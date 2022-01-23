@@ -44,3 +44,65 @@
 [21-01-2022 11:51:38] INFO core 4431728128 - Applying Heroku Staticfiles configuration to Django settings.
 [21-01-2022 11:51:38] INFO core 4431728128 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
 [21-01-2022 11:51:38] INFO core 4431728128 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 04:46:15] INFO core 4388584960 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 04:46:15] INFO core 4388584960 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 04:46:15] INFO core 4388584960 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 04:46:15] INFO core 4388584960 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 04:46:16] INFO core 4536229376 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 04:46:16] INFO core 4536229376 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 04:46:16] INFO core 4536229376 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 04:46:16] INFO core 4536229376 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 04:46:16] INFO autoreload 4536229376 - Watching for file changes with StatReloader
+[23-01-2022 04:49:10] INFO core 4485860864 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 04:49:10] INFO core 4485860864 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 04:49:10] INFO core 4485860864 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 04:49:10] INFO core 4485860864 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 04:49:11] INFO core 4551241216 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 04:49:11] INFO core 4551241216 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 04:49:11] INFO core 4551241216 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 04:49:11] INFO core 4551241216 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 04:49:11] INFO autoreload 4551241216 - Watching for file changes with StatReloader
+[23-01-2022 04:51:07] INFO autoreload 4551241216 - /Users/Olaofe/Desktop/TM30/payarena/payarena/payarena/settings/dev.py changed, reloading.
+[23-01-2022 04:51:08] INFO core 4674977280 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 04:51:08] INFO core 4674977280 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 04:51:08] INFO core 4674977280 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 04:51:08] INFO core 4674977280 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 04:51:08] INFO autoreload 4674977280 - Watching for file changes with StatReloader
+[23-01-2022 04:51:14] INFO autoreload 4674977280 - /Users/Olaofe/Desktop/TM30/payarena/payarena/payarena/settings/dev.py changed, reloading.
+[23-01-2022 04:51:15] INFO core 4779593216 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 04:51:15] INFO core 4779593216 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 04:51:15] INFO core 4779593216 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 04:51:15] INFO core 4779593216 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 04:51:15] INFO autoreload 4779593216 - Watching for file changes with StatReloader
+[23-01-2022 05:50:21] INFO core 4569972224 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 05:50:21] INFO core 4569972224 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 05:50:21] INFO core 4569972224 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 05:50:21] INFO core 4569972224 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 05:50:22] INFO core 4454178304 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 05:50:22] INFO core 4454178304 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 05:50:22] INFO core 4454178304 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 05:50:22] INFO core 4454178304 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 05:50:23] INFO autoreload 4454178304 - Watching for file changes with StatReloader
+[23-01-2022 05:51:12] INFO core 4624727552 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 05:51:12] INFO core 4624727552 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 05:51:12] INFO core 4624727552 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 05:51:12] INFO core 4624727552 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 05:51:20] INFO core 4665581056 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 05:51:20] INFO core 4665581056 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 05:51:20] INFO core 4665581056 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 05:51:20] INFO core 4665581056 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 05:51:40] INFO core 4577738240 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 05:51:40] INFO core 4577738240 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 05:51:40] INFO core 4577738240 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 05:51:40] INFO core 4577738240 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 05:52:15] WARNING log 123145438478336 - Not Found: /favicon.ico
+[23-01-2022 05:54:03] INFO core 4482354688 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 05:54:03] INFO core 4482354688 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 05:54:03] INFO core 4482354688 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 05:54:03] INFO core 4482354688 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 05:54:04] INFO core 4719726080 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 05:54:04] INFO core 4719726080 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 05:54:04] INFO core 4719726080 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 05:54:04] INFO core 4719726080 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 05:54:04] INFO autoreload 4719726080 - Watching for file changes with StatReloader
+[23-01-2022 05:54:17] WARNING log 123145411010560 - Not Found: /favicon.ico
