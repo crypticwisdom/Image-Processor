@@ -114,3 +114,9 @@
 [23-01-2022 05:59:18] INFO core 4599033344 - Applying Heroku Staticfiles configuration to Django settings.
 [23-01-2022 05:59:18] INFO core 4599033344 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
 [23-01-2022 05:59:18] INFO core 4599033344 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 06:09:46] INFO autoreload 4719726080 - /Users/Olaofe/Desktop/TM30/payarena/payarena/payarena/wsgi.py changed, reloading.
+[23-01-2022 06:09:48] INFO core 4548230656 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 06:09:48] INFO core 4548230656 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 06:09:48] INFO core 4548230656 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 06:09:48] INFO core 4548230656 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 06:09:48] INFO autoreload 4548230656 - Watching for file changes with StatReloader
