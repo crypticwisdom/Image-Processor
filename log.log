@@ -106,3 +106,11 @@
 [23-01-2022 05:54:04] INFO core 4719726080 - Applying Heroku logging configuration to Django settings.
 [23-01-2022 05:54:04] INFO autoreload 4719726080 - Watching for file changes with StatReloader
 [23-01-2022 05:54:17] WARNING log 123145411010560 - Not Found: /favicon.ico
+[23-01-2022 05:59:05] INFO core 4654521856 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 05:59:05] INFO core 4654521856 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 05:59:05] INFO core 4654521856 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 05:59:05] INFO core 4654521856 - Applying Heroku logging configuration to Django settings.
+[23-01-2022 05:59:18] INFO core 4599033344 - $DATABASE_URL not found, falling back to previous settings!
+[23-01-2022 05:59:18] INFO core 4599033344 - Applying Heroku Staticfiles configuration to Django settings.
+[23-01-2022 05:59:18] INFO core 4599033344 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[23-01-2022 05:59:18] INFO core 4599033344 - Applying Heroku logging configuration to Django settings.
