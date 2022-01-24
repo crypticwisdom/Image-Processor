@@ -1,0 +1,17 @@
+.env
+*.env
+*.db.sqlite3
+*.db.sqlite
+payarena/db.sqlite3
+__pycache__/
+*.pyc
+.idea
+*.idea
+.idea/*
+log.log
+*.log
+*.sqlite
+*.sqlite3
+.DS_Store
+*.DS_Store
+

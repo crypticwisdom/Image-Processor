@@ -16,7 +16,7 @@ DATABASES = {
         'USER': 'payarena',
         'PASSWORD': 'payarena',
         'HOST': 'localhost',
-        'PORT': '',
+        'PORT': '5432',
     }
 }
 

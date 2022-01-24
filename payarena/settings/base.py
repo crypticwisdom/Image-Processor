@@ -19,6 +19,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'account',
+    'home',
+    'merchant',
+    'store',
+    'superadmin',
+    'transaction',
+
     'rest_framework',
     # 'django-filter',
     'corsheaders',
