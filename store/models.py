@@ -18,7 +18,7 @@ class Brand(models.Model):
 class ProductCategory(models.Model):
     name = models.CharField(max_length=100)
     parent = models.ForeignKey('self', blank=True, null=True, on_delete=models.CASCADE)
-    brands = models.ManyToManyField(Brand, default=None)
+    brands = models.ManyToManyField(Brand, default=None, related_name='brands')
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -30,7 +30,7 @@ class ProductCategory(models.Model):
 
 
 class Store(models.Model):
-    seller = models.ForeignKey(Seller, on_delete=models.CASCADE)
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, related_name='seller')
     name = models.CharField(max_length=100)
     logo = models.ImageField(upload_to='store-logo')
     description = models.TextField()
@@ -83,7 +83,7 @@ class ProductDetail(models.Model):
 
 
 class ProductImage(models.Model):
-    product_detail = models.ForeignKey(ProductDetail, on_delete=models.CASCADE)
+    product_detail = models.ForeignKey(ProductDetail, on_delete=models.CASCADE, related_name='product_detail')
     image = models.ImageField(upload_to='product-images')
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
