@@ -120,6 +120,7 @@
 [23-01-2022 06:09:48] INFO core 4548230656 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
 [23-01-2022 06:09:48] INFO core 4548230656 - Applying Heroku logging configuration to Django settings.
 [23-01-2022 06:09:48] INFO autoreload 4548230656 - Watching for file changes with StatReloader
+<<<<<<< HEAD
 [24-01-2022 11:15:06] INFO core 139684452435776 - $DATABASE_URL not found, falling back to previous settings!
 [24-01-2022 11:15:06] INFO core 139684452435776 - Applying Heroku Staticfiles configuration to Django settings.
 [24-01-2022 11:15:06] INFO core 139684452435776 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
@@ -5327,3 +5328,1726 @@ UnboundLocalError: local variable 'paginated_response' referenced before assignm
 [28-01-2022 09:50:56] INFO core 139728305563456 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
 [28-01-2022 09:50:56] INFO core 139728305563456 - Applying Heroku logging configuration to Django settings.
 [28-01-2022 09:50:56] INFO autoreload 139728305563456 - Watching for file changes with StatReloader
+=======
+[24-01-2022 09:20:54] INFO core 4554317312 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 09:20:54] INFO core 4554317312 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 09:20:54] INFO core 4554317312 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 09:20:54] INFO core 4554317312 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 09:20:55] INFO core 4677320192 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 09:20:55] INFO core 4677320192 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 09:20:55] INFO core 4677320192 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 09:20:55] INFO core 4677320192 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 09:20:55] INFO autoreload 4677320192 - Watching for file changes with StatReloader
+[24-01-2022 09:21:19] INFO autoreload 4677320192 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/urls.py changed, reloading.
+[24-01-2022 09:21:19] DEBUG selector_events 4677320192 - Using selector: KqueueSelector
+[24-01-2022 09:21:20] INFO core 4419972608 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 09:21:20] INFO core 4419972608 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 09:21:20] INFO core 4419972608 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 09:21:20] INFO core 4419972608 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 09:21:20] INFO autoreload 4419972608 - Watching for file changes with StatReloader
+[24-01-2022 09:27:31] DEBUG selector_events 4419972608 - Using selector: KqueueSelector
+[24-01-2022 09:27:31] DEBUG selector_events 4554317312 - Using selector: KqueueSelector
+[24-01-2022 10:38:51] INFO core 4632575488 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 10:38:51] INFO core 4632575488 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 10:38:51] INFO core 4632575488 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 10:38:51] INFO core 4632575488 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 10:46:21] INFO core 4587572736 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 10:46:21] INFO core 4587572736 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 10:46:21] INFO core 4587572736 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 10:46:21] INFO core 4587572736 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 11:16:43] INFO core 4619288064 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 11:16:43] INFO core 4619288064 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 11:16:43] INFO core 4619288064 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 11:16:43] INFO core 4619288064 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 11:16:43] DEBUG selector_events 4619288064 - Using selector: KqueueSelector
+[24-01-2022 11:16:51] INFO core 4432821760 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 11:16:51] INFO core 4432821760 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 11:16:51] INFO core 4432821760 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 11:16:51] INFO core 4432821760 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 11:16:52] INFO core 4538342912 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 11:16:52] INFO core 4538342912 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 11:16:52] INFO core 4538342912 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 11:16:52] INFO core 4538342912 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 11:16:52] INFO autoreload 4538342912 - Watching for file changes with StatReloader
+[24-01-2022 11:16:55] WARNING log 123145617424384 - Not Found: /apple-touch-icon-precomposed.png
+[24-01-2022 11:16:55] WARNING log 123145617424384 - Not Found: /apple-touch-icon.png
+[24-01-2022 11:16:55] WARNING log 123145634213888 - Not Found: /favicon.ico
+[24-01-2022 11:17:50] DEBUG selector_events 4538342912 - Using selector: KqueueSelector
+[24-01-2022 11:17:50] DEBUG selector_events 4432821760 - Using selector: KqueueSelector
+[24-01-2022 11:58:41] INFO core 4354428416 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 11:58:41] INFO core 4354428416 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 11:58:41] INFO core 4354428416 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 11:58:41] INFO core 4354428416 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 11:58:42] INFO core 4609621504 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 11:58:42] INFO core 4609621504 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 11:58:42] INFO core 4609621504 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 11:58:42] INFO core 4609621504 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 11:58:42] INFO autoreload 4609621504 - Watching for file changes with StatReloader
+[24-01-2022 11:59:33] DEBUG selector_events 4609621504 - Using selector: KqueueSelector
+[24-01-2022 11:59:33] DEBUG selector_events 4354428416 - Using selector: KqueueSelector
+[24-01-2022 11:59:35] INFO core 4527877632 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 11:59:35] INFO core 4527877632 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 11:59:35] INFO core 4527877632 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 11:59:35] INFO core 4527877632 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 11:59:35] INFO core 4599500288 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 11:59:35] INFO core 4599500288 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 11:59:35] INFO core 4599500288 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 11:59:35] INFO core 4599500288 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 11:59:35] INFO autoreload 4599500288 - Watching for file changes with StatReloader
+[24-01-2022 12:00:59] WARNING log 123145463447552 - Not Found: /merchant/seller
+[24-01-2022 12:01:02] WARNING log 123145463447552 - Not Found: /merchant/seller/
+[24-01-2022 12:42:07] INFO autoreload 4599500288 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[24-01-2022 12:42:07] DEBUG selector_events 4599500288 - Using selector: KqueueSelector
+[24-01-2022 12:42:08] INFO core 4451315200 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 12:42:08] INFO core 4451315200 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 12:42:08] INFO core 4451315200 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 12:42:08] INFO core 4451315200 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 12:42:08] INFO autoreload 4451315200 - Watching for file changes with StatReloader
+[24-01-2022 12:45:06] WARNING log 123145509900288 - Not Found: /merchant/seller
+[24-01-2022 12:45:31] WARNING log 123145526689792 - Not Found: /favicon.ico
+[24-01-2022 12:45:38] WARNING log 123145526689792 - Not Found: /merchant/seller
+[24-01-2022 12:46:15] WARNING log 123145526689792 - Forbidden: /seller/seller/
+[24-01-2022 12:46:26] WARNING log 123145509900288 - Forbidden: /seller/seller/
+[24-01-2022 12:48:44] DEBUG selector_events 4451315200 - Using selector: KqueueSelector
+[24-01-2022 12:48:45] DEBUG selector_events 4527877632 - Using selector: KqueueSelector
+[24-01-2022 12:48:49] INFO core 4622515712 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 12:48:49] INFO core 4622515712 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 12:48:49] INFO core 4622515712 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 12:48:49] INFO core 4622515712 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 12:48:50] INFO core 4552568320 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 12:48:50] INFO core 4552568320 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 12:48:50] INFO core 4552568320 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 12:48:50] INFO core 4552568320 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 12:48:50] INFO autoreload 4552568320 - Watching for file changes with StatReloader
+[24-01-2022 12:49:19] DEBUG selector_events 4552568320 - Using selector: KqueueSelector
+[24-01-2022 12:49:20] DEBUG selector_events 4622515712 - Using selector: KqueueSelector
+[24-01-2022 12:49:33] INFO core 4713983488 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 12:49:33] INFO core 4713983488 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 12:49:33] INFO core 4713983488 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 12:49:33] INFO core 4713983488 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 12:49:34] DEBUG selector_events 4713983488 - Using selector: KqueueSelector
+[24-01-2022 12:50:17] INFO core 4465966592 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 12:50:17] INFO core 4465966592 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 12:50:17] INFO core 4465966592 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 12:50:17] INFO core 4465966592 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 12:50:18] INFO core 4414098944 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 12:50:18] INFO core 4414098944 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 12:50:18] INFO core 4414098944 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 12:50:18] INFO core 4414098944 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 12:50:18] INFO autoreload 4414098944 - Watching for file changes with StatReloader
+[24-01-2022 12:51:37] WARNING log 123145482137600 - Forbidden: /seller/seller/
+[24-01-2022 12:51:42] WARNING log 123145482137600 - Forbidden: /seller/seller/
+[24-01-2022 12:52:36] WARNING log 123145482137600 - Forbidden: /seller/seller/
+[24-01-2022 12:53:42] WARNING log 123145482137600 - Forbidden: /seller/seller/
+[24-01-2022 12:53:48] WARNING log 123145482137600 - Forbidden: /seller/seller/
+[24-01-2022 12:55:58] INFO autoreload 4414098944 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[24-01-2022 12:55:58] DEBUG selector_events 4414098944 - Using selector: KqueueSelector
+[24-01-2022 12:56:00] INFO core 4587318784 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 12:56:00] INFO core 4587318784 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 12:56:00] INFO core 4587318784 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 12:56:00] INFO core 4587318784 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 12:56:00] INFO autoreload 4587318784 - Watching for file changes with StatReloader
+[24-01-2022 12:56:20] INFO autoreload 4587318784 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[24-01-2022 12:56:20] DEBUG selector_events 4587318784 - Using selector: KqueueSelector
+[24-01-2022 12:56:20] INFO core 4753317376 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 12:56:20] INFO core 4753317376 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 12:56:20] INFO core 4753317376 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 12:56:20] INFO core 4753317376 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 12:56:21] INFO autoreload 4753317376 - Watching for file changes with StatReloader
+[24-01-2022 12:56:24] WARNING log 123145497255936 - Forbidden: /seller/seller/
+[24-01-2022 12:56:25] WARNING log 123145497255936 - Forbidden: /seller/seller/
+[24-01-2022 12:56:50] ERROR log 123145514045440 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/fields/__init__.py", line 1823, in get_prep_value
+    return int(value)
+TypeError: int() argument must be a string, a bytes-like object or a number, not 'Request'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 16, in get
+    item = Seller.objects.filter(id=id)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 941, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 961, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 968, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/query.py", line 1393, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/query.py", line 1412, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/query.py", line 1347, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/query.py", line 1193, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/lookups.py", line 25, in __init__
+    self.rhs = self.get_prep_lookup()
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/lookups.py", line 77, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/fields/__init__.py", line 1825, in get_prep_value
+    raise e.__class__(
+TypeError: Field 'id' expected a number but got <rest_framework.request.Request: GET '/seller/seller/'>.
+[24-01-2022 13:03:14] INFO autoreload 4753317376 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[24-01-2022 13:03:14] DEBUG selector_events 4753317376 - Using selector: KqueueSelector
+[24-01-2022 13:03:15] INFO core 4691025408 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 13:03:15] INFO core 4691025408 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 13:03:15] INFO core 4691025408 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 13:03:15] INFO core 4691025408 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 13:03:16] INFO autoreload 4691025408 - Watching for file changes with StatReloader
+[24-01-2022 13:03:20] WARNING log 123145598017536 - Forbidden: /seller/seller/
+[24-01-2022 13:03:28] ERROR log 123145614807040 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 22, in get
+    return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 745, in data
+    ret = super().data
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 246, in data
+    self._data = self.to_representation(self.instance)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 663, in to_representation
+    return [
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 664, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 500, in to_representation
+    for field in fields:
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 361, in _readable_fields
+    for field in self.fields.values():
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/utils/functional.py", line 48, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 349, in fields
+    for key, value in self.get_fields().items():
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 1029, in get_fields
+    field_names = self.get_field_names(declared_fields, info)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 1125, in get_field_names
+    assert field_name in fields, (
+AssertionError: The field 'email' was declared on serializer SellerSerializer, but has not been included in the 'fields' option.
+[24-01-2022 13:03:51] INFO autoreload 4691025408 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/serializers.py changed, reloading.
+[24-01-2022 13:03:51] DEBUG selector_events 4691025408 - Using selector: KqueueSelector
+[24-01-2022 13:03:51] INFO core 4587687424 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 13:03:51] INFO core 4587687424 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 13:03:51] INFO core 4587687424 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 13:03:51] INFO core 4587687424 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 13:03:52] INFO autoreload 4587687424 - Watching for file changes with StatReloader
+[24-01-2022 13:04:00] WARNING log 123145373577216 - Forbidden: /seller/seller/
+[24-01-2022 13:04:04] WARNING log 123145373577216 - Forbidden: /seller/seller/
+[24-01-2022 13:04:12] WARNING log 123145373577216 - Forbidden: /seller/seller/
+[24-01-2022 13:04:29] WARNING log 123145373577216 - Forbidden: /seller/seller/
+[24-01-2022 13:07:34] WARNING log 123145373577216 - Forbidden: /seller/seller/
+[24-01-2022 13:08:55] ERROR log 123145339998208 - Internal Server Error: /seller/seller/2/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+TypeError: get() got an unexpected keyword argument 'seller_id'
+[24-01-2022 13:14:01] INFO autoreload 4587687424 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[24-01-2022 13:14:01] DEBUG selector_events 4587687424 - Using selector: KqueueSelector
+[24-01-2022 13:14:01] DEBUG selector_events 4465966592 - Using selector: KqueueSelector
+[24-01-2022 13:14:40] INFO core 4528172544 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 13:14:40] INFO core 4528172544 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 13:14:40] INFO core 4528172544 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 13:14:40] INFO core 4528172544 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 13:14:41] INFO core 4539645440 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 13:14:41] INFO core 4539645440 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 13:14:41] INFO core 4539645440 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 13:14:41] INFO core 4539645440 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 13:14:41] INFO autoreload 4539645440 - Watching for file changes with StatReloader
+[24-01-2022 13:14:55] INFO autoreload 4539645440 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[24-01-2022 13:14:55] DEBUG selector_events 4539645440 - Using selector: KqueueSelector
+[24-01-2022 13:14:56] INFO core 4584271360 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 13:14:56] INFO core 4584271360 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 13:14:56] INFO core 4584271360 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 13:14:56] INFO core 4584271360 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 13:14:56] INFO autoreload 4584271360 - Watching for file changes with StatReloader
+[24-01-2022 13:15:20] WARNING log 123145520939008 - Forbidden: /seller/seller/
+[24-01-2022 13:15:22] WARNING log 123145520939008 - Forbidden: /seller/seller/
+[24-01-2022 13:15:54] ERROR log 123145520939008 - Internal Server Error: /seller/seller
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/utils/deprecation.py", line 116, in __call__
+    response = self.process_request(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/middleware/common.py", line 54, in process_request
+    path = self.get_full_path_with_slash(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/middleware/common.py", line 88, in get_full_path_with_slash
+    raise RuntimeError(
+RuntimeError: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to 127.0.0.1:8000/seller/seller/?phone=3456789067 (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
+[24-01-2022 13:16:08] ERROR log 123145520939008 - Internal Server Error: /seller/seller
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/utils/deprecation.py", line 116, in __call__
+    response = self.process_request(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/middleware/common.py", line 54, in process_request
+    path = self.get_full_path_with_slash(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/middleware/common.py", line 88, in get_full_path_with_slash
+    raise RuntimeError(
+RuntimeError: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to 127.0.0.1:8000/seller/seller/?phone=3456789067/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
+[24-01-2022 13:19:17] ERROR log 123145537728512 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 29, in post
+    if serializer.is_valid():
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 213, in is_valid
+    assert hasattr(self, 'initial_data'), (
+AssertionError: Cannot call `.is_valid()` as no `data=` keyword argument was passed when instantiating the serializer instance.
+[24-01-2022 13:20:22] WARNING log 123145537728512 - Bad Request: /seller/seller/
+[24-01-2022 13:20:35] WARNING log 123145537728512 - Bad Request: /seller/seller/
+[24-01-2022 13:24:32] INFO autoreload 4584271360 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[24-01-2022 13:24:32] DEBUG selector_events 4584271360 - Using selector: KqueueSelector
+[24-01-2022 13:24:33] INFO core 4538256896 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 13:24:33] INFO core 4538256896 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 13:24:33] INFO core 4538256896 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 13:24:33] INFO core 4538256896 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 13:24:33] INFO autoreload 4538256896 - Watching for file changes with StatReloader
+[24-01-2022 13:24:44] WARNING log 123145490706432 - Bad Request: /seller/seller/
+[24-01-2022 13:25:30] ERROR log 123145490706432 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 29, in post
+    if serializer.is_valid():
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/serializers.py", line 213, in is_valid
+    assert hasattr(self, 'initial_data'), (
+AssertionError: Cannot call `.is_valid()` as no `data=` keyword argument was passed when instantiating the serializer instance.
+[24-01-2022 13:31:42] DEBUG selector_events 4538256896 - Using selector: KqueueSelector
+[24-01-2022 13:31:43] DEBUG selector_events 4528172544 - Using selector: KqueueSelector
+[24-01-2022 13:32:11] INFO core 4674227712 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 13:32:11] INFO core 4674227712 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 13:32:11] INFO core 4674227712 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 13:32:11] INFO core 4674227712 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 13:32:12] INFO core 4574375424 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 13:32:12] INFO core 4574375424 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 13:32:12] INFO core 4574375424 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 13:32:12] INFO core 4574375424 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 13:32:12] INFO autoreload 4574375424 - Watching for file changes with StatReloader
+[24-01-2022 14:07:05] INFO autoreload 4574375424 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/serializers.py changed, reloading.
+[24-01-2022 14:07:05] DEBUG selector_events 4574375424 - Using selector: KqueueSelector
+[24-01-2022 14:07:06] DEBUG selector_events 4674227712 - Using selector: KqueueSelector
+[24-01-2022 15:33:51] INFO core 4755742208 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 15:33:51] INFO core 4755742208 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 15:33:51] INFO core 4755742208 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 15:33:51] INFO core 4755742208 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 15:33:52] INFO core 4467969536 - $DATABASE_URL not found, falling back to previous settings!
+[24-01-2022 15:33:52] INFO core 4467969536 - Applying Heroku Staticfiles configuration to Django settings.
+[24-01-2022 15:33:52] INFO core 4467969536 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[24-01-2022 15:33:52] INFO core 4467969536 - Applying Heroku logging configuration to Django settings.
+[24-01-2022 15:33:52] INFO autoreload 4467969536 - Watching for file changes with StatReloader
+[25-01-2022 08:23:01] DEBUG selector_events 4467969536 - Using selector: KqueueSelector
+[25-01-2022 08:23:01] DEBUG selector_events 4755742208 - Using selector: KqueueSelector
+[25-01-2022 08:24:25] INFO core 4712320512 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:24:25] INFO core 4712320512 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:24:25] INFO core 4712320512 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:24:25] INFO core 4712320512 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:24:26] INFO core 4672089600 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:24:26] INFO core 4672089600 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:24:26] INFO core 4672089600 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:24:26] INFO core 4672089600 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:24:26] INFO autoreload 4672089600 - Watching for file changes with StatReloader
+[25-01-2022 08:25:29] ERROR log 123145458372608 - Internal Server Error: /seller/seller
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/utils/deprecation.py", line 116, in __call__
+    response = self.process_request(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/middleware/common.py", line 54, in process_request
+    path = self.get_full_path_with_slash(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/middleware/common.py", line 88, in get_full_path_with_slash
+    raise RuntimeError(
+RuntimeError: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to 127.0.0.1:8000/seller/seller/?phone=345678906767&cac_number=987654345 (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
+[25-01-2022 08:25:40] ERROR log 123145458372608 - Internal Server Error: /seller/seller
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/utils/deprecation.py", line 116, in __call__
+    response = self.process_request(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/middleware/common.py", line 54, in process_request
+    path = self.get_full_path_with_slash(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/middleware/common.py", line 88, in get_full_path_with_slash
+    raise RuntimeError(
+RuntimeError: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to 127.0.0.1:8000/seller/seller/?phone=345678906767&cac_number=987654345/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
+[25-01-2022 08:26:34] WARNING log 123145475162112 - Forbidden: /seller/seller/
+[25-01-2022 08:28:08] INFO autoreload 4672089600 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 08:28:08] DEBUG selector_events 4672089600 - Using selector: KqueueSelector
+[25-01-2022 08:28:09] INFO core 4630498816 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:28:09] INFO core 4630498816 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:28:09] INFO core 4630498816 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:28:09] INFO core 4630498816 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:28:09] INFO autoreload 4630498816 - Watching for file changes with StatReloader
+[25-01-2022 08:28:20] WARNING log 123145349308416 - Forbidden: /seller/seller/
+[25-01-2022 08:34:14] WARNING log 123145349308416 - Forbidden: /seller/seller/
+[25-01-2022 08:34:37] INFO autoreload 4630498816 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 08:34:37] DEBUG selector_events 4630498816 - Using selector: KqueueSelector
+[25-01-2022 08:34:38] INFO core 4387843584 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:34:38] INFO core 4387843584 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:34:38] INFO core 4387843584 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:34:38] INFO core 4387843584 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:34:38] INFO autoreload 4387843584 - Watching for file changes with StatReloader
+[25-01-2022 08:34:43] ERROR log 123145359572992 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.NotNullViolation: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (3, , pending, 2022-01-25 07:34:42.619152+00, 2022-01-25 07:34:42.619181+00, null).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 32, in post
+    seller = Seller.objects.create(phone_number=phone)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 453, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 763, in save_base
+    updated = self._save_table(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 868, in _save_table
+    results = self._do_insert(cls._base_manager, using, fields, returning_fields, raw)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 906, in _do_insert
+    return manager._insert(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 1270, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py", line 1416, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 98, in execute
+    return super().execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (3, , pending, 2022-01-25 07:34:42.619152+00, 2022-01-25 07:34:42.619181+00, null).
+
+[25-01-2022 08:35:24] ERROR log 123145359572992 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.NotNullViolation: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (4, , pending, 2022-01-25 07:35:24.370966+00, 2022-01-25 07:35:24.371003+00, null).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 32, in post
+    seller = Seller.objects.create(phone_number=phone)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 453, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 763, in save_base
+    updated = self._save_table(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 868, in _save_table
+    results = self._do_insert(cls._base_manager, using, fields, returning_fields, raw)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 906, in _do_insert
+    return manager._insert(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 1270, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py", line 1416, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 98, in execute
+    return super().execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (4, , pending, 2022-01-25 07:35:24.370966+00, 2022-01-25 07:35:24.371003+00, null).
+
+[25-01-2022 08:44:46] ERROR log 123145359572992 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.NotNullViolation: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (5, 3456789, pending, 2022-01-25 07:44:46.557746+00, 2022-01-25 07:44:46.557906+00, null).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 32, in post
+    seller = Seller.objects.create(phone_number=phone)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 453, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 763, in save_base
+    updated = self._save_table(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 868, in _save_table
+    results = self._do_insert(cls._base_manager, using, fields, returning_fields, raw)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 906, in _do_insert
+    return manager._insert(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 1270, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py", line 1416, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 98, in execute
+    return super().execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (5, 3456789, pending, 2022-01-25 07:44:46.557746+00, 2022-01-25 07:44:46.557906+00, null).
+
+[25-01-2022 08:46:36] INFO autoreload 4387843584 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 08:46:36] DEBUG selector_events 4387843584 - Using selector: KqueueSelector
+[25-01-2022 08:46:36] INFO core 4583071232 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:46:36] INFO core 4583071232 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:46:36] INFO core 4583071232 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:46:36] INFO core 4583071232 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:46:37] INFO autoreload 4583071232 - Watching for file changes with StatReloader
+[25-01-2022 08:46:47] ERROR log 123145417527296 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.NotNullViolation: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (6, 3456789, pending, 2022-01-25 07:46:46.803135+00, 2022-01-25 07:46:46.803289+00, null).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 32, in post
+    seller = Seller.objects.create(phone_number=phone)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 453, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 763, in save_base
+    updated = self._save_table(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 868, in _save_table
+    results = self._do_insert(cls._base_manager, using, fields, returning_fields, raw)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 906, in _do_insert
+    return manager._insert(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 1270, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py", line 1416, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 98, in execute
+    return super().execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (6, 3456789, pending, 2022-01-25 07:46:46.803135+00, 2022-01-25 07:46:46.803289+00, null).
+
+[25-01-2022 08:49:31] INFO autoreload 4583071232 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 08:49:31] DEBUG selector_events 4583071232 - Using selector: KqueueSelector
+[25-01-2022 08:49:32] INFO core 4726877696 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:49:32] INFO core 4726877696 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:49:32] INFO core 4726877696 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:49:32] INFO core 4726877696 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:49:33] INFO autoreload 4726877696 - Watching for file changes with StatReloader
+[25-01-2022 08:49:36] DEBUG selector_events 4726877696 - Using selector: KqueueSelector
+[25-01-2022 08:49:36] DEBUG selector_events 4712320512 - Using selector: KqueueSelector
+[25-01-2022 08:52:53] INFO core 4561280512 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:52:53] INFO core 4561280512 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:52:53] INFO core 4561280512 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:52:53] INFO core 4561280512 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:52:53] INFO core 4530982400 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:52:53] INFO core 4530982400 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:52:53] INFO core 4530982400 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:52:53] INFO core 4530982400 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:52:54] INFO autoreload 4530982400 - Watching for file changes with StatReloader
+[25-01-2022 08:52:59] ERROR log 123145448968192 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 33, in post
+    seller_ver = SellerVerification.objects.get(pk=1)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 435, in get
+    raise self.model.DoesNotExist(
+merchant.models.SellerVerification.DoesNotExist: SellerVerification matching query does not exist.
+[25-01-2022 08:53:24] INFO autoreload 4530982400 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 08:53:24] DEBUG selector_events 4530982400 - Using selector: KqueueSelector
+[25-01-2022 08:53:26] INFO core 4449074688 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:53:26] INFO core 4449074688 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:53:26] INFO core 4449074688 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:53:26] INFO core 4449074688 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:53:26] INFO autoreload 4449074688 - Watching for file changes with StatReloader
+[25-01-2022 08:53:54] INFO autoreload 4449074688 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 08:53:54] DEBUG selector_events 4449074688 - Using selector: KqueueSelector
+[25-01-2022 08:53:55] INFO core 4373163520 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 08:53:55] INFO core 4373163520 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 08:53:55] INFO core 4373163520 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 08:53:55] INFO core 4373163520 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 08:53:55] INFO autoreload 4373163520 - Watching for file changes with StatReloader
+[25-01-2022 08:54:20] ERROR log 123145502253056 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 33, in post
+    seller_ver = SellerVerification.objects.get(pk=1)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 435, in get
+    raise self.model.DoesNotExist(
+merchant.models.SellerVerification.DoesNotExist: SellerVerification matching query does not exist.
+[25-01-2022 09:17:25] INFO autoreload 4373163520 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 09:17:25] DEBUG selector_events 4373163520 - Using selector: KqueueSelector
+[25-01-2022 09:17:27] INFO core 4526738944 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 09:17:27] INFO core 4526738944 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 09:17:27] INFO core 4526738944 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 09:17:27] INFO core 4526738944 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 09:17:27] INFO autoreload 4526738944 - Watching for file changes with StatReloader
+[25-01-2022 09:17:33] ERROR log 123145528766464 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 33, in post
+    seller_ver = SellerVerification.objects.get(pk=1)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 435, in get
+    raise self.model.DoesNotExist(
+merchant.models.SellerVerification.DoesNotExist: SellerVerification matching query does not exist.
+[25-01-2022 09:19:28] INFO autoreload 4526738944 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 09:19:28] DEBUG selector_events 4526738944 - Using selector: KqueueSelector
+[25-01-2022 09:19:29] INFO core 4741361152 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 09:19:29] INFO core 4741361152 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 09:19:29] INFO core 4741361152 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 09:19:29] INFO core 4741361152 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 09:19:29] INFO autoreload 4741361152 - Watching for file changes with StatReloader
+[25-01-2022 09:19:33] ERROR log 123145402736640 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 511, in dispatch
+    self.response = self.finalize_response(request, response, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 423, in finalize_response
+    assert isinstance(response, HttpResponseBase), (
+AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
+[25-01-2022 09:21:07] INFO autoreload 4741361152 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 09:21:07] DEBUG selector_events 4741361152 - Using selector: KqueueSelector
+[25-01-2022 09:21:07] INFO core 4698619392 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 09:21:07] INFO core 4698619392 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 09:21:07] INFO core 4698619392 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 09:21:07] INFO core 4698619392 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 09:21:08] INFO autoreload 4698619392 - Watching for file changes with StatReloader
+[25-01-2022 09:21:52] INFO autoreload 4698619392 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 09:21:52] DEBUG selector_events 4698619392 - Using selector: KqueueSelector
+[25-01-2022 09:21:53] INFO core 4508208640 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 09:21:53] INFO core 4508208640 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 09:21:53] INFO core 4508208640 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 09:21:53] INFO core 4508208640 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 09:21:53] INFO autoreload 4508208640 - Watching for file changes with StatReloader
+[25-01-2022 09:21:59] ERROR log 123145456660480 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "merchant_sellerverification_seller_id_key"
+DETAIL:  Key (seller_id)=(1) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 42, in post
+    sellerVerification = SellerVerification.objects.create(seller=seller, cac_number=cac, id_card=id_card)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 453, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 763, in save_base
+    updated = self._save_table(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 868, in _save_table
+    results = self._do_insert(cls._base_manager, using, fields, returning_fields, raw)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 906, in _do_insert
+    return manager._insert(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 1270, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py", line 1416, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 98, in execute
+    return super().execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "merchant_sellerverification_seller_id_key"
+DETAIL:  Key (seller_id)=(1) already exists.
+
+[25-01-2022 09:22:39] INFO autoreload 4508208640 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 09:22:39] DEBUG selector_events 4508208640 - Using selector: KqueueSelector
+[25-01-2022 09:22:40] INFO core 4512722432 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 09:22:40] INFO core 4512722432 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 09:22:40] INFO core 4512722432 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 09:22:40] INFO core 4512722432 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 09:22:40] INFO autoreload 4512722432 - Watching for file changes with StatReloader
+[25-01-2022 09:22:44] ERROR log 123145423634432 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.NotNullViolation: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (7, 3456789, pending, 2022-01-25 08:22:44.261337+00, 2022-01-25 08:22:44.261365+00, null).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 41, in post
+    seller = Seller.objects.create(phone_number=phone)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 453, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 763, in save_base
+    updated = self._save_table(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 868, in _save_table
+    results = self._do_insert(cls._base_manager, using, fields, returning_fields, raw)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 906, in _do_insert
+    return manager._insert(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 1270, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py", line 1416, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 98, in execute
+    return super().execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: null value in column "user_id" of relation "merchant_seller" violates not-null constraint
+DETAIL:  Failing row contains (7, 3456789, pending, 2022-01-25 08:22:44.261337+00, 2022-01-25 08:22:44.261365+00, null).
+
+[25-01-2022 09:24:56] INFO autoreload 4512722432 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 09:24:56] DEBUG selector_events 4512722432 - Using selector: KqueueSelector
+[25-01-2022 09:24:57] INFO core 4517314048 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 09:24:57] INFO core 4517314048 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 09:24:57] INFO core 4517314048 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 09:24:57] INFO core 4517314048 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 09:24:57] INFO autoreload 4517314048 - Watching for file changes with StatReloader
+[25-01-2022 09:25:08] ERROR log 123145410297856 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "merchant_sellerverification_seller_id_key"
+DETAIL:  Key (seller_id)=(1) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 42, in post
+    sellerVerification = SellerVerification.objects.create(seller=seller, cac_number=cac, id_card=id_card)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 453, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 763, in save_base
+    updated = self._save_table(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 868, in _save_table
+    results = self._do_insert(cls._base_manager, using, fields, returning_fields, raw)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 906, in _do_insert
+    return manager._insert(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 1270, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py", line 1416, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 98, in execute
+    return super().execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "merchant_sellerverification_seller_id_key"
+DETAIL:  Key (seller_id)=(1) already exists.
+
+[25-01-2022 09:29:50] INFO autoreload 4517314048 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 09:29:50] DEBUG selector_events 4517314048 - Using selector: KqueueSelector
+[25-01-2022 09:29:51] INFO core 4439862784 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 09:29:51] INFO core 4439862784 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 09:29:51] INFO core 4439862784 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 09:29:51] INFO core 4439862784 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 09:29:51] INFO autoreload 4439862784 - Watching for file changes with StatReloader
+[25-01-2022 10:05:32] INFO autoreload 4439862784 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 10:05:32] DEBUG selector_events 4439862784 - Using selector: KqueueSelector
+[25-01-2022 10:05:33] INFO core 4690034176 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 10:05:33] INFO core 4690034176 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 10:05:33] INFO core 4690034176 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 10:05:33] INFO core 4690034176 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 10:05:34] INFO autoreload 4690034176 - Watching for file changes with StatReloader
+[25-01-2022 10:09:22] INFO autoreload 4690034176 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 10:09:22] DEBUG selector_events 4690034176 - Using selector: KqueueSelector
+[25-01-2022 10:09:24] INFO core 4474060288 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 10:09:24] INFO core 4474060288 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 10:09:24] INFO core 4474060288 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 10:09:24] INFO core 4474060288 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 10:09:24] INFO autoreload 4474060288 - Watching for file changes with StatReloader
+[25-01-2022 10:12:10] INFO autoreload 4474060288 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[25-01-2022 10:12:10] DEBUG selector_events 4474060288 - Using selector: KqueueSelector
+[25-01-2022 10:12:11] INFO core 4622347776 - $DATABASE_URL not found, falling back to previous settings!
+[25-01-2022 10:12:11] INFO core 4622347776 - Applying Heroku Staticfiles configuration to Django settings.
+[25-01-2022 10:12:11] INFO core 4622347776 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[25-01-2022 10:12:11] INFO core 4622347776 - Applying Heroku logging configuration to Django settings.
+[25-01-2022 10:12:12] INFO autoreload 4622347776 - Watching for file changes with StatReloader
+[25-01-2022 11:52:50] DEBUG selector_events 4622347776 - Using selector: KqueueSelector
+[25-01-2022 11:52:50] DEBUG selector_events 4561280512 - Using selector: KqueueSelector
+[26-01-2022 15:27:23] INFO core 4557848064 - $DATABASE_URL not found, falling back to previous settings!
+[26-01-2022 15:27:23] INFO core 4557848064 - Applying Heroku Staticfiles configuration to Django settings.
+[26-01-2022 15:27:23] INFO core 4557848064 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[26-01-2022 15:27:23] INFO core 4557848064 - Applying Heroku logging configuration to Django settings.
+[26-01-2022 15:27:24] INFO core 4542541312 - $DATABASE_URL not found, falling back to previous settings!
+[26-01-2022 15:27:24] INFO core 4542541312 - Applying Heroku Staticfiles configuration to Django settings.
+[26-01-2022 15:27:24] INFO core 4542541312 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[26-01-2022 15:27:24] INFO core 4542541312 - Applying Heroku logging configuration to Django settings.
+[26-01-2022 15:27:24] INFO autoreload 4542541312 - Watching for file changes with StatReloader
+[26-01-2022 15:27:38] WARNING log 123145425502208 - Forbidden: /seller/seller/
+[26-01-2022 15:27:53] INFO autoreload 4542541312 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[26-01-2022 15:27:53] DEBUG selector_events 4542541312 - Using selector: KqueueSelector
+[26-01-2022 15:27:55] INFO core 4677271040 - $DATABASE_URL not found, falling back to previous settings!
+[26-01-2022 15:27:55] INFO core 4677271040 - Applying Heroku Staticfiles configuration to Django settings.
+[26-01-2022 15:27:55] INFO core 4677271040 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[26-01-2022 15:27:55] INFO core 4677271040 - Applying Heroku logging configuration to Django settings.
+[26-01-2022 15:27:55] INFO autoreload 4677271040 - Watching for file changes with StatReloader
+[26-01-2022 15:27:59] ERROR log 123145571209216 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "merchant_sellerverification_seller_id_key"
+DETAIL:  Key (seller_id)=(1) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 46, in post
+    sellerVerification = SellerVerification.objects.create(seller=seller, cac_number=cac, id_card=id_card)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 453, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 726, in save
+    self.save_base(using=using, force_insert=force_insert,
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 763, in save_base
+    updated = self._save_table(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 868, in _save_table
+    results = self._do_insert(cls._base_manager, using, fields, returning_fields, raw)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 906, in _do_insert
+    return manager._insert(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 1270, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py", line 1416, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 98, in execute
+    return super().execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 66, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 75, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/backends/utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "merchant_sellerverification_seller_id_key"
+DETAIL:  Key (seller_id)=(1) already exists.
+
+[26-01-2022 15:28:09] INFO autoreload 4677271040 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[26-01-2022 15:28:09] DEBUG selector_events 4677271040 - Using selector: KqueueSelector
+[26-01-2022 15:28:10] INFO core 4813868544 - $DATABASE_URL not found, falling back to previous settings!
+[26-01-2022 15:28:10] INFO core 4813868544 - Applying Heroku Staticfiles configuration to Django settings.
+[26-01-2022 15:28:10] INFO core 4813868544 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[26-01-2022 15:28:10] INFO core 4813868544 - Applying Heroku logging configuration to Django settings.
+[26-01-2022 15:28:10] INFO autoreload 4813868544 - Watching for file changes with StatReloader
+[26-01-2022 16:56:50] DEBUG selector_events 4813868544 - Using selector: KqueueSelector
+[26-01-2022 16:56:50] DEBUG selector_events 4557848064 - Using selector: KqueueSelector
+[26-01-2022 17:17:27] INFO core 4609826304 - $DATABASE_URL not found, falling back to previous settings!
+[26-01-2022 17:17:27] INFO core 4609826304 - Applying Heroku Staticfiles configuration to Django settings.
+[26-01-2022 17:17:27] INFO core 4609826304 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[26-01-2022 17:17:27] INFO core 4609826304 - Applying Heroku logging configuration to Django settings.
+[26-01-2022 17:17:27] INFO core 4524506624 - $DATABASE_URL not found, falling back to previous settings!
+[26-01-2022 17:17:27] INFO core 4524506624 - Applying Heroku Staticfiles configuration to Django settings.
+[26-01-2022 17:17:27] INFO core 4524506624 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[26-01-2022 17:17:27] INFO core 4524506624 - Applying Heroku logging configuration to Django settings.
+[26-01-2022 17:17:28] INFO autoreload 4524506624 - Watching for file changes with StatReloader
+[26-01-2022 17:17:46] INFO autoreload 4524506624 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[26-01-2022 17:17:46] DEBUG selector_events 4524506624 - Using selector: KqueueSelector
+[26-01-2022 17:17:47] INFO core 4574416384 - $DATABASE_URL not found, falling back to previous settings!
+[26-01-2022 17:17:47] INFO core 4574416384 - Applying Heroku Staticfiles configuration to Django settings.
+[26-01-2022 17:17:47] INFO core 4574416384 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[26-01-2022 17:17:47] INFO core 4574416384 - Applying Heroku logging configuration to Django settings.
+[26-01-2022 17:17:47] INFO autoreload 4574416384 - Watching for file changes with StatReloader
+[26-01-2022 17:17:52] WARNING log 123145538703360 - Forbidden: /seller/seller/
+[26-01-2022 17:18:03] INFO autoreload 4574416384 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[26-01-2022 17:18:03] DEBUG selector_events 4574416384 - Using selector: KqueueSelector
+[26-01-2022 17:18:04] INFO core 4339420672 - $DATABASE_URL not found, falling back to previous settings!
+[26-01-2022 17:18:04] INFO core 4339420672 - Applying Heroku Staticfiles configuration to Django settings.
+[26-01-2022 17:18:04] INFO core 4339420672 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[26-01-2022 17:18:04] INFO core 4339420672 - Applying Heroku logging configuration to Django settings.
+[26-01-2022 17:18:05] INFO autoreload 4339420672 - Watching for file changes with StatReloader
+[26-01-2022 17:18:08] ERROR log 123145387782144 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 204, in _get_response
+    response = response.render()
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/template/response.py", line 105, in render
+    self.content = self.rendered_content
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/response.py", line 70, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/renderers.py", line 100, in render
+    ret = json.dumps(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/utils/json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/__init__.py", line 234, in dumps
+    return cls(
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/utils/encoders.py", line 67, in default
+    return super().default(obj)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type SellerVerification is not JSON serializable
+[26-01-2022 17:18:59] INFO autoreload 4339420672 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[26-01-2022 17:18:59] DEBUG selector_events 4339420672 - Using selector: KqueueSelector
+[26-01-2022 17:18:59] DEBUG selector_events 4609826304 - Using selector: KqueueSelector
+[27-01-2022 09:30:42] INFO core 4553391616 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:30:42] INFO core 4553391616 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:30:42] INFO core 4553391616 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:30:42] INFO core 4553391616 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:30:42] INFO core 4610039296 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:30:42] INFO core 4610039296 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:30:42] INFO core 4610039296 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:30:42] INFO core 4610039296 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:30:43] INFO autoreload 4610039296 - Watching for file changes with StatReloader
+[27-01-2022 09:33:00] INFO autoreload 4610039296 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[27-01-2022 09:33:00] DEBUG selector_events 4610039296 - Using selector: KqueueSelector
+[27-01-2022 09:33:03] INFO core 4658011648 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:33:03] INFO core 4658011648 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:33:03] INFO core 4658011648 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:33:03] INFO core 4658011648 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:33:03] INFO autoreload 4658011648 - Watching for file changes with StatReloader
+[27-01-2022 09:33:06] WARNING log 123145535037440 - Forbidden: /seller/seller/
+[27-01-2022 09:33:26] INFO autoreload 4658011648 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[27-01-2022 09:33:26] DEBUG selector_events 4658011648 - Using selector: KqueueSelector
+[27-01-2022 09:33:26] INFO core 4341169664 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:33:26] INFO core 4341169664 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:33:26] INFO core 4341169664 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:33:26] INFO core 4341169664 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:33:27] INFO autoreload 4341169664 - Watching for file changes with StatReloader
+[27-01-2022 09:33:32] ERROR log 123145566969856 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 22, in get
+    token = Token.objects.create(user=item)
+AttributeError: type object 'Token' has no attribute 'objects'
+[27-01-2022 09:36:00] INFO autoreload 4341169664 - /Users/mac/Desktop/tm30/payarena/payarena/payarena/settings/base.py changed, reloading.
+[27-01-2022 09:36:00] DEBUG selector_events 4341169664 - Using selector: KqueueSelector
+[27-01-2022 09:36:01] DEBUG selector_events 4553391616 - Using selector: KqueueSelector
+[27-01-2022 09:36:09] INFO core 4638903808 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:36:09] INFO core 4638903808 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:36:09] INFO core 4638903808 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:36:09] INFO core 4638903808 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:36:10] DEBUG selector_events 4638903808 - Using selector: KqueueSelector
+[27-01-2022 09:36:15] INFO core 4804124160 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:36:15] INFO core 4804124160 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:36:15] INFO core 4804124160 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:36:15] INFO core 4804124160 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:36:16] INFO core 4383591936 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:36:16] INFO core 4383591936 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:36:16] INFO core 4383591936 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:36:16] INFO core 4383591936 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:36:16] INFO autoreload 4383591936 - Watching for file changes with StatReloader
+[27-01-2022 09:36:21] ERROR log 123145494708224 - Internal Server Error: /seller/seller/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 22, in get
+    token = Token.objects.create(user=item)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/query.py", line 451, in create
+    obj = self.model(**kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/base.py", line 485, in __init__
+    _setattr(self, field.name, rel_obj)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/fields/related_descriptors.py", line 310, in __set__
+    super().__set__(instance, value)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/db/models/fields/related_descriptors.py", line 215, in __set__
+    raise ValueError(
+ValueError: Cannot assign "<QuerySet [<Seller: seyi-+2348105474517: pending>]>": "Token.user" must be a "User" instance.
+[27-01-2022 09:38:03] INFO autoreload 4383591936 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[27-01-2022 09:38:03] DEBUG selector_events 4383591936 - Using selector: KqueueSelector
+[27-01-2022 09:38:04] INFO core 4742766080 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:38:04] INFO core 4742766080 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:38:04] INFO core 4742766080 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:38:04] INFO core 4742766080 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:38:04] INFO autoreload 4742766080 - Watching for file changes with StatReloader
+[27-01-2022 09:40:21] DEBUG selector_events 4742766080 - Using selector: KqueueSelector
+[27-01-2022 09:40:21] DEBUG selector_events 4804124160 - Using selector: KqueueSelector
+[27-01-2022 09:40:23] INFO core 4590980608 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:40:23] INFO core 4590980608 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:40:23] INFO core 4590980608 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:40:23] INFO core 4590980608 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:40:23] DEBUG selector_events 4590980608 - Using selector: KqueueSelector
+[27-01-2022 09:40:24] INFO core 4576624128 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:40:24] INFO core 4576624128 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:40:24] INFO core 4576624128 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:40:24] INFO core 4576624128 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:40:24] DEBUG selector_events 4576624128 - Using selector: KqueueSelector
+[27-01-2022 09:40:24] INFO autoreload 4576624128 - Watching for file changes with StatReloader
+[27-01-2022 09:41:05] INFO core 4613910016 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:41:05] INFO core 4613910016 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:41:05] INFO core 4613910016 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:41:05] INFO core 4613910016 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:41:05] INFO core 4692327936 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:41:05] INFO core 4692327936 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:41:05] INFO core 4692327936 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:41:05] INFO core 4692327936 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:41:05] INFO autoreload 4692327936 - Watching for file changes with StatReloader
+[27-01-2022 09:42:14] DEBUG selector_events 4692327936 - Using selector: KqueueSelector
+[27-01-2022 09:42:15] DEBUG selector_events 4613910016 - Using selector: KqueueSelector
+[27-01-2022 09:42:16] INFO core 4818841088 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:42:16] INFO core 4818841088 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:42:16] INFO core 4818841088 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:42:16] INFO core 4818841088 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:42:17] DEBUG selector_events 4818841088 - Using selector: KqueueSelector
+[27-01-2022 09:42:17] INFO core 4573216256 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:42:17] INFO core 4573216256 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:42:17] INFO core 4573216256 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:42:17] INFO core 4573216256 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:42:17] DEBUG selector_events 4573216256 - Using selector: KqueueSelector
+[27-01-2022 09:42:17] INFO autoreload 4573216256 - Watching for file changes with StatReloader
+[27-01-2022 09:45:01] INFO autoreload 4573216256 - /Users/mac/Desktop/tm30/payarena/payarena/manage.py changed, reloading.
+[27-01-2022 09:45:15] INFO core 4602334720 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:45:15] INFO core 4602334720 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:45:15] INFO core 4602334720 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:45:15] INFO core 4602334720 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:45:15] DEBUG selector_events 4602334720 - Using selector: KqueueSelector
+[27-01-2022 09:45:37] INFO core 4585537024 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:45:37] INFO core 4585537024 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:45:37] INFO core 4585537024 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:45:37] INFO core 4585537024 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:45:37] DEBUG selector_events 4585537024 - Using selector: KqueueSelector
+[27-01-2022 09:45:37] INFO core 4747443712 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:45:37] INFO core 4747443712 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:45:37] INFO core 4747443712 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:45:37] INFO core 4747443712 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:45:38] DEBUG selector_events 4747443712 - Using selector: KqueueSelector
+[27-01-2022 09:45:38] INFO autoreload 4747443712 - Watching for file changes with StatReloader
+[27-01-2022 09:45:44] INFO autoreload 4747443712 - /Users/mac/Desktop/tm30/payarena/payarena/manage.py changed, reloading.
+[27-01-2022 09:45:45] INFO core 4577701376 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:45:45] INFO core 4577701376 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:45:45] INFO core 4577701376 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:45:45] INFO core 4577701376 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:45:45] DEBUG selector_events 4577701376 - Using selector: KqueueSelector
+[27-01-2022 09:45:46] INFO autoreload 4577701376 - Watching for file changes with StatReloader
+[27-01-2022 09:46:10] INFO core 4459888128 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:46:10] INFO core 4459888128 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:46:10] INFO core 4459888128 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:46:10] INFO core 4459888128 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:46:10] INFO core 4371545600 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:46:10] INFO core 4371545600 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:46:10] INFO core 4371545600 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:46:10] INFO core 4371545600 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:46:10] INFO autoreload 4371545600 - Watching for file changes with StatReloader
+[27-01-2022 09:46:20] INFO autoreload 4371545600 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/models.py changed, reloading.
+[27-01-2022 09:46:20] DEBUG selector_events 4371545600 - Using selector: KqueueSelector
+[27-01-2022 09:46:20] INFO core 4390985216 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:46:20] INFO core 4390985216 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:46:20] INFO core 4390985216 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:46:20] INFO core 4390985216 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:46:20] DEBUG selector_events 4390985216 - Using selector: KqueueSelector
+[27-01-2022 09:46:20] INFO autoreload 4390985216 - Watching for file changes with StatReloader
+[27-01-2022 09:46:53] DEBUG selector_events 4459888128 - Using selector: KqueueSelector
+[27-01-2022 09:46:54] INFO core 4598115840 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:46:54] INFO core 4598115840 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:46:54] INFO core 4598115840 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:46:54] INFO core 4598115840 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:46:55] DEBUG selector_events 4598115840 - Using selector: KqueueSelector
+[27-01-2022 09:46:55] INFO core 4544183808 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:46:55] INFO core 4544183808 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:46:55] INFO core 4544183808 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:46:55] INFO core 4544183808 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:46:55] DEBUG selector_events 4544183808 - Using selector: KqueueSelector
+[27-01-2022 09:46:55] INFO autoreload 4544183808 - Watching for file changes with StatReloader
+[27-01-2022 09:47:50] INFO core 4600983040 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:47:50] INFO core 4600983040 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:47:50] INFO core 4600983040 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:47:50] INFO core 4600983040 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:47:50] DEBUG selector_events 4600983040 - Using selector: KqueueSelector
+[27-01-2022 09:47:50] INFO core 4405059072 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:47:50] INFO core 4405059072 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:47:50] INFO core 4405059072 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:47:50] INFO core 4405059072 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:47:50] DEBUG selector_events 4405059072 - Using selector: KqueueSelector
+[27-01-2022 09:47:50] INFO autoreload 4405059072 - Watching for file changes with StatReloader
+[27-01-2022 09:49:34] INFO core 4444618240 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:49:34] INFO core 4444618240 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:49:34] INFO core 4444618240 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:49:34] INFO core 4444618240 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:49:34] INFO core 4682718720 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:49:34] INFO core 4682718720 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:49:34] INFO core 4682718720 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:49:34] INFO core 4682718720 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:49:35] INFO autoreload 4682718720 - Watching for file changes with StatReloader
+[27-01-2022 09:50:49] WARNING log 123145424015360 - Forbidden: /seller/seller/
+[27-01-2022 09:51:14] WARNING log 123145424015360 - Forbidden: /seller/seller/
+[27-01-2022 09:52:41] WARNING log 123145424015360 - Forbidden: /seller/seller/
+[27-01-2022 09:53:35] INFO autoreload 4682718720 - /Users/mac/Desktop/tm30/payarena/payarena/payarena/settings/dev.py changed, reloading.
+[27-01-2022 09:53:35] DEBUG selector_events 4682718720 - Using selector: KqueueSelector
+[27-01-2022 09:53:36] INFO core 4743577088 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:53:36] INFO core 4743577088 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:53:36] INFO core 4743577088 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:53:36] INFO core 4743577088 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:53:36] INFO autoreload 4743577088 - Watching for file changes with StatReloader
+[27-01-2022 09:53:56] WARNING log 123145451630592 - Forbidden: /seller/seller/
+[27-01-2022 09:54:07] WARNING log 123145451630592 - Forbidden: /seller/seller/
+[27-01-2022 09:55:10] INFO autoreload 4743577088 - /Users/mac/Desktop/tm30/payarena/payarena/payarena/settings/dev.py changed, reloading.
+[27-01-2022 09:55:10] DEBUG selector_events 4743577088 - Using selector: KqueueSelector
+[27-01-2022 09:55:10] INFO core 4403125760 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:55:10] INFO core 4403125760 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:55:10] INFO core 4403125760 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:55:10] INFO core 4403125760 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:55:10] INFO autoreload 4403125760 - Watching for file changes with StatReloader
+[27-01-2022 09:55:15] WARNING log 123145401065472 - Unauthorized: /seller/seller/
+[27-01-2022 09:58:30] WARNING log 123145401065472 - Unauthorized: /seller/seller/
+[27-01-2022 09:58:36] INFO autoreload 4403125760 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[27-01-2022 09:58:36] DEBUG selector_events 4403125760 - Using selector: KqueueSelector
+[27-01-2022 09:58:37] INFO core 4556996096 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:58:37] INFO core 4556996096 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:58:37] INFO core 4556996096 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:58:37] INFO core 4556996096 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:58:38] INFO autoreload 4556996096 - Watching for file changes with StatReloader
+[27-01-2022 09:58:45] INFO autoreload 4556996096 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[27-01-2022 09:58:45] DEBUG selector_events 4556996096 - Using selector: KqueueSelector
+[27-01-2022 09:58:46] INFO core 4775034368 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 09:58:46] INFO core 4775034368 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 09:58:46] INFO core 4775034368 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 09:58:46] INFO core 4775034368 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 09:58:47] INFO autoreload 4775034368 - Watching for file changes with StatReloader
+[27-01-2022 09:58:49] WARNING log 123145357914112 - Unauthorized: /seller/seller/
+[27-01-2022 09:58:55] WARNING log 123145357914112 - Unauthorized: /seller/seller/
+[27-01-2022 09:59:01] WARNING log 123145357914112 - Unauthorized: /seller/seller/
+[27-01-2022 09:59:15] WARNING log 123145357914112 - Unauthorized: /seller/seller/
+[27-01-2022 10:01:25] INFO autoreload 4775034368 - /Users/mac/Desktop/tm30/payarena/payarena/payarena/settings/dev.py changed, reloading.
+[27-01-2022 10:01:25] DEBUG selector_events 4775034368 - Using selector: KqueueSelector
+[27-01-2022 10:01:25] INFO core 4503182848 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 10:01:25] INFO core 4503182848 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 10:01:25] INFO core 4503182848 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 10:01:25] INFO core 4503182848 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 10:01:26] INFO autoreload 4503182848 - Watching for file changes with StatReloader
+[27-01-2022 10:01:28] WARNING log 123145540149248 - Unauthorized: /seller/seller/
+[27-01-2022 10:01:44] INFO autoreload 4503182848 - /Users/mac/Desktop/tm30/payarena/payarena/payarena/settings/dev.py changed, reloading.
+[27-01-2022 10:01:44] DEBUG selector_events 4503182848 - Using selector: KqueueSelector
+[27-01-2022 10:01:45] INFO core 4806094336 - $DATABASE_URL not found, falling back to previous settings!
+[27-01-2022 10:01:45] INFO core 4806094336 - Applying Heroku Staticfiles configuration to Django settings.
+[27-01-2022 10:01:45] INFO core 4806094336 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[27-01-2022 10:01:45] INFO core 4806094336 - Applying Heroku logging configuration to Django settings.
+[27-01-2022 10:01:45] INFO autoreload 4806094336 - Watching for file changes with StatReloader
+[27-01-2022 10:02:39] DEBUG selector_events 4806094336 - Using selector: KqueueSelector
+[27-01-2022 10:02:39] DEBUG selector_events 4444618240 - Using selector: KqueueSelector
+[28-01-2022 09:34:54] INFO core 4700159488 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 09:34:54] INFO core 4700159488 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 09:34:54] INFO core 4700159488 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 09:34:54] INFO core 4700159488 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 09:34:54] INFO core 4523736576 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 09:34:54] INFO core 4523736576 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 09:34:54] INFO core 4523736576 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 09:34:54] INFO core 4523736576 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 09:34:55] INFO autoreload 4523736576 - Watching for file changes with StatReloader
+[28-01-2022 09:49:17] DEBUG selector_events 4523736576 - Using selector: KqueueSelector
+[28-01-2022 09:49:17] DEBUG selector_events 4700159488 - Using selector: KqueueSelector
+[28-01-2022 10:26:56] INFO core 4452253184 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:26:56] INFO core 4452253184 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:26:56] INFO core 4452253184 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:26:56] INFO core 4452253184 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:26:57] INFO core 4616969728 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:26:57] INFO core 4616969728 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:26:57] INFO core 4616969728 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:26:57] INFO core 4616969728 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:26:57] INFO autoreload 4616969728 - Watching for file changes with StatReloader
+[28-01-2022 10:28:02] WARNING log 123145392197632 - Forbidden: /seller/signin/
+[28-01-2022 10:28:21] INFO autoreload 4616969728 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 10:28:21] DEBUG selector_events 4616969728 - Using selector: KqueueSelector
+[28-01-2022 10:28:22] INFO core 4598160896 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:28:22] INFO core 4598160896 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:28:22] INFO core 4598160896 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:28:22] INFO core 4598160896 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:28:22] INFO autoreload 4598160896 - Watching for file changes with StatReloader
+[28-01-2022 10:28:26] WARNING log 123145404067840 - Method Not Allowed: /seller/signin/
+[28-01-2022 10:28:40] ERROR log 123145404067840 - Internal Server Error: /seller/signin/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 67, in post
+    token = TokenObtainPairView.as_view(email=email, password=password)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 138, in as_view
+    view = super().as_view(**initkwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 58, in as_view
+    raise TypeError("%s() received an invalid keyword %r. as_view "
+TypeError: TokenObtainPairView() received an invalid keyword 'email'. as_view only accepts arguments that are already attributes of the class.
+[28-01-2022 10:29:08] INFO autoreload 4598160896 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 10:29:08] DEBUG selector_events 4598160896 - Using selector: KqueueSelector
+[28-01-2022 10:29:09] INFO core 4516425216 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:29:09] INFO core 4516425216 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:29:09] INFO core 4516425216 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:29:09] INFO core 4516425216 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:29:09] INFO autoreload 4516425216 - Watching for file changes with StatReloader
+[28-01-2022 10:29:13] ERROR log 123145399009280 - Internal Server Error: /seller/signin/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py", line 67, in post
+    token = TokenObtainPairView.as_view(username=email, password=password)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/views.py", line 138, in as_view
+    view = super().as_view(**initkwargs)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/views/generic/base.py", line 58, in as_view
+    raise TypeError("%s() received an invalid keyword %r. as_view "
+TypeError: TokenObtainPairView() received an invalid keyword 'username'. as_view only accepts arguments that are already attributes of the class.
+[28-01-2022 10:29:35] INFO autoreload 4516425216 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 10:29:35] DEBUG selector_events 4516425216 - Using selector: KqueueSelector
+[28-01-2022 10:29:35] INFO core 4457238016 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:29:35] INFO core 4457238016 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:29:35] INFO core 4457238016 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:29:35] INFO core 4457238016 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:29:36] INFO autoreload 4457238016 - Watching for file changes with StatReloader
+[28-01-2022 10:29:42] INFO autoreload 4457238016 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 10:29:42] DEBUG selector_events 4457238016 - Using selector: KqueueSelector
+[28-01-2022 10:29:43] INFO core 4674067968 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:29:43] INFO core 4674067968 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:29:43] INFO core 4674067968 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:29:43] INFO core 4674067968 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:29:43] INFO autoreload 4674067968 - Watching for file changes with StatReloader
+[28-01-2022 10:29:46] ERROR log 123145480843264 - Internal Server Error: /seller/signin/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 204, in _get_response
+    response = response.render()
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/template/response.py", line 105, in render
+    self.content = self.rendered_content
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/response.py", line 70, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/renderers.py", line 100, in render
+    ret = json.dumps(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/utils/json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/__init__.py", line 234, in dumps
+    return cls(
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/utils/encoders.py", line 67, in default
+    return super().default(obj)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type TokenObtainPairView is not JSON serializable
+[28-01-2022 10:30:49] INFO autoreload 4674067968 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 10:30:49] DEBUG selector_events 4674067968 - Using selector: KqueueSelector
+[28-01-2022 10:30:50] INFO core 4569734656 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:30:50] INFO core 4569734656 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:30:50] INFO core 4569734656 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:30:50] INFO core 4569734656 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:30:50] INFO autoreload 4569734656 - Watching for file changes with StatReloader
+[28-01-2022 10:53:50] INFO autoreload 4569734656 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 10:53:50] DEBUG selector_events 4569734656 - Using selector: KqueueSelector
+[28-01-2022 10:53:51] INFO core 4465065472 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:53:51] INFO core 4465065472 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:53:51] INFO core 4465065472 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:53:51] INFO core 4465065472 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:53:52] INFO autoreload 4465065472 - Watching for file changes with StatReloader
+[28-01-2022 10:54:13] INFO autoreload 4465065472 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 10:54:13] DEBUG selector_events 4465065472 - Using selector: KqueueSelector
+[28-01-2022 10:54:14] INFO core 4483845632 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:54:14] INFO core 4483845632 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:54:14] INFO core 4483845632 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:54:14] INFO core 4483845632 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:54:14] INFO autoreload 4483845632 - Watching for file changes with StatReloader
+[28-01-2022 10:54:26] INFO autoreload 4483845632 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 10:54:26] DEBUG selector_events 4483845632 - Using selector: KqueueSelector
+[28-01-2022 10:54:26] INFO core 4450008576 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 10:54:26] INFO core 4450008576 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 10:54:26] INFO core 4450008576 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 10:54:26] INFO core 4450008576 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 10:54:27] INFO autoreload 4450008576 - Watching for file changes with StatReloader
+[28-01-2022 10:54:45] DEBUG selector_events 4450008576 - Using selector: KqueueSelector
+[28-01-2022 10:54:45] DEBUG selector_events 4452253184 - Using selector: KqueueSelector
+[28-01-2022 11:05:18] INFO core 4669586944 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 11:05:18] INFO core 4669586944 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 11:05:18] INFO core 4669586944 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 11:05:18] INFO core 4669586944 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 11:05:19] INFO core 4558945792 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 11:05:19] INFO core 4558945792 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 11:05:19] INFO core 4558945792 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 11:05:19] INFO core 4558945792 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 11:05:19] INFO autoreload 4558945792 - Watching for file changes with StatReloader
+[28-01-2022 11:07:28] DEBUG selector_events 4558945792 - Using selector: KqueueSelector
+[28-01-2022 11:07:28] DEBUG selector_events 4669586944 - Using selector: KqueueSelector
+[28-01-2022 12:03:38] INFO core 4689874432 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:03:38] INFO core 4689874432 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:03:38] INFO core 4689874432 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:03:38] INFO core 4689874432 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:03:39] INFO core 4490771968 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:03:39] INFO core 4490771968 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:03:39] INFO core 4490771968 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:03:39] INFO core 4490771968 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:03:39] INFO autoreload 4490771968 - Watching for file changes with StatReloader
+[28-01-2022 12:03:46] WARNING log 123145461485568 - Bad Request: /seller/signin/
+[28-01-2022 12:04:00] WARNING log 123145461485568 - Unauthorized: /seller/signin/
+[28-01-2022 12:05:16] WARNING log 123145461485568 - Unauthorized: /seller/signin/
+[28-01-2022 12:05:31] WARNING log 123145461485568 - Unauthorized: /seller/signin/
+[28-01-2022 12:05:38] WARNING log 123145461485568 - Unauthorized: /seller/signin/
+[28-01-2022 12:05:48] WARNING log 123145461485568 - Unauthorized: /seller/signin/
+[28-01-2022 12:09:00] DEBUG selector_events 4490771968 - Using selector: KqueueSelector
+[28-01-2022 12:09:00] DEBUG selector_events 4689874432 - Using selector: KqueueSelector
+[28-01-2022 12:18:37] INFO core 4700040704 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:18:37] INFO core 4700040704 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:18:37] INFO core 4700040704 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:18:37] INFO core 4700040704 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:18:38] INFO core 4491021824 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:18:38] INFO core 4491021824 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:18:38] INFO core 4491021824 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:18:38] INFO core 4491021824 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:18:38] INFO autoreload 4491021824 - Watching for file changes with StatReloader
+[28-01-2022 12:18:44] ERROR log 123145584701440 - Internal Server Error: /seller/signin/
+Traceback (most recent call last):
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/exception.py", line 47, in inner
+    response = get_response(request)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/core/handlers/base.py", line 204, in _get_response
+    response = response.render()
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/django/template/response.py", line 105, in render
+    self.content = self.rendered_content
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/response.py", line 70, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/renderers.py", line 100, in render
+    ret = json.dumps(
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/utils/json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/__init__.py", line 234, in dumps
+    return cls(
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/Users/mac/PycharmProjects/pythonProject/venv/lib/python3.9/site-packages/rest_framework/utils/encoders.py", line 67, in default
+    return super().default(obj)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+[28-01-2022 12:19:05] INFO autoreload 4491021824 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 12:19:05] DEBUG selector_events 4491021824 - Using selector: KqueueSelector
+[28-01-2022 12:19:06] INFO core 4438928896 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:19:06] INFO core 4438928896 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:19:06] INFO core 4438928896 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:19:06] INFO core 4438928896 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:19:06] INFO autoreload 4438928896 - Watching for file changes with StatReloader
+[28-01-2022 12:19:36] INFO autoreload 4438928896 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 12:19:36] DEBUG selector_events 4438928896 - Using selector: KqueueSelector
+[28-01-2022 12:19:37] INFO core 4699008512 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:19:37] INFO core 4699008512 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:19:37] INFO core 4699008512 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:19:37] INFO core 4699008512 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:19:37] INFO autoreload 4699008512 - Watching for file changes with StatReloader
+[28-01-2022 12:19:58] INFO autoreload 4699008512 - /Users/mac/Desktop/tm30/payarena/payarena/merchant/views.py changed, reloading.
+[28-01-2022 12:19:58] DEBUG selector_events 4699008512 - Using selector: KqueueSelector
+[28-01-2022 12:19:59] INFO core 4393119232 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:19:59] INFO core 4393119232 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:19:59] INFO core 4393119232 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:19:59] INFO core 4393119232 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:19:59] INFO autoreload 4393119232 - Watching for file changes with StatReloader
+[28-01-2022 12:21:00] DEBUG selector_events 4393119232 - Using selector: KqueueSelector
+[28-01-2022 12:21:01] DEBUG selector_events 4700040704 - Using selector: KqueueSelector
+>>>>>>> 9c464a1995adcc79b36d614132d033b072200de1
+[28-01-2022 12:59:17] INFO core 140221602699072 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:59:17] INFO core 140221602699072 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:59:17] INFO core 140221602699072 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:59:17] INFO core 140221602699072 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:59:29] INFO core 140375344932672 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:59:29] INFO core 140375344932672 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:59:29] INFO core 140375344932672 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:59:29] INFO core 140375344932672 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:59:29] INFO core 140366525675328 - $DATABASE_URL not found, falling back to previous settings!
+[28-01-2022 12:59:29] INFO core 140366525675328 - Applying Heroku Staticfiles configuration to Django settings.
+[28-01-2022 12:59:29] INFO core 140366525675328 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[28-01-2022 12:59:29] INFO core 140366525675328 - Applying Heroku logging configuration to Django settings.
+[28-01-2022 12:59:30] INFO autoreload 140366525675328 - Watching for file changes with StatReloader
