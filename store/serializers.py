@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from merchant.models import Seller
+from merchant.serializer import SellerSerializer
 from rest_framework import serializers
 from store.models import (
     Brand,
@@ -31,21 +31,14 @@ class ProductCategorySerializer(ModelSerializer):
         fields = ['id', 'name', 'parent', 'brands', 'created_on', 'updated_on']
 
 
-# Seller Serializer from merchant ( this serializer should be from Seyi's Serializer for this class )
-class SellerSerializer(ModelSerializer):
-    class Meta:
-        model = Seller
-        exclude = ()
-        # print(serializer.is_valid, serializer.data, 'nnhh')
-
-
+# import SellerSerialize from merchant.store
 class StoreSerializer(ModelSerializer):
     seller = SellerSerializer(many=False)
     # categories = ProductCategorySerializer(many=True)
 
     class Meta:
         model = Store
-        depth = 1
+        depth = 2
         fields = [
             'id',
             'seller',
@@ -58,21 +51,18 @@ class StoreSerializer(ModelSerializer):
             'updated_on']
 
 
-
-
 class ProductSerializer(ModelSerializer):
-    '''
+    """
         This serializer is used for serializing Product Model
         and this serializer is used for listing out all products and
         retrieve a particular product.
-    '''
+    """
 
     store = StoreSerializer(many=False)
 
     class Meta:
         model = Product
         fields = [
-            'id',
             'store',
             'name',
             'slug',

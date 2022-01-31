@@ -15,6 +15,7 @@ from rest_framework.authtoken.models import Token
 
 # Create your views here.
 
+
 class SellerViews(APIView):
     item = Seller.objects.filter()
     serializer = SellerSerializer()
@@ -31,19 +32,13 @@ class SellerViews(APIView):
         serializer = SellerSerializer(item, many=True)
         return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
-
     def post(self, request):
         phone = request.data.get('phone', '')
         cac = request.data.get('cac_number', '')
         id_card = request.data.get('id_card',)
         file = request.data.get('file', '')
 
-        seller = Seller.objects.get(id=1)
-        # print(seller)
-        # seller_ver.seller = seller
-        # seller_ver.cac_number = cac
-        # seller_ver.id_card = id_card
-        # seller_ver.save()
+        seller = Seller.objects.get(user=request.user)
 
         # seller = Seller.objects.create(phone_number=phone)
         print(seller)
@@ -61,7 +56,6 @@ class SellerViews(APIView):
         #
         # else:
         #     return Response({"status":"error", "data":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class SignInSerializer(TokenObtainPairSerializer):

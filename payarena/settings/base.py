@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     'account',
     'home',
     'merchant',
-    'store',
+    'store.apps.StoreConfig',
     'superadmin',
     'transaction',
 
