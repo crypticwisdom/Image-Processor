@@ -120,3 +120,20 @@
 [23-01-2022 06:09:48] INFO core 4548230656 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
 [23-01-2022 06:09:48] INFO core 4548230656 - Applying Heroku logging configuration to Django settings.
 [23-01-2022 06:09:48] INFO autoreload 4548230656 - Watching for file changes with StatReloader
+[23-01-2022 06:12:24] WARNING log 123145338167296 - Not Found: /admin/merchant/merchant/
+[26-01-2022 09:21:42] INFO core 4606250496 - $DATABASE_URL not found, falling back to previous settings!
+[26-01-2022 09:21:42] INFO core 4606250496 - Applying Heroku Staticfiles configuration to Django settings.
+[26-01-2022 09:21:42] INFO core 4606250496 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[26-01-2022 09:21:42] INFO core 4606250496 - Applying Heroku logging configuration to Django settings.
+[01-02-2022 14:05:56] INFO core 4480986624 - $DATABASE_URL not found, falling back to previous settings!
+[01-02-2022 14:05:56] INFO core 4480986624 - Applying Heroku Staticfiles configuration to Django settings.
+[01-02-2022 14:05:56] INFO core 4480986624 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[01-02-2022 14:05:56] INFO core 4480986624 - Applying Heroku logging configuration to Django settings.
+[01-02-2022 14:06:46] INFO core 4584852992 - $DATABASE_URL not found, falling back to previous settings!
+[01-02-2022 14:06:46] INFO core 4584852992 - Applying Heroku Staticfiles configuration to Django settings.
+[01-02-2022 14:06:46] INFO core 4584852992 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[01-02-2022 14:06:46] INFO core 4584852992 - Applying Heroku logging configuration to Django settings.
+[01-02-2022 14:07:01] INFO core 4617420288 - $DATABASE_URL not found, falling back to previous settings!
+[01-02-2022 14:07:01] INFO core 4617420288 - Applying Heroku Staticfiles configuration to Django settings.
+[01-02-2022 14:07:01] INFO core 4617420288 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[01-02-2022 14:07:01] INFO core 4617420288 - Applying Heroku logging configuration to Django settings.

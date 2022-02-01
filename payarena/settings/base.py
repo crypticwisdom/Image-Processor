@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'merchant',
     'store',
     'superadmin',
+    'location',
     'transaction',
 
     'rest_framework',
@@ -31,6 +32,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_crontab',
     'storages',
+    'rest_framework_simplejwt',
+
 ]
 
 MIDDLEWARE = [
