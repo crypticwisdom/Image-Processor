@@ -15,3 +15,11 @@ log.log
 .DS_Store
 *.DS_Store
 
+# Project image and file folders
+brand-images/
+product-images/
+seller-files/
+seller-verification/
+store-logo/
+
+
