@@ -137,3 +137,21 @@
 [01-02-2022 14:07:01] INFO core 4617420288 - Applying Heroku Staticfiles configuration to Django settings.
 [01-02-2022 14:07:01] INFO core 4617420288 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
 [01-02-2022 14:07:01] INFO core 4617420288 - Applying Heroku logging configuration to Django settings.
+[01-02-2022 14:28:40] INFO core 4505546240 - $DATABASE_URL not found, falling back to previous settings!
+[01-02-2022 14:28:40] INFO core 4505546240 - Applying Heroku Staticfiles configuration to Django settings.
+[01-02-2022 14:28:40] INFO core 4505546240 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[01-02-2022 14:28:40] INFO core 4505546240 - Applying Heroku logging configuration to Django settings.
+[01-02-2022 14:28:41] INFO core 4502064640 - $DATABASE_URL not found, falling back to previous settings!
+[01-02-2022 14:28:41] INFO core 4502064640 - Applying Heroku Staticfiles configuration to Django settings.
+[01-02-2022 14:28:41] INFO core 4502064640 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[01-02-2022 14:28:41] INFO core 4502064640 - Applying Heroku logging configuration to Django settings.
+[01-02-2022 14:28:42] INFO autoreload 4502064640 - Watching for file changes with StatReloader
+[01-02-2022 14:28:50] INFO core 4572642816 - $DATABASE_URL not found, falling back to previous settings!
+[01-02-2022 14:28:50] INFO core 4572642816 - Applying Heroku Staticfiles configuration to Django settings.
+[01-02-2022 14:28:50] INFO core 4572642816 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[01-02-2022 14:28:50] INFO core 4572642816 - Applying Heroku logging configuration to Django settings.
+[01-02-2022 14:28:51] INFO core 4652551680 - $DATABASE_URL not found, falling back to previous settings!
+[01-02-2022 14:28:51] INFO core 4652551680 - Applying Heroku Staticfiles configuration to Django settings.
+[01-02-2022 14:28:51] INFO core 4652551680 - Applying Heroku ALLOWED_HOSTS configuration to Django settings.
+[01-02-2022 14:28:51] INFO core 4652551680 - Applying Heroku logging configuration to Django settings.
+[01-02-2022 14:28:52] INFO autoreload 4652551680 - Watching for file changes with StatReloader
