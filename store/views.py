@@ -1,69 +1,66 @@
-from rest_framework.authentication import TokenAuthentication
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from home.pagination import CustomPagination
 from rest_framework.views import APIView
-from rest_framework import generics
-from rest_framework import status
-from store.models import (
-    Brand,
-    ProductCategory,
-    Store,
-    Product,
-    ProductDetail,
-    ProductImage,
-    ProductReview,
-    ProductWishlist,
-    Shipper,
-    Cart,
-    CartProduct,
-    CartBill,
-)
+from rest_framework import generics, status
 
-from store.serializers import (
-    BrandSerializer,
-    ProductCategorySerializer,
-    StoreSerializer,
-    ProductSerializer,
-    ProductDetailSerializer,
-    ProductImageSerializer,
-    ProductReviewSerializer,
-    ProductWishlistSerializer,
-    ShipperSerializer,
-    CartSerializer,
-    CartProductSerializer,
-    CartBillSerializer,
-
-)
+from .serializers import *
+from .utils import create_or_update_store
 
 
-class BrandView(APIView):
+class BrandView(APIView, CustomPagination):
     permission_classes = []
 
-    def get(self, request):
-        queryset = Brand.objects.all()
-        serializer = BrandSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, brand_id=None):
+        if brand_id:
+            serializer = BrandSerializer(get_object_or_404(Brand, id=brand_id)).data
+        else:
+            brands = self.paginate_queryset(Brand.objects.all(), request)
+
+            serializer = BrandSerializer(brands, many=True).data
+        return Response(serializer)
 
 
 class ProductCategoryView(APIView):
     permission_classes = []
 
-    def get(self, request):
-        queryset = ProductCategory.objects.all()
-        serializer = ProductCategorySerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, cat_id=None):
+        if cat_id:
+            serializer = ProductCategorySerializer(get_object_or_404(ProductCategory, id=cat_id)).data
+        else:
+            serializer = ProductCategorySerializer(ProductCategory.objects.all(), many=True).data
+        return Response(serializer)
 
 
 class StoreView(APIView):
     permission_classes = []
 
-    def get(self, request):
-        queryset = Store.objects.all()
-        serializer = StoreSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, store_id=None):
+        if store_id:
+            if request.user.is_anonymous:
+                return Response({"status": False, "detail": "You must be logged in to perform this operation"},
+                                status=status.HTTP_401_UNAUTHORIZED)
+            store = Store.objects.get(id=store_id, seller__user=request.user)
+            if not store:
+                return Response({"status": False, "detail": "You are not permitted to view this item"},
+                                status=status.HTTP_401_UNAUTHORIZED)
+            serializer = StoreSerializer(store).data
+        else:
+            serializer = StoreSerializer(Store.objects.all(), many=True).data
+        return Response(serializer)
+
+    def put(self, request, store_id):
+        if request.user.is_anonymous:
+            return Response({"status": False, "detail": "You must be logged in to perform this operation"},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            store = Store.objects.get(id=store_id, seller__user=request.user)
+            success = create_or_update_store(store, request)
+            if success is True:
+                serializer = StoreSerializer(store).data
+                return Response({"success": True, "detail": serializer})
+        except Exception as ex:
+            return Response({"success": False, "detail": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProductView(APIView, CustomPagination):

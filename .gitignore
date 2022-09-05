@@ -9,6 +9,7 @@ __pycache__/
 *.idea
 .idea/*
 log.log
+payarenamall.log
 *.log
 *.sqlite
 *.sqlite3
@@ -21,5 +22,6 @@ product-images/
 seller-files/
 seller-verification/
 store-logo/
+.push.py
 
 

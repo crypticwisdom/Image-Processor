@@ -26,7 +26,8 @@ class Seller(models.Model):
     city = models.ForeignKey(City, null=True, on_delete=models.SET_NULL, blank=True)
     state = models.ForeignKey(State, null=True, on_delete=models.SET_NULL, blank=True)
     country = models.ForeignKey(Country, null=True, on_delete=models.SET_NULL, blank=True)
-    status = models.CharField(max_length=20, choices=seller_status_choices, default='pending')
+    profile_picture = models.ImageField(null=True, blank=True, upload_to='seller-profile-picture')
+    status = models.CharField(max_length=20, choices=seller_status_choices, default='pending', null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 

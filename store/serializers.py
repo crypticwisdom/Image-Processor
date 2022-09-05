@@ -1,57 +1,33 @@
-from rest_framework.serializers import ModelSerializer
-from merchant.serializer import SellerSerializer
 from rest_framework import serializers
-from store.models import (
-    Brand,
-    ProductCategory,
-    Store,
-    Product,
-    ProductDetail,
-    ProductImage,
-    ProductReview,
-    ProductWishlist,
-    Shipper,
-    Cart,
-    CartProduct,
-    CartBill,
-)
+from merchant.serializer import SellerSerializer
+from .models import *
 
 
-class BrandSerializer(ModelSerializer):
+class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
-        exclude = ()
+        exclude = []
 
 
-class ProductCategorySerializer(ModelSerializer):
+class ProductCategorySerializer(serializers.ModelSerializer):
     brands = BrandSerializer(many=True)
 
     class Meta:
         model = ProductCategory
-        fields = ['id', 'name', 'parent', 'brands', 'created_on', 'updated_on']
+        exclude = []
 
 
-# import SellerSerialize from merchant.store
-class StoreSerializer(ModelSerializer):
+class StoreSerializer(serializers.ModelSerializer):
     seller = SellerSerializer(many=False)
     # categories = ProductCategorySerializer(many=True)
 
     class Meta:
         model = Store
+        exclude = []
         depth = 2
-        fields = [
-            'id',
-            'seller',
-            'name',
-            'logo',
-            'description',
-            'categories',
-            'is_active',
-            'created_on',
-            'updated_on']
 
 
-class ProductSerializer(ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     """
         This serializer is used for serializing Product Model
         and this serializer is used for listing out all products and
@@ -76,7 +52,7 @@ class ProductSerializer(ModelSerializer):
         depth = 2
 
 
-class ProductDetailSerializer(ModelSerializer):
+class ProductDetailSerializer(serializers.ModelSerializer):
     product = ProductSerializer(many=False)
     brand = BrandSerializer(many=False)
 
@@ -105,7 +81,7 @@ class ProductDetailSerializer(ModelSerializer):
         ]
 
 
-class ProductImageSerializer(ModelSerializer):
+class ProductImageSerializer(serializers.ModelSerializer):
     product_detail = ProductDetailSerializer(many=False)
 
     class Meta:
@@ -119,7 +95,7 @@ class ProductImageSerializer(ModelSerializer):
         ]
 
 
-class ProductReviewSerializer(ModelSerializer):
+class ProductReviewSerializer(serializers.ModelSerializer):
     product = ProductSerializer(many=False)
 
     class Meta:
@@ -127,7 +103,7 @@ class ProductReviewSerializer(ModelSerializer):
         fields = ['id', 'product']
 
 
-class ProductWishlistSerializer(ModelSerializer):
+class ProductWishlistSerializer(serializers.ModelSerializer):
     product = ProductSerializer(many=False)
 
     class Meta:
@@ -135,19 +111,19 @@ class ProductWishlistSerializer(ModelSerializer):
         fields = ['id', 'user', 'product']
 
 
-class ShipperSerializer(ModelSerializer):
+class ShipperSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipper
         exclude = ()
 
 
-class CartSerializer(ModelSerializer):
+class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         exclude = ()
 
 
-class CartProductSerializer(ModelSerializer):
+class CartProductSerializer(serializers.ModelSerializer):
     cart = CartSerializer(many=False)
     product_detail = ProductDetailSerializer(many=False)
 
@@ -166,7 +142,7 @@ class CartProductSerializer(ModelSerializer):
         ]
 
 
-class CartBillSerializer(ModelSerializer):
+class CartBillSerializer(serializers.ModelSerializer):
     shipper = ShipperSerializer(many=False)
 
     class Meta:

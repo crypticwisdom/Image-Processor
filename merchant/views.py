@@ -1,73 +1,70 @@
-from django.shortcuts import render
 from .serializers import SellerSerializer
-from .models import Seller, SellerVerification, SellerFile
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+from home.pagination import CustomPagination
 
-from django.contrib.auth import authenticate
-from rest_framework import serializers
-
-from rest_framework.authtoken.models import Token
-
-# Create your views here.
+from .utils import *
 
 
-class SellerViews(APIView):
-    item = Seller.objects.filter()
-    serializer = SellerSerializer()
-    permission_classes = [IsAuthenticated]
+class MerchantView(APIView, CustomPagination):
+    permission_classes = []
 
+    def get(self, request, seller_id=None):
 
-    def get(self, request, id=None):
-        if id:
-            item = Seller.objects.filter(id=id)
-            serializer = SellerSerializer(item)
-            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        try:
+            if id:
+                item = Seller.objects.get(id=seller_id)
+                serializer = SellerSerializer(item)
+            else:
+                item = Seller.objects.all()
+                item = self.paginate_queryset(item, request)
+                serializer = SellerSerializer(item, many=True).data
+                serializer = self.get_paginated_response(serializer)
 
-        item = Seller.objects.all()
-        serializer = SellerSerializer(item, many=True)
-        return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(serializer.data)
+        except Exception as ex:
+            return Response({"detail": "Error getting object", "message": str(ex)},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
-        phone = request.data.get('phone', '')
-        cac = request.data.get('cac_number', '')
-        id_card = request.data.get('id_card',)
-        file = request.data.get('file', '')
+        if request.user.is_anonymous:
+            return Response({"status": False, "detail": "You must be logged in to perform this operation"},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            seller, created = Seller.objects.get_or_create(user=request.user)
+            success = create_update_seller(seller, request)
+            if success is True:
+                # CREATE A THREAD TO SEND NOTIFICATION TO MERCHANT HERE
+
+                serializer = SellerSerializer(seller).data
+                return Response({"success": True, "detail": serializer})
+        except Exception as ex:
+            return Response({"success": False, "detail": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        if request.user.is_anonymous:
+            return Response({"status": False,
+                             "detail": "You must be logged in to perform this option"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         seller = Seller.objects.get(user=request.user)
-
-        # seller = Seller.objects.create(phone_number=phone)
-        print(seller)
-        # seller.save()
-
-        sellerVerification = SellerVerification.objects.create(seller=seller, cac_number=cac, id_card=id_card)
-        sellerVerification.save()
-
-        return Response({"status": "success", "data": sellerVerification}, status=status.HTTP_400_BAD_REQUEST)
-        # serializer = SellerSerializer(phone)
-
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response({"status":"success", "data":serializer.data}, status=status.HTTP_200_OK)
-        #
-        # else:
-        #     return Response({"status":"error", "data":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        if not seller:
+            return Response({"success": False, "detail": "Invalid account selected"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            success = create_update_seller(seller, request)
+            if success is True:
+                serializer = SellerSerializer(seller).data
+                return Response({"success": True, "detail": serializer})
+        except Exception as ex:
+            return Response({"success": False, "detail": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SignInSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        refresh = self.get_token(self.user)
-        # data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
-        new_data = {"token" : data['access']}
+class MerchantLoginView(APIView):
+    permission_classes = []
 
-        return new_data
+    def post(self, request):
+        ...
 
-
-class SignIn(TokenObtainPairView):
-    serializer_class = SignInSerializer
