@@ -4,8 +4,8 @@ import os
 import sys
 from decouple import config
 
-f = open('.env', 'a+')
-f.close()
+with open('.env', 'a+') as f:
+    f.close()
 
 
 def main():

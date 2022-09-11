@@ -1,13 +1,16 @@
-import datetime
+import secrets
+
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import check_password, make_password
 from account import utils
-from django.utils.timezone import now
+from django.utils import timezone
 from .email import forgot_password_mail
 from threading import Thread
 
@@ -17,27 +20,36 @@ class LoginView(APIView):
 
     def post(self, request):
         try:
-            email = request.data.get('email', None)
-            password = request.data.get('password', None)
+            email_or_username = request.data.get('email_or_username', None)
+            password, user = request.data.get('password', None), None
 
-            if not email or not password:
-                return Response({'detail': 'email and password are required field'}, status=status.HTTP_400_BAD_REQUEST)
-            print(request.user)
-            user = authenticate(request, email=email, password=password)
+            if email_or_username is None:
+                return Response({"detail": "Email field is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if password is None:
+                return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if utils.validate_email(email_or_username):
+                user = User.objects.get(email=email_or_username)
+                if not check_password(password=password, encoded=user.password):
+                    return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user_instance = User.objects.get(username=email_or_username)
+                if not check_password(password=password, encoded=user_instance.password):
+                    return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
+
+                user = authenticate(request, username=email_or_username, password=password)
+
             if user is not None:
-                login(request, user=user)
-                user.last_login = now()
-                user.save()
+                return Response({"detail": "Login success", "token": f"{AccessToken.for_user(user)}"},
+                                status=status.HTTP_200_OK)
 
-                if request.user.is_authenticated:
-                    return Response({'detail': 'Login successful', 'token': f"{RefreshToken.for_user(user).access_token}"},
-                                    status=status.HTTP_200_OK)
+            return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({'detail': 'Invalid email or password'}, status=status.HTTP_400_BAD_REQUEST)
-        except (Exception, ) as err:
+        except (ValueError, Exception) as err:
             print(err)
-            # Log
-            return Response({'detail': 'Invalid email or password'}, status=status.HTTP_400_BAD_REQUEST)
+            # Log error
+            return Response({"detail": "Something went wrong while trying to login"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):
@@ -51,6 +63,11 @@ class SignupView(APIView):
 
             if username is None:
                 return Response({"detail": "Username field is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check username exist
+            if not User.objects.filter(username=username).exists():
+                return Response({"detail": "A user with this username exists already"},
+                                status=status.HTTP_400_BAD_REQUEST)
 
             if email is None:
                 return Response({"detail": "Email field is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -75,22 +92,23 @@ class SignupView(APIView):
                 return Response({"detail": "User has been created"}, status=status.HTTP_201_CREATED)
             return Response({"detail": msg}, status=status.HTTP_400_BAD_REQUEST)
 
-        except (Exception, ) as err:
+        except (Exception,) as err:
             print(err)
             # Log
-            return Response({"detail": "An error occurred while creating this user"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "An error occurred while creating this user"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
-class ForgotPasswordView(APIView):
+# Pending the flow for Forgot Password.
+class ForgotPasswordSendOTPView(APIView):
     permission_classes = []
 
-    def get(self, request):
+    def post(self, request):
         try:
-            email_or_username, email, username = request.data.get("email_or_username"), None, None
+            email_or_username = request.data.get("email_or_username")
 
             if email_or_username is None:
                 return Response({"detail": "Email or Username is required"}, status=status.HTTP_400_BAD_REQUEST)
-            print(email_or_username)
 
             if '@' in email_or_username:
                 if not utils.validate_email(email_or_username):
@@ -109,24 +127,42 @@ class ForgotPasswordView(APIView):
 
                 if not user_instance:
                     return Response({"detail": "No user found with this username"}, status=status.HTTP_400_BAD_REQUEST)
+
                 email_or_username = user_instance.email
+
+            # A forgot_password_instance is created to hold a generated_otp and the user's email.
+            generated_otp = secrets.token_hex(3)
+            forgot_password_instance = ForgotPasswordOTP(otp=generated_otp, email=email_or_username)
+            forgot_password_instance.save()
 
             # Inform user that someone has requested a password reset with his email.
             # The notification would be sent with a link to redirect them to where they will enter a new password.
 
-            Thread(target=forgot_password_mail, args=[email_or_username]).start()
+            # pass forgot_password_instance, into the 'forgot_password_mail' thread
+            Thread(target=forgot_password_mail, kwargs={"email": email_or_username,
+                                                        "forgot_password_instance": forgot_password_instance}).start()
 
-            return Response({"detail": "Email has been sent"}, status=status.HTTP_200_OK)
+            return Response({"detail": "A message containing an OTP has been sent to your mail"},
+                            status=status.HTTP_200_OK)
         except (TypeError, Exception) as err:
             print(err)
             # Log
             return Response({"detail": "An error occurred while receiving email for [password forgot]"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request):
+    def put(self, request):
         try:
+            otp = request.data.get("otp", None)
             password, password_confirm = request.data.get("password", None), request.data.get("password_confirm", None)
-            email = request.data.get("email", "")
+
+            otp_instance = ForgotPasswordOTP.objects.get(otp=otp)
+            if otp:
+                if otp_instance.is_sent is False or timezone.now() > otp_instance.expire_time or otp_instance.is_used is True:
+                    # Either mail was not sent or token has lived for 5 minutes (expired)
+                    return Response({"detail": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"detail": "OTP is field required"}, status=status.HTTP_400_BAD_REQUEST)
+
             if password is None:
                 return Response({"detail": "Password is field required"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -136,8 +172,49 @@ class ForgotPasswordView(APIView):
             if password != password_confirm:
                 return Response({"detail": "Password does not match"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # if
-        except (Exception, ) as err:
+            user = User.objects.get(email=otp_instance.email)
+
+            if user is not None:
+                password = make_password(password=password)
+                user.password = password
+                user.save()
+
+                otp_instance.is_used = True
+                otp_instance.save()
+
+                return Response({"detail": "Password reset successful"}, status=status.HTTP_200_OK)
+
+            return Response({"detail": "Password reset was not successful"}, status=status.HTTP_400_BAD_REQUEST)
+        except (Exception,) as err:
             print(err)
             # Log
-            return Response({"detail": ""}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        try:
+            old_password, new_password = request.data.get("old_password", None), request.data.get("new_password", None)
+            confirm_new_password = request.data.get("confirm_new_password", None)
+
+            if not all([old_password, new_password, confirm_new_password]):
+                return Response({"detail": "All password fields are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if new_password != confirm_new_password:
+                return Response({"detail": "Password does not match"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if not check_password(old_password, request.user.password):
+                return Response({"detail": "Old password does not match your current password"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            user = request.user
+            user.password = make_password(confirm_new_password)
+            user.save()
+
+        except (Exception,) as err:
+            print(err)
+            # Log
+        else:
+            return Response({"detail": "Password has been changed"}, status=status.HTTP_201_CREATED)
+
