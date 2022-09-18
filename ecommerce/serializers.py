@@ -28,3 +28,11 @@ class MallProductArrivalSerializer(ModelSerializer):
         model = Product
         fields = ['id', 'name', 'product_detail', 'product_review']
 # END #
+
+
+class AllCategorySerializer(ModelSerializer):
+    class Meta:
+        model = ProductCategory
+        exclude = ["created_on", "updated_on", "brands"]
+        depth = 1
+

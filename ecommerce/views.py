@@ -4,7 +4,8 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CR
 from rest_framework.views import APIView
 from store.models import Product
 from django.utils import timezone
-from .serializers import MallProductArrivalSerializer
+from .serializers import MallProductArrivalSerializer, AllCategorySerializer
+from store.models import ProductCategory
 # Create your views here.
 
 
@@ -39,3 +40,14 @@ class MallLandPageView(APIView):
             print(err)
             # LOG
             return Response({"detail": str(err)})
+
+
+class AllCategoriesView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        try:
+            serialized_data = AllCategorySerializer(ProductCategory.objects.all(), many=True).data
+            return Response({"detail": serialized_data}, status=HTTP_200_OK)
+        except (Exception, ) as err:
+            return Response({"detail": str(err)}, status=HTTP_400_BAD_REQUEST)
