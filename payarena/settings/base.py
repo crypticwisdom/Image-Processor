@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'storages',
     'rest_framework_simplejwt',
+    'ecommerce.apps.EcommerceConfig',
 
 ]
 

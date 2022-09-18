@@ -8,5 +8,6 @@ urlpatterns = [
     path('seller/', include('merchant.urls')),
     path('location/', include('location.urls')),
     path('superadmin/', include('superadmin.urls')),
+    path('ecommerce/', include('ecommerce.urls')),
     path('admin/', admin.site.urls),
 ]

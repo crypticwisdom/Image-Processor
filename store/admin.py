@@ -2,6 +2,8 @@ from django.contrib import admin
 from .models import *
 
 admin.site.register(CartProduct)
+
+
 class BrandAdmin(admin.ModelAdmin):
     exclude = []
 
@@ -76,6 +78,6 @@ admin.site.register(Product, ProductAdmin)
 admin.site.register(Shipper, ShipperAdmin)
 admin.site.register(Cart, CartAdmin)
 admin.site.register(CartBill, CartBillAdmin)
-
-
+admin.site.register(ProductDetail)
+admin.site.register(ProductImage)
 

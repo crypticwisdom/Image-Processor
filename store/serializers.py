@@ -100,7 +100,7 @@ class ProductReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductReview
-        fields = ['id', 'product']
+        fields = ['id', 'product', 'rating']
 
 
 class ProductWishlistSerializer(serializers.ModelSerializer):

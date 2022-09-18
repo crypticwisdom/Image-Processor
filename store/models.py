@@ -51,6 +51,16 @@ class Product(models.Model):
     sub_category = models.ForeignKey(ProductCategory, blank=True, null=True, on_delete=models.CASCADE)
     tags = models.TextField(blank=True, null=True)
     status = models.CharField(choices=product_status_choices, max_length=10, default='inactive')
+
+    # Recommended Product: should be updated to 'True' once the merchant makes payment.
+    is_featured = models.BooleanField(default=False)
+
+    # View Count: number of times the product is viewed by a particular user. To be updated when a user views the prod.
+    view_count = models.PositiveBigIntegerField(default=0)
+
+    # Top Selling: The highest sold product. Field updates when this product has been successfully paid for.
+    selling_count =
+
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
