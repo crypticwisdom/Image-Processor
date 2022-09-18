@@ -1,11 +1,9 @@
 from store.models import Product, ProductCategory, ProductDetail, ProductImage, ProductWishlist, ProductReview
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
-from store.serializers import ProductSerializer, ProductDetailSerializer, ProductReviewSerializer, \
-    ProductImageSerializer
 
 
 # Hot New Arrivals Serializers #
-class HotNewProductDetailSerializer(ModelSerializer):
+class MallProductDetailSerializer(ModelSerializer):
     image = SerializerMethodField()
 
     def get_image(self, obj):
@@ -16,12 +14,12 @@ class HotNewProductDetailSerializer(ModelSerializer):
         fields = ['id', 'image', 'price', 'discount']
 
 
-class HotNewProductArrivalSerializer(ModelSerializer):
+class MallProductArrivalSerializer(ModelSerializer):
     product_detail = SerializerMethodField()
     product_review = SerializerMethodField()
 
     def get_product_detail(self, obj):
-        return HotNewProductDetailSerializer(ProductDetail.objects.filter(product=obj), many=True).data
+        return MallProductDetailSerializer(ProductDetail.objects.filter(product=obj), many=True).data
 
     def get_product_review(self, obj):
         return [str(i.rating) for i in ProductReview.objects.filter(product=obj)]

@@ -4,7 +4,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CR
 from rest_framework.views import APIView
 from store.models import Product
 from django.utils import timezone
-from .serializers import HotNewProductArrivalSerializer
+from .serializers import MallProductArrivalSerializer
 # Create your views here.
 
 
@@ -20,19 +20,20 @@ class MallLandPageView(APIView):
             start_date = timezone.datetime.today()
             end_date = timezone.timedelta(days=3)
             hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date)    # 3 days ago
-            arrival_serialized = HotNewProductArrivalSerializer(hot_new_arrivals, many=True).data
-            response_container["hot_new_arrivals"] = arrival_serialized[:5]
-
-            # top_selling
-            response_container["top_selling"] = []
-            # print(hot_new_arrivals)
-            response.append(response_container)
-
-            # Top categories of the month
+            arrival_serialized = MallProductArrivalSerializer(hot_new_arrivals, many=True).data
+            response_container["hot_new_arrivals"] = arrival_serialized
 
             # Top selling
+            response_container["top_selling"] = ""
+
+            # Top categories of the month
+            response_container["top_selling"] = ""
 
             # Recommended Products
+            recommended = MallProductArrivalSerializer(Product.objects.filter(is_featured=True), many=True).data
+            response_container["recommended_products"] = recommended
+
+            response.append(response_container)
             return Response({"detail": response}, status=HTTP_200_OK)
         except (Exception, ) as err:
             print(err)

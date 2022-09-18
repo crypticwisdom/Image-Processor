@@ -59,7 +59,7 @@ class Product(models.Model):
     view_count = models.PositiveBigIntegerField(default=0)
 
     # Top Selling: The highest sold product. Field updates when this product has been successfully paid for.
-    selling_count =
+    selling_count = models.IntegerField(default=0)
 
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
