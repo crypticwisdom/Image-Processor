@@ -120,7 +120,6 @@ class ForgotPasswordSendOTPView(APIView):
                     return Response({"detail": "No user found with this email"}, status=status.HTTP_400_BAD_REQUEST)
 
                 email_or_username = user_instance.email
-
             else:
                 # Get user instance with username
                 user_instance = User.objects.filter(username=email_or_username).first()

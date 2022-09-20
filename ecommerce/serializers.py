@@ -7,14 +7,14 @@ class MallProductDetailSerializer(ModelSerializer):
     image = SerializerMethodField()
 
     def get_image(self, obj):
-        return [str(instance.image) for instance in ProductImage.objects.filter(product_detail=obj)]
+        return [str(instance.image.url) for instance in ProductImage.objects.filter(product_detail=obj)]
 
     class Meta:
         model = ProductDetail
         fields = ['id', 'image', 'price', 'discount']
 
 
-class MallProductArrivalSerializer(ModelSerializer):
+class MallProductSerializer(ModelSerializer):
     product_detail = SerializerMethodField()
     product_review = SerializerMethodField()
 
@@ -26,11 +26,23 @@ class MallProductArrivalSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'product_detail', 'product_review']
+        fields = ['id', 'name', 'product_detail', 'product_review', 'sale_count']
 # END #
 
 
-class AllCategorySerializer(ModelSerializer):
+class MallCategorySerializer(ModelSerializer):
+    category_detail = SerializerMethodField()
+
+    def get_category_detail(self, obj):
+        category = Product.objects.get(id=obj.id).category
+        return {"category_id": category.id, "category_name": category.name, "category_image": category.image.url}
+
+    class Meta:
+        model = Product
+        fields = ['category_detail']
+
+
+class AllCategoriesSerializer(ModelSerializer):
     class Meta:
         model = ProductCategory
         exclude = ["created_on", "updated_on", "brands"]

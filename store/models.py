@@ -18,6 +18,7 @@ class Brand(models.Model):
 class ProductCategory(models.Model):
     name = models.CharField(max_length=100)
     parent = models.ForeignKey('self', blank=True, null=True, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='product-images', null=False)
     brands = models.ManyToManyField(Brand, related_name='brands', blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
@@ -52,14 +53,14 @@ class Product(models.Model):
     tags = models.TextField(blank=True, null=True)
     status = models.CharField(choices=product_status_choices, max_length=10, default='inactive')
 
-    # Recommended Product: should be updated to 'True' once the merchant makes payment.
+    # Recommended Product: should be updated to 'True' once the merchant makes' payment.
     is_featured = models.BooleanField(default=False)
 
     # View Count: number of times the product is viewed by a particular user. To be updated when a user views the prod.
     view_count = models.PositiveBigIntegerField(default=0)
 
     # Top Selling: The highest sold product. Field updates when this product has been successfully paid for.
-    selling_count = models.IntegerField(default=0)
+    sale_count = models.IntegerField(default=0)
 
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
