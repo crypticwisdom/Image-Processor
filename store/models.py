@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from merchant.models import Seller
-
 from .choices import *
+from merchant.models import Seller
 
 
 class Brand(models.Model):
@@ -141,13 +141,14 @@ class Shipper(models.Model):
 
 
 class Cart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    cart_uid = models.CharField(max_length=100, default="", null=True, blank=True)
     status = models.CharField(max_length=20, default='open', choices=cart_status_choices)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{}: {} {}".format(self.id, self.user, self.status)
+        return f"{self.id}: {self.cart_uid}-{self.user}-{self.status}"
 
 
 class CartProduct(models.Model):
@@ -158,7 +159,6 @@ class CartProduct(models.Model):
     discount = models.DecimalField(default=0, decimal_places=2, max_digits=20)
     status = models.CharField(max_length=20, default='open', choices=cart_status_choices)
     delivery_fee = models.DecimalField(default=0, decimal_places=2, max_digits=50, null=True, blank=True)
-
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -181,4 +181,33 @@ class CartBill(models.Model):
         return "{} {}".format(self.cart, self.total)
 
 
+DEAL_DISCOUNT_TYPE_CHOICES = (
+    ('fixed', 'Fixed amount'), ('percentage', 'Percentage')
+)
 
+
+class Deals(models.Model):
+    title = models.CharField(max_length=100)
+    price_promo = models.BooleanField(default=False, help_text="Enter price if this is selected")
+    merchant_promo = models.BooleanField(default=False, help_text="Select merchant(s) if this is selected")
+    category_promo = models.BooleanField(default=False, help_text="Select category(s) if this is selected")
+    sub_category_promo = models.BooleanField(default=False, help_text="Select sub_category(s) if this is selected")
+    product_promo = models.BooleanField(default=False, help_text="Select product(s) if this is selected")
+    price = models.DecimalField(max_digits=50, decimal_places=2, null=True, blank=True, default=0)
+    discount_type = models.CharField(max_length=50, default='fixed', choices=DEAL_DISCOUNT_TYPE_CHOICES)
+    discount = models.IntegerField(help_text='Discount value, 1 means 1% if discount type is percentage, 1000 '
+                                             'means fixed discount of 1000 if discount type is fixed', null=True,
+                                   blank=True, default=0)
+    details = models.TextField(null=True, blank=True)
+    merchant = models.ManyToManyField(Seller, blank=True)
+    category = models.ManyToManyField(ProductCategory, blank=True)
+    sub_category = models.ManyToManyField(ProductCategory, blank=True, related_name='sub_category')
+    product = models.ManyToManyField(Product, blank=True)
+    banner_image = models.ImageField(upload_to='promo banners', null=True, blank=True)
+    status_choice = (('active', 'Active'), ('inactive', 'Inactive'))
+    status = models.CharField(max_length=50, default='active', choices=status_choice)
+    created_on = models.DateTimeField(auto_now_add=True, )
+    updated_on = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(f"{self.title}")
