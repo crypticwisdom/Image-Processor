@@ -1,12 +1,13 @@
 from django.contrib.auth.models import User
 from django.db import models
-
+from django.utils import timezone
 from .choices import card_from_choices
 from location.models import Country, State, City
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    wallet_id = models.CharField(max_length=40, null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     home_address = models.CharField(max_length=100, null=True, blank=True)
     country = models.ForeignKey(Country, null=True, on_delete=models.SET_NULL, blank=True)
@@ -49,3 +50,13 @@ class UserCard(models.Model):
 
     def __str__(self):
         return f"{self.id}: {self.profile}"
+
+
+class ForgotPasswordOTP(models.Model):
+    otp = models.SlugField(max_length=20, null=False, blank=False)
+    email = models.EmailField(max_length=200, null=True)
+    is_sent = models.BooleanField(help_text="If token was sent successfully", default=False)
+    is_used = models.BooleanField(help_text="If token has been used", default=False)
+    expire_time = models.DateTimeField(default=timezone.now() + timezone.timedelta(minutes=5), help_text="Expires after 5 minutes")
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)

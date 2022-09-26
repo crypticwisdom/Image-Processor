@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'storages',
     'rest_framework_simplejwt',
+    'ecommerce.apps.EcommerceConfig',
 
 ]
 
@@ -105,6 +106,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
+# MEDIA_ROOT = f"{BASE_DIR}/media"
+# MEDIA_URL = "/media/"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 

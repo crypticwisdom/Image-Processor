@@ -3,6 +3,8 @@ import django_heroku
 from decouple import config
 import dj_database_url
 
+print("---------------------- You are on Pay Arena's Development Environment --------------------------------")
+
 SECRET_KEY = 'b0e0f216-6bd2-4d10-9e34-9c892h273ge6-do-user-dfghjiu548642'
 
 DEBUG = True
@@ -21,14 +23,12 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.SessionAuthentication',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    ),
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated']
 }
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
@@ -48,5 +48,4 @@ SIMPLE_JWT = {
 }
 
 # Activate Django-Heroku.
-django_heroku.settings(locals())
-
+# django_heroku.settings(locals())

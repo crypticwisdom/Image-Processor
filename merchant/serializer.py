@@ -6,4 +6,3 @@ class SellerSerializer(ModelSerializer):
     class Meta:
         model = Seller
         exclude = ()
-
