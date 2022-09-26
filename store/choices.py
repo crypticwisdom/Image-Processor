@@ -5,4 +5,3 @@ product_status_choices = (
 cart_status_choices = (
     ('open', 'Open'), ('closed', 'Closed'), ('discard', 'Discard')
 )
-

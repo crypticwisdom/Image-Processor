@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from rest_framework.views import APIView
 from django.utils import timezone
-from .serializers import MallProductSerializer, AllCategoriesSerializer, MallCategorySerializer
-from store.models import ProductCategory, Product, Deals, Cart, CartProduct, ProductDetail
+from .serializers import MallProductSerializer, AllCategoriesSerializer, MallCategorySerializer, MallDealSerializer
+from store.models import ProductCategory, Product, Cart, CartProduct, ProductDetail, Promo
 from ecommerce.pagination import CustomPagination
 import uuid
 
@@ -19,13 +19,14 @@ class MallLandPageView(APIView):
     def get(self, request):
         try:
             response, response_container, start_date = list(), dict(), timezone.datetime.today()
+            start_date = timezone.datetime.today()
 
-            # (1) Deals of the day
-            deals_query_set = Deals.objects.all().order_by("-id")[:5]
-            response_container["deals_of_the_day"] = None
+            # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
+            deal_end_date = timezone.timedelta(days=1)
+            deals_query_set = Promo.objects.filter(created_on__date__gte=start_date - deal_end_date).order_by("-id")[:5]
+            response_container["deals_of_the_day"] = MallDealSerializer(deals_query_set, many=True).data
 
             # (2) Hot New Arrivals in last 3 days
-            start_date = timezone.datetime.today()
             end_date1 = timezone.timedelta(days=3)
             hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1)  # 3 days ago
             arrival_serializer = MallProductSerializer(hot_new_arrivals, many=True).data
@@ -39,9 +40,9 @@ class MallLandPageView(APIView):
             top_selling_serializer = MallProductSerializer(top_selling, many=True).data
             response_container["top_selling"] = top_selling_serializer[:15]
 
-            # (4) Top categories of the month
+            # (4) Top categories of the month updated
             end_date3 = timezone.timedelta(weeks=4)
-            # sale-count would be updated by the Admin.
+            # sale-count would be manually updated by the Admin on his end.
             # here, we would fetch the updated results made by the admin.
             top_selling = Product.objects.filter(sale_count=0, created_on__date__gte=start_date - end_date3)
             categories_serializer = MallCategorySerializer(top_selling, many=True).data
@@ -109,10 +110,6 @@ class RecommendedProductView(APIView, CustomPagination):
             print(err)
             # LOG ERROR
             return Response({"detail": str(err)}, status=HTTP_400_BAD_REQUEST)
-# {
-#     "cart_uid_or_id": "a159c450-fb9a-418d-9d7f-8ee700a8ba06",
-#     "product_id": 157
-# }
 
 
 class AddToCartView(APIView):
@@ -120,6 +117,9 @@ class AddToCartView(APIView):
         AddToCartView: This view is used to create a cart with an initial item and PUT item to cart.
             POST: Creates a new cart and adds the product to cart. returns --> cart_uid and cart's ID.
             PUT: Adds an Item to cart. Returns --> detail message.
+    """
+    """
+        merge carts
     """
     permission_classes = []
 
@@ -173,7 +173,7 @@ class AddToCartView(APIView):
             )
 
             return Response({"detail": "Product has been added to cart"}, status=HTTP_200_OK)
-        except (Exception,) as err:
+        except (Exception, ) as err:
             return Response({"detail": str(err)}, status=HTTP_400_BAD_REQUEST)
 
 
@@ -181,8 +181,18 @@ class CartProductOperationsView(APIView):
     permission_classes = []
 
     """
-        Used for increasing, decreasing and removing cart-product to cart, it receives a Cart-Product ID, 
+        Used for increasing, decreasing and removing cart-product to/from cart, it receives a Cart-Product ID, 
         for either of the cases.
         A user should not be able to add more than the available stocks for the product.
     """
-
+    """
+    - Ashavin said i should handle the increment and decrement in the 'AddToCartView' post request.
+        So that if a newly item was added twice it should increment it instead of adding it as a second item in the cart
+    - Add only wallet ID field to user profile.
+    - write an end point for Related Products.
+    """
+    def put(self, request):
+        try:
+            ...
+        except (Exception, ) as err:
+            ...

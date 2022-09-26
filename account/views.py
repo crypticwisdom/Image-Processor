@@ -22,6 +22,7 @@ class LoginView(APIView):
         try:
             email_or_username = request.data.get('email_or_username', None)
             password, user = request.data.get('password', None), None
+            cart_uid = request.data.get("cart_uid", None)
 
             if email_or_username is None:
                 return Response({"detail": "Email field is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -41,6 +42,9 @@ class LoginView(APIView):
                 user = authenticate(request, username=email_or_username, password=password)
 
             if user is not None:
+                if cart_uid is not None:
+                    utils.merge_carts(cart_uid=cart_uid, user=user)
+
                 return Response({"detail": "Login success", "token": f"{AccessToken.for_user(user)}"},
                                 status=status.HTTP_200_OK)
 

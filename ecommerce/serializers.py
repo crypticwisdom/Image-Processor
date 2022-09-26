@@ -1,4 +1,4 @@
-from store.models import Product, ProductCategory, ProductDetail, ProductImage, ProductReview, Deals
+from store.models import Product, ProductCategory, ProductDetail, ProductImage, ProductReview, Promo
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
 
@@ -26,7 +26,7 @@ class MallProductSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'product_detail', 'product_review', 'sale_count']
+        fields = ['id', 'name', 'product_detail', 'product_review', 'sale_count', 'is_featured']
 # END #
 
 
@@ -50,6 +50,8 @@ class AllCategoriesSerializer(ModelSerializer):
 
 
 class MallDealSerializer(ModelSerializer):
+
     class Meta:
-        model = Deals
-        fields = ['product', 'category', '']
+        model = Promo
+        fields = ['product', ]
+        depth = 1

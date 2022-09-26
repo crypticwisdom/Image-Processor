@@ -7,6 +7,7 @@ from location.models import Country, State, City
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    wallet_id = models.CharField(max_length=40, null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     home_address = models.CharField(max_length=100, null=True, blank=True)
     country = models.ForeignKey(Country, null=True, on_delete=models.SET_NULL, blank=True)
