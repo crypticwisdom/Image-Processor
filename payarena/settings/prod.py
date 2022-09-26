@@ -2,6 +2,8 @@ from .base import *
 import dj_database_url
 from decouple import config
 
+print("---------------------- You are on Pay Arena's Production Environment --------------------------------")
+
 SECRET_KEY = 'pMTaRpvdoG9BTSdqODKihVvBJGFOSze0yojoNNOZsIjw8VL6veEWKdXAOuthIQt9XS7o48SBNZr2KJo1ZQ'
 
 DEBUG = False
@@ -21,7 +23,7 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [

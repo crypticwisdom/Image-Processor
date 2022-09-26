@@ -2,6 +2,7 @@ from .base import *
 from decouple import config
 import dj_database_url
 
+print("---------------------- You are on Pay Arena's Development Environment --------------------------------")
 SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = True
@@ -20,14 +21,12 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.SessionAuthentication',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    ),
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated']
 }
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
@@ -45,5 +44,4 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': True,
     'AUTH_HEADER_TYPES': ('Bearer', 'Token',),
 }
-
 
