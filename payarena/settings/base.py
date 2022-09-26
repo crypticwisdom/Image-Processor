@@ -1,6 +1,13 @@
+import os
 import logging
 from pathlib import Path
 from datetime import timedelta
+
+import environ
+
+env = environ.Env()
+environ.Env.read_env(os.path.join('.env'))
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -115,7 +122,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 logging.basicConfig(
-    filename='log.log',
+    filename='payarenamall.log',
     filemode='a',
     level=logging.DEBUG,
     format='[{asctime}] {levelname} {module} {thread:d} - {message}',

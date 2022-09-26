@@ -1,11 +1,9 @@
 from .base import *
-import django_heroku
 from decouple import config
 import dj_database_url
 
 print("---------------------- You are on Pay Arena's Development Environment --------------------------------")
-
-SECRET_KEY = 'b0e0f216-6bd2-4d10-9e34-9c892h273ge6-do-user-dfghjiu548642'
+SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = True
 
@@ -13,12 +11,12 @@ ALLOWED_HOSTS = []
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'payarena',
-        'USER': 'payarena',
-        'PASSWORD': 'payarena',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': env('DATABASE_ENGINE'),
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
+        'HOST': env('DATABASE_HOST'),
+        'PORT': env('DATABASE_PORT'),
     }
 }
 
@@ -47,5 +45,3 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer', 'Token',),
 }
 
-# Activate Django-Heroku.
-# django_heroku.settings(locals())
