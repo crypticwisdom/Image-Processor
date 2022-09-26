@@ -3,7 +3,7 @@ import re
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from account.models import Profile
-from store.models import Cart, CartProduct, CartBill, Product, ProductDetail
+from ecommerce.models import Product, ProductDetail, Cart, CartProduct, CartBill
 
 
 def create_account(username, email, phone_number, password):

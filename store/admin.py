@@ -1,4 +1,7 @@
 from django.contrib import admin
+
+from ecommerce.models import ProductImage, ProductReview, CartProduct, CartBill, ProductDetail, Brand, Product, Shipper, \
+    Cart
 from .models import *
 
 admin.site.register(CartProduct)

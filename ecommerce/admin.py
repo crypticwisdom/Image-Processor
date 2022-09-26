@@ -1,5 +1,5 @@
 from django.contrib import admin
-from store.models import Promo
+from ecommerce.models import Promo
 
 # Register your models here.
 

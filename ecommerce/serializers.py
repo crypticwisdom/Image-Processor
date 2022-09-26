@@ -1,4 +1,4 @@
-from store.models import Product, ProductCategory, ProductDetail, ProductImage, ProductReview, Promo
+from ecommerce.models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
 

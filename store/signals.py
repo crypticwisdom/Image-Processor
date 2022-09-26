@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from store.models import Product
+from ecommerce.models import Product
 from uuid import uuid4
 
 

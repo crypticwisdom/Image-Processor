@@ -5,7 +5,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CR
 from rest_framework.views import APIView
 from django.utils import timezone
 from .serializers import MallProductSerializer, AllCategoriesSerializer, MallCategorySerializer, MallDealSerializer
-from store.models import ProductCategory, Product, Cart, CartProduct, ProductDetail, Promo
+from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo
 from ecommerce.pagination import CustomPagination
 import uuid
 
