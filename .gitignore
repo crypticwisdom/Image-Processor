@@ -10,6 +10,7 @@ __pycache__/
 .idea/*
 log.log
 payarenamall.log
+paymall.log
 *.log
 *.sqlite
 *.sqlite3
