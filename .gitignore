@@ -1,3 +1,4 @@
+
 .env
 *.env
 *.db.sqlite3
@@ -24,3 +25,4 @@ seller-files/
 seller-verification/
 store-logo/
 .push.py
+.idea/
