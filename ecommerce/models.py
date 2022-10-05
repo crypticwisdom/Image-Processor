@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.template.defaultfilters import slugify
 
 from merchant.models import Seller
 from store.choices import product_status_choices, cart_status_choices
@@ -205,4 +206,57 @@ class Promo(models.Model):
         return f"{self.merchant} - {self.status}"
 
 
+# class ReturnReason(models.Model):
+#     reason = models.CharField(max_length=200, null=False, blank=False)
+#     slug = models.SlugField(null=True, blank=True)
+#
+#     def save(self, *args, **kwargs):
+#         self.slug = slugify(self.reason)
+#         super(ReturnReason, self).save()
+#
+#     def __str__(self):
+#         return self.slug
+#
+#
+# RETURNED_STATUS_CHOICES = (
+#     ('pending', 'Pending'),
+#     ('approved', 'Approved'),
+#     ('success', 'Success'),
+#     ('failed', 'Failed'),
+#     ('rejected', 'Rejected'),
+# )
 
+
+# class ReturnedProduct(models.Model):
+#     returned_by = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
+#     product = models.ForeignKey(OrderProduct, on_delete=models.CASCADE, )
+#     reason = models.ForeignKey(ReturnReason, on_delete=models.CASCADE, default='')
+#     status = models.CharField(max_length=50, choices=RETURNED_STATUS_CHOICES, default='pending', blank=True, null=True)
+#     payment_status = models.CharField(max_length=50, choices=RETURNED_STATUS_CHOICES, default='pending', blank=True,
+#                                       null=True)
+#     comment = models.TextField(null=True, blank=True)
+#     created_on = models.DateTimeField(auto_now_add=True)
+#     updated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='updated_by', blank=True, null=True,
+#                                    default='')
+#     updated_on = models.DateTimeField(auto_now=True)
+#
+#     def __str__(self):
+#         return "{} {} {}".format(self.returned_by, self.product, self.reason)
+#
+#     class Meta:
+#         indexes = [
+#             models.Index(
+#                 fields=['status', 'payment_status', 'created_on', 'updated_on']
+#             )
+#         ]
+#
+#
+# class ReturnProductImage(models.Model):
+#     return_product = models.ForeignKey(ReturnedProduct, on_delete=models.CASCADE)
+#     image = models.FileField(storage=MComStorage(), upload_to=upload_media_to)
+#     is_primary = models.BooleanField(default=False)
+#
+#     def __str__(self):
+#         return f'{self.return_product} {self.image}'
+#
+#
