@@ -33,7 +33,9 @@ INSTALLED_APPS = [
     'superadmin',
     'location',
     'transaction',
+    'ecommerce.apps.EcommerceConfig',
 
+    # INSTALLED APPS
     'rest_framework',
     'rest_framework.authtoken',
     # 'django-filter',
@@ -41,7 +43,6 @@ INSTALLED_APPS = [
     'django_crontab',
     'storages',
     'rest_framework_simplejwt',
-    'ecommerce.apps.EcommerceConfig',
 
 ]
 
@@ -112,6 +113,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # MEDIA_ROOT = f"{BASE_DIR}/media"
