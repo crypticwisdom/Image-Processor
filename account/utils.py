@@ -22,7 +22,7 @@ def create_account(username, email, phone_number, password):
         return False, "An error occurred during user creation"
 
 
-def validate_email(email, /):
+def validate_email(email):
     try:
         regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         if re.fullmatch(regex, email):
