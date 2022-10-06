@@ -1,9 +1,9 @@
 from .base import *
-import django_heroku
 from decouple import config
-import dj_database_url
 
-SECRET_KEY = 'b0e0f216-6bd2-4d10-9e34-9c892h273ge6-do-user-dfghjiu548642'
+print("------------------ You are on Pay Arena's Development Environment --------------------")
+
+SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = True
 
@@ -11,24 +11,22 @@ ALLOWED_HOSTS = []
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'payarena',
-        'USER': 'payarena',
-        'PASSWORD': 'payarena',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': env('DATABASE_ENGINE'),
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
+        'HOST': env('DATABASE_HOST'),
+        'PORT': env('DATABASE_PORT'),
     }
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.SessionAuthentication',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    ),
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated']
 }
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
@@ -39,14 +37,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_ALL_ORIGINS = True
 # CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=60),
     'UPDATE_LAST_LOGIN': True,
     'AUTH_HEADER_TYPES': ('Bearer', 'Token',),
 }
-
-# Activate Django-Heroku.
-django_heroku.settings(locals())
-

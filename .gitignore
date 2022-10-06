@@ -10,6 +10,7 @@ __pycache__/
 .idea/*
 log.log
 payarenamall.log
+paymall.log
 *.log
 *.sqlite
 *.sqlite3
@@ -23,5 +24,4 @@ seller-files/
 seller-verification/
 store-logo/
 .push.py
-
-
+static/
