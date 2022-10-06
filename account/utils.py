@@ -73,9 +73,6 @@ def merge_carts(*, cart_uid, user):
         else:
             print(user_old_cart, "is empty")
 
-
-
-
         # print(cart_product_query)
         return True, "Success"
     except (Exception, ) as err:
