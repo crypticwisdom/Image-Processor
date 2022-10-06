@@ -114,13 +114,8 @@ class RecommendedProductView(APIView, CustomPagination):
 
 class CartProductOperationsView(APIView):
     """
-        This view is used to create a cart with an initial item and PUT item to cart.
-            POST: Creates a new cart and adds the product to cart. returns --> cart_uid and cart's ID.
-            PUT: Adds an Item to cart. Returns --> detail message.
-    """
-    """
-        Used for increasing, decreasing and removing cart-product to/from cart, it receives a Cart-Product ID, 
-        for either of the cases.
+        Used for creating cart and adding item, increasing, decreasing and removing cart-product to/from cart,
+        it receives a Cart-Product ID, for either of the cases.
         A user should not be able to add more than the available stocks for the product.
     """
     permission_classes = []
@@ -209,7 +204,6 @@ class CartProductOperationsView(APIView):
                                     pass
 
                                 item.quantity += 1
-
                                 item.price = item.quantity * product_detail.price
                                 item.save()
 
@@ -264,3 +258,18 @@ class CartProductOperationsView(APIView):
             return Response({"detail": "Invalid Product ID"}, status=HTTP_400_BAD_REQUEST)
         except (Exception,) as err:
             return Response({"detail": str(err)}, status=HTTP_400_BAD_REQUEST)
+
+
+class CartView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        try:
+            cart_uid_or_id = request.GET.get("cart_uid_or_id", None)
+
+            if cart_uid_or_id is not None:
+                carts = Cart.objects.filter(id=cart_uid_or_id) or Cart.objects.filter(cart_uid=cart_uid_or_id)
+
+                # cart_product =
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)

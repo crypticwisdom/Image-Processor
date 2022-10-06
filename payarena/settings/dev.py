@@ -2,7 +2,8 @@ from .base import *
 from decouple import config
 import dj_database_url
 
-print("---------------------- You are on Pay Arena's Development Environment --------------------------------")
+print("------------------ You are on Pay Arena's Development Environment --------------------")
+
 SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = True
@@ -37,11 +38,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_ALL_ORIGINS = True
 # CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=60),
     'UPDATE_LAST_LOGIN': True,
     'AUTH_HEADER_TYPES': ('Bearer', 'Token',),
 }
-
