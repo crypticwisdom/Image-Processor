@@ -1,0 +1,27 @@
+.env
+*.env
+*.db.sqlite3
+*.db.sqlite
+payarena/db.sqlite3
+__pycache__/
+*.pyc
+.idea
+*.idea
+.idea/*
+log.log
+payarenamall.log
+paymall.log
+*.log
+*.sqlite
+*.sqlite3
+.DS_Store
+*.DS_Store
+
+# Project image and file folders
+brand-images/
+product-images/
+seller-files/
+seller-verification/
+store-logo/
+.push.py
+static/
