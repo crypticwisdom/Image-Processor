@@ -61,7 +61,7 @@ class MallLandPageView(APIView):
             response_container["recommended_products"] = recommended[:5]
 
             # (6) All categories - to include sub categories and product types
-            categories = CategoriesSerializer(ProductCategory.objects.filter(parent=True), many=True, context={"request": request}).data
+            categories = CategoriesSerializer(ProductCategory.objects.filter(parent=None), many=True, context={"request": request}).data
             response_container["categories"] = categories
 
             response.append(response_container)
