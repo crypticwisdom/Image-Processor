@@ -171,7 +171,11 @@ class CartProductOperationsView(APIView):
                             # create a cart and return cart id and uid
                             # Return 'cart_id' and 'uid' if 'cart_id' or 'cart_uid' is not given
                             # Create CART
-                            cart = Cart.objects.get(id=cart_id) or Cart.objects.get(cart_uid=cart_uid)
+
+                            if cart_id:
+                                cart = Cart.objects.get(id=cart_id, status='open')
+                            elif cart_uid:
+                                Cart.objects.get(cart_uid=cart_uid, status='open')
 
                             success, response = create_cart_product(product_id=product_id, cart=cart)
                             if success:
@@ -187,9 +191,9 @@ class CartProductOperationsView(APIView):
                         cart = None
 
                         if cart_id:
-                            cart = Cart.objects.get(id=cart_id)
+                            cart = Cart.objects.get(id=cart_id, status='open')
                         elif cart_uid:
-                            cart = Cart.objects.get(cart_uid=cart_uid)
+                            cart = Cart.objects.get(cart_uid=cart_uid, status='open')
 
                         # Get cart products that belongs to that cart.
                         cart_products = CartProduct.objects.all().filter(cart=cart)
@@ -250,7 +254,7 @@ class CartProductOperationsView(APIView):
                     # get the product_detail
                     # check the operation the user wants to perform
                     product_detail = ProductDetail.objects.get(product__id=product_id)
-                    cart = Cart.objects.get(user=user)
+                    cart = Cart.objects.get(user=user, status='open')
 
                     # Get cart products that belongs to that cart.
                     cart_products = CartProduct.objects.all().filter(cart=cart)
@@ -294,21 +298,37 @@ class CartView(APIView):
 
     def get(self, request):
         try:
-            cart_uid_or_id = request.data.get("cart_uid_or_id", None)
+            cart_uid = request.data.get("cart_uid", None)
+            cart_id = request.data.get("cart_id", None)
 
-            if cart_uid_or_id is None:
-                return Response({"detail": "Cart UID or ID is required"}, status=HTTP_400_BAD_REQUEST)
+            cart = None
+            print(cart, request.user)
+            if request.user.is_authenticated:
+                cart = Cart.objects.get(user=request.user, status='open')
+            else:
+                if cart_uid is None and cart_id is None:
+                    return Response({"detail": "Cart UID or ID is required"}, status=HTTP_400_BAD_REQUEST)
 
-            cart_products = CartProduct.objects.filter(cart__cart_uid=cart_uid_or_id) or CartProduct.objects.filter(
-                cart__id=cart_uid_or_id)
+                if cart_id:
+                    cart = Cart.objects.get(id=cart_id, status='open')
+                elif cart_uid:
+                    Cart.objects.get(cart_uid=cart_uid, status='open')
 
-            # ser = CartProductSerializer
-            from store.serializers import CartSerializer, CartProductSerializer
-
+            print(cart, "--------------------")
+            cart_products = CartProduct.objects.all().filter(cart=cart)
             print(cart_products)
 
-            ser = CartSerializer(cart_products, many=True).data
+            # # ser = CartProductSerializer
+            from .serializers import CartProductSerializer
 
-            return Response({"detail": "Positive response", "ser": ser}, status=HTTP_200_OK)
+            # print(cart_products)
+            #
+            ser = CartProductSerializer(cart_products, many=True).data
+
+            return Response({"detail": "Positive response", "data": {
+                "cart_count": cart_products.count(),
+                "ser": ser
+            }}, status=HTTP_200_OK)
         except (Exception,) as err:
+            print(err)
             return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)

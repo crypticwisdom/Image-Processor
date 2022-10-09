@@ -59,6 +59,7 @@ class MallDealSerializer(ModelSerializer):
 
 
 class CartProductSerializer(ModelSerializer):
+
     class Meta:
         model = CartProduct
-        fields = ['id']
+        fields = ["id", "price", "quantity", "discount", "product_detail"]
