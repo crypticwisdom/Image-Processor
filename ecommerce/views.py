@@ -13,6 +13,9 @@ from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerial
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist
 from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
+from .utils import check_cart, create_cart_product, perform_operation
+
+
 # from ecommerce.utils import add_minus_remove_product_check
 
 
@@ -151,27 +154,57 @@ class CartProductOperationsView(APIView):
             if product_id is None:
                 return Response({"detail": "Product's ID was not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # If cart 'id' or 'uid' is present in the request, it means there's a cart created already
-            if cart_uid or cart_id:
-                # Get CART with CART's UID or ID
+            if operation_param is None:
+                return Response({"detail": "Specify operation with one of these -, +, or remove"},
+                                status=HTTP_400_BAD_REQUEST)
 
-                if Cart.objects.filter(cart_uid=cart_uid).exists() or Cart.objects.filter(id=cart_id).exists():
+            # user is not authenticated, cart_id or uid was not given then, create a new cart.
+            if not request.user.is_authenticated:
+                # request for cart id or uid since user is not authenticated.
+                # If 'cart_uid' or 'cart_id' is not given and 'operation_param' == '+'
+                if not (cart_uid or cart_id) and operation_param == "+":
+                    # Create cart
+                    cart = Cart.objects.create(cart_uid=uuid.uuid4())
 
-                    # check if product exist add to cart
-                    cart = None
-                    if cart_uid:
-                        cart = Cart.objects.get(cart_uid=cart_uid)
-                    elif cart_id:
-                        cart = Cart.objects.get(id=cart_id)
+                    success, response = create_cart_product(product_id=product_id, cart=cart)
+                    if success:
+                        return Response({"detail": "Successfully created a cart and product has been added",
+                                         "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
+                                        status=HTTP_201_CREATED)
+                    else:
+                        return Response({"detail": f"{response}"}, status=HTTP_400_BAD_REQUEST)
+                else:
+                    # That means this user is not authenticated, but cart id / uid and a product_id is passed.
+                    success, msg = check_cart(cart_id=cart_id, cart_uid=cart_uid)
 
-                    if Product.objects.filter(id=product_id).exists():
+                    if not success:
+                        # Create cart
+                        if not (cart_uid or cart_id) and operation_param == "+":
+                            # create a cart and return cart id and uid
+                            # Return 'cart_id' and 'uid' if 'cart_id' or 'cart_uid' is not given
+                            # Create CART
+                            cart = Cart.objects.get(id=cart_id) or Cart.objects.get(cart_uid=cart_uid)
 
-                        product = Product.objects.get(id=product_id)
-                        product_detail = ProductDetail.objects.get(product=product)
+                            success, response = create_cart_product(product_id=product_id, cart=cart)
+                            if success:
+                                return Response({"detail": "Successfully created a cart and product has been added",
+                                                 "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
+                                                status=HTTP_201_CREATED)
+                            else:
+                                return Response({"detail": f"{response}"}, status=HTTP_400_BAD_REQUEST)
+                    else:
+                        # get the product_detail
+                        # check the operation the user wants to perform
+                        product_detail = ProductDetail.objects.get(product__id=product_id)
+                        cart = None
+
+                        if cart_id:
+                            cart = Cart.objects.get(id=cart_id)
+                        elif cart_uid:
+                            cart = Cart.objects.get(cart_uid=cart_uid)
 
                         # Get cart products that belongs to that cart.
                         cart_products = CartProduct.objects.all().filter(cart=cart)
-
                         # Loop through the cart-products to see if this product already exists.
                         # If True then, Simply increase the item/product by 1.
                         # Else, Add the item/product to Cart.
@@ -208,36 +241,34 @@ class CartProductOperationsView(APIView):
                                         return Response({"detail": "Product has been reduced from cart",
                                                          "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}})
 
-                                else:
-                                    # This block executes only if operation_param is '+'
-                                    # And the program continues/flow downward.
-                                    pass
+                        for cart_product in cart_products:
+                            if cart_product.product_detail == product_detail:
+                                check_response.append(True)
 
-                                item.quantity += 1
-                                item.price = item.quantity * product_detail.price
-                                item.save()
+                                # what operation to perform ?
+                                operation_status, msg = perform_operation(operation_param, product_detail, cart_product)
+                                if operation_status is False:
+                                    return Response({"detail": f"{msg}"}, status=HTTP_400_BAD_REQUEST)
+                                else:
+                                    return Response({"detail": f"{msg}"}, status=HTTP_200_OK)
 
                                 check_response.append(True)
                                 return Response({"detail": "Added to cart",
                                                  "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
                                                 status=status.HTTP_201_CREATED)
                             else:
-                                # Update 'check_response' to False, which means each item wasn't found
+                                # update check response
                                 check_response.append(False)
 
-                        # if all elements of 'check_response' is False and the len. of 'check_response' is equal to the
-                        # 'cart_products' query set. which means the product is not found in the 'cart_products'
-                        if (True not in check_response) and len(check_response) == cart_products.count():
+                        # Add product to cart if product is not found inside the cart.
 
                             if operation_param == "-" or operation_param == "remove":
                                 return Response({"detail": f"Can't add product by passing {operation_param} operation",
                                                  "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
                                                 status=status.HTTP_400_BAD_REQUEST)
 
-                            # Add product to cart.
-                            cart_product = CartProduct.objects.create(cart=cart, product_detail=product_detail,
-                                                                      price=product_detail.price, quantity=1,
-                                                                      discount=product_detail.discount)
+                    # Get cart products that belongs to that cart.
+                    cart_products = CartProduct.objects.all().filter(cart=cart)
 
                             return Response({"detail": "Successfully added product",
                                              "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
@@ -247,17 +278,22 @@ class CartProductOperationsView(APIView):
                 # Create CART
                 cart = Cart.objects.create(cart_uid=uuid.uuid4())
 
-                # Get product and product detail with the 'product_id'
+                    check_response = list()
+                    for cart_product in cart_products:
 
-                if Product.objects.filter(id=product_id).exists():
+                        if cart_product.product_detail == product_detail:
+                            check_response.append(True)
 
-                    product = Product.objects.get(id=product_id)
-                    product_detail = ProductDetail.objects.get(product=product)
+                            # what operation to perform ?
+                            operation_status, msg = perform_operation(operation_param, product_detail, cart_product)
+                            if operation_status is False:
+                                return Response({"detail": f"{msg}"}, status=HTTP_400_BAD_REQUEST)
+                            else:
+                                return Response({"detail": f"{msg}"}, status=HTTP_200_OK)
 
-                    # Cart Product
-                    cart_product = CartProduct.objects.create(
-                        cart=cart, product_detail=product_detail, price=product_detail.price,
-                        discount=product_detail.discount, quantity=1)
+                        else:
+                            # update check response
+                            check_response.append(False)
 
                     return Response({"detail": "Successfully created a cart and product has been added",
                                      "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
@@ -275,10 +311,16 @@ class CartView(APIView):
 
     def get(self, request):
         try:
-            cart_uid_or_id = request.GET.get("cart_uid_or_id", None)
+            cart_uid_or_id = request.data.get("cart_uid_or_id", None)
 
-            if cart_uid_or_id is not None:
-                carts = Cart.objects.filter(id=cart_uid_or_id) or Cart.objects.filter(cart_uid=cart_uid_or_id)
+            if cart_uid_or_id is None:
+                return Response({"detail": "Cart UID or ID is required"}, status=HTTP_400_BAD_REQUEST)
+
+            cart_products = CartProduct.objects.filter(cart__cart_uid=cart_uid_or_id) or CartProduct.objects.filter(
+                cart__id=cart_uid_or_id)
+
+            # ser = CartProductSerializer
+            from store.serializers import CartSerializer, CartProductSerializer
 
                 # cart_product =
         except (Exception, ) as err:

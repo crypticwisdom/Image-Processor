@@ -4,7 +4,6 @@ from .models import ProductCategory, Product, ProductDetail, ProductImage, Produ
     ProductWishlist
 from rest_framework import serializers
 
-
 # Hot New Arrivals Serializers #
 class ProductDetailSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
