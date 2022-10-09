@@ -1,17 +1,25 @@
+from django.db.models import Q
 from django.shortcuts import render
 from django.views.generic import ListView
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework import status, generics
 from rest_framework.views import APIView
 from django.utils import timezone
-from .serializers import MallProductSerializer, AllCategoriesSerializer, MallCategorySerializer, MallDealSerializer
-from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo
-from ecommerce.pagination import CustomPagination
+
+from .filters import ProductFilter
+from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer
+from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist
+from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
 # from ecommerce.utils import add_minus_remove_product_check
 
 
 # Create your views here.
+from .utils import sorted_queryset
+
+
 class MallLandPageView(APIView):
     permission_classes = []
 
@@ -28,16 +36,16 @@ class MallLandPageView(APIView):
 
             # (2) Hot New Arrivals in last 3 days
             end_date1 = timezone.timedelta(days=3)
-            hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1)  # 3 days ago
-            arrival_serializer = MallProductSerializer(hot_new_arrivals, many=True).data
+            hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1, status="active")  # 3 days ago
+            arrival_serializer = ProductSerializer(hot_new_arrivals, many=True).data
             response_container["hot_new_arrivals"] = arrival_serializer
 
             # (3) Top-selling
             end_date2 = timezone.timedelta(weeks=1)
             # sale count would be updated by the Admin.
             # here, we would fetch the updated results made by the admin.
-            top_selling = Product.objects.filter(sale_count=0, created_on__date__gte=start_date - end_date2)
-            top_selling_serializer = MallProductSerializer(top_selling, many=True).data
+            top_selling = Product.objects.filter(sale_count=0, created_on__date__gte=start_date - end_date2, status="active")
+            top_selling_serializer = ProductSerializer(top_selling, many=True).data
             response_container["top_selling"] = top_selling_serializer[:15]
 
             # (4) Top categories of the month updated
@@ -45,34 +53,38 @@ class MallLandPageView(APIView):
             # sale-count would be manually updated by the Admin on his end.
             # here, we would fetch the updated results made by the admin.
             top_selling = Product.objects.filter(sale_count=0, created_on__date__gte=start_date - end_date3)
-            categories_serializer = MallCategorySerializer(top_selling, many=True).data
+            categories_serializer = ProductSerializer(top_selling, many=True, context={"request": request}).data
             response_container["top_monthly_categories"] = categories_serializer
 
             # (5) Recommended Products
-            recommended = MallProductSerializer(Product.objects.filter(is_featured=True), many=True).data
+            recommended = ProductSerializer(Product.objects.filter(is_featured=True), many=True, context={"request": request}).data
             response_container["recommended_products"] = recommended[:5]
 
+            # (6) All categories - to include sub categories and product types
+            categories = CategoriesSerializer(ProductCategory.objects.filter(parent=True), many=True, context={"request": request}).data
+            response_container["categories"] = categories
+
             response.append(response_container)
-            return Response({"detail": response}, status=HTTP_200_OK)
-        except (Exception,) as err:
+            return Response({"detail": response})
+        except Exception as err:
             print(err)
             # LOG
-            return Response({"detail": str(err)}, status=HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AllCategoriesView(APIView, CustomPagination):
+class CategoriesView(APIView, CustomPagination):
     permission_classes = []
 
     def get(self, request):
         try:
-            query_set = ProductCategory.objects.filter().order_by("-id")
+            query_set = ProductCategory.objects.filter(parent=None).order_by("-id")
             paginate_queryset = self.paginate_queryset(query_set, request)
-            serialized_data = AllCategoriesSerializer(paginate_queryset, many=True).data
+            serialized_data = CategoriesSerializer(paginate_queryset, many=True, context={"request": request}).data
             data = self.get_paginated_response(serialized_data).data
-            return Response({"detail": data}, status=HTTP_200_OK)
+            return Response({"detail": data})
 
         except (Exception,) as err:
-            return Response({"detail": str(err)}, status=HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TopSellingProductsView(APIView, CustomPagination):
@@ -86,13 +98,13 @@ class TopSellingProductsView(APIView, CustomPagination):
             queryset = Product.objects.filter(sale_count=0, created_on__date__gte=start_date - end_date2).order_by(
                 "-id")
             paginated_query = self.paginate_queryset(queryset, request)
-            data = self.get_paginated_response(MallProductSerializer(paginated_query, many=True).data).data
+            data = self.get_paginated_response(ProductSerializer(paginated_query, many=True).data).data
 
-            return Response({"detail": data}, status=HTTP_200_OK)
+            return Response({"detail": data})
         except (Exception,) as err:
             print(err)
             # LOG ERROR
-            return Response({"detail": str(err)}, status=HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RecommendedProductView(APIView, CustomPagination):
@@ -101,15 +113,15 @@ class RecommendedProductView(APIView, CustomPagination):
     def get(self, request):
         try:
             query_set = Product.objects.filter(is_featured=True).order_by("-id")
-            data = MallProductSerializer(query_set, many=True).data
+            data = ProductSerializer(query_set, many=True).data
 
             paginated_query = self.paginate_queryset(query_set, request)
             data = self.get_paginated_response(data=data).data
-            return Response({"detail": data}, status=HTTP_200_OK)
+            return Response({"detail": data})
         except (Exception,) as err:
             print(err)
             # LOG ERROR
-            return Response({"detail": str(err)}, status=HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CartProductOperationsView(APIView):
@@ -137,7 +149,7 @@ class CartProductOperationsView(APIView):
             operation_param = request.data.get("operation_param", None)
 
             if product_id is None:
-                return Response({"detail": "Product's ID was not provided"}, status=HTTP_400_BAD_REQUEST)
+                return Response({"detail": "Product's ID was not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
             # If cart 'id' or 'uid' is present in the request, it means there's a cart created already
             if cart_uid or cart_id:
@@ -176,27 +188,25 @@ class CartProductOperationsView(APIView):
                                 if not (product_detail.stock > item.quantity):
                                     return Response({"detail": "This product is out of stock",
                                                      "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
-                                                    status=HTTP_400_BAD_REQUEST)
+                                                    status=status.HTTP_400_BAD_REQUEST)
 
                                 # Operations for increase, reduce and remove
 
                                 if operation_param not in ("+", "-", "remove"):
                                     return Response({"detail": "Invalid Operation Parameter, expected -, +, or remove"},
-                                                    status=HTTP_400_BAD_REQUEST)
+                                                    status=status.HTTP_400_BAD_REQUEST)
 
                                 elif operation_param == "-" or operation_param == "remove":
                                     if item.quantity == 1 or operation_param == "remove":
                                         item.delete()
                                         return Response({"detail": "Product has been removed from cart",
-                                                         "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
-                                                        status=HTTP_200_OK)
+                                                         "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}})
 
                                     elif operation_param == "-":
                                         item.quantity -= 1
                                         item.save()
                                         return Response({"detail": "Product has been reduced from cart",
-                                                         "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
-                                                        status=HTTP_200_OK)
+                                                         "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}})
 
                                 else:
                                     # This block executes only if operation_param is '+'
@@ -210,7 +220,7 @@ class CartProductOperationsView(APIView):
                                 check_response.append(True)
                                 return Response({"detail": "Added to cart",
                                                  "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
-                                                status=HTTP_201_CREATED)
+                                                status=status.HTTP_201_CREATED)
                             else:
                                 # Update 'check_response' to False, which means each item wasn't found
                                 check_response.append(False)
@@ -222,7 +232,7 @@ class CartProductOperationsView(APIView):
                             if operation_param == "-" or operation_param == "remove":
                                 return Response({"detail": f"Can't add product by passing {operation_param} operation",
                                                  "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
-                                                status=HTTP_400_BAD_REQUEST)
+                                                status=status.HTTP_400_BAD_REQUEST)
 
                             # Add product to cart.
                             cart_product = CartProduct.objects.create(cart=cart, product_detail=product_detail,
@@ -231,7 +241,7 @@ class CartProductOperationsView(APIView):
 
                             return Response({"detail": "Successfully added product",
                                              "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
-                                            status=HTTP_201_CREATED)
+                                            status=status.HTTP_201_CREATED)
             else:
                 # if 'cart_id' or 'cart_uid' is not present it means to create a cart and return 'cart_id' and 'uid'
                 # Create CART
@@ -251,13 +261,13 @@ class CartProductOperationsView(APIView):
 
                     return Response({"detail": "Successfully created a cart and product has been added",
                                      "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
-                                    status=HTTP_201_CREATED)
+                                    status=status.HTTP_201_CREATED)
                 else:
-                    return Response({"detail": "Product ID does not match"}, status=HTTP_400_BAD_REQUEST)
+                    return Response({"detail": "Product ID does not match"}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({"detail": "Invalid Product ID"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Invalid Product ID"}, status=status.HTTP_400_BAD_REQUEST)
         except (Exception,) as err:
-            return Response({"detail": str(err)}, status=HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CartView(APIView):
@@ -272,4 +282,57 @@ class CartView(APIView):
 
                 # cart_product =
         except (Exception, ) as err:
-            return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FilteredSearchView(generics.ListAPIView):
+    permission_classes = []
+    pagination_class = DesktopResultsSetPagination
+    serializer_class = ProductSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_class = ProductFilter
+
+    def get_queryset(self):
+        search = self.request.GET.get('search', '')
+        order_by = self.request.GET.get('sort_by', '')
+
+        query = Q(status='active', store__is_active=True)
+
+        if search:
+            query &= Q(name=search)
+
+        if order_by:
+            queryset = sorted_queryset(order_by, query)
+            return queryset
+
+        queryset = Product.objects.filter(query).order_by('-updated_on').distinct()
+        return queryset
+
+
+class ProductWishlistView(APIView):
+
+    def post(self, request):
+        product_id = request.data.get('product_id', '')
+        if not product_id:
+            return Response({"detail": "Product ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            product = Product.objects.get(pk=product_id)
+            product_wishlist, created = ProductWishlist.objects.get_or_create(user=request.user, product=product)
+            data = ProductWishlistSerializer(product_wishlist).data
+
+            return Response({"detail": "Added to wishlist", "data": data})
+        except Exception as ex:
+            return Response({"detail": "An error occurred. Please try again", "error": str(ex)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class RetrieveDeleteWishlistView(generics.RetrieveDestroyAPIView):
+    pagination_class = [CustomPagination]
+    serializer_class = ProductWishlistSerializer
+    lookup_field = "id"
+
+    def get_queryset(self):
+        queryset = ProductWishlist.objects.filter(user=self.request.user)
+        return queryset
+
