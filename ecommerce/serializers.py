@@ -76,6 +76,20 @@ class CategoriesSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     sub_categories = serializers.SerializerMethodField()
     product_types = serializers.SerializerMethodField()
+    brand = serializers.SerializerMethodField()
+    parent_category = serializers.SerializerMethodField()
+
+    def get_parent_category(self, obj):
+        data = None
+        if obj.parent:
+            data = {"id": obj.parent.id, "name": obj.parent.name}
+        return data
+
+    def get_brand(self, obj):
+        if not obj.parent:
+            brand = [{"id": brand.id, "name": brand.name} for brand in obj.brands.all()]
+            return brand
+        return None
 
     def get_image(self, obj):
         if obj.image:
@@ -99,8 +113,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategory
-        exclude = []
-        depth = 1
+        exclude = ["brands", "parent"]
 
 
 class MallDealSerializer(serializers.ModelSerializer):
