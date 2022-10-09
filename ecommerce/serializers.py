@@ -1,8 +1,9 @@
-from ecommerce.models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo
+from ecommerce.models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo, CartProduct
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
-
 # Hot New Arrivals Serializers #
+
+
 class MallProductDetailSerializer(ModelSerializer):
     image = SerializerMethodField()
 
@@ -55,3 +56,9 @@ class MallDealSerializer(ModelSerializer):
         model = Promo
         fields = ['product', ]
         depth = 1
+
+
+class CartProductSerializer(ModelSerializer):
+    class Meta:
+        model = CartProduct
+        fields = ['id']
