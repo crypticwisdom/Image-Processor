@@ -57,6 +57,6 @@ class ForgotPasswordOTP(models.Model):
     email = models.EmailField(max_length=200, null=True)
     is_sent = models.BooleanField(help_text="If token was sent successfully", default=False)
     is_used = models.BooleanField(help_text="If token has been used", default=False)
-    expire_time = models.DateTimeField(null=True, blank=True, help_text="Expires after 5 minutes")
+    expire_time = models.DateTimeField(help_text="Expires after 5 minutes", blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)

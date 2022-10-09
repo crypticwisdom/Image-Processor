@@ -106,14 +106,6 @@ class ProductReviewSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'rating']
 
 
-class ProductWishlistSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(many=False)
-
-    class Meta:
-        model = ProductWishlist
-        fields = ['id', 'user', 'product']
-
-
 class ShipperSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipper
