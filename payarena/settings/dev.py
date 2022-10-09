@@ -1,6 +1,5 @@
 from .base import *
 from decouple import config
-import dj_database_url
 
 print("------------------ You are on Pay Arena's Development Environment --------------------")
 
@@ -8,7 +7,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*", "payarenamall.tm-dev.xyz"]
 
 DATABASES = {
     'default': {
