@@ -40,9 +40,13 @@ class LoginView(APIView):
                     return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
 
                 user = authenticate(request, username=email_or_username, password=password)
+                print(user, "---------------1------------------")
             if user is not None:
+                print(user, "---------------2-----------------")
+
                 if cart_uid is not None:
                     utils.merge_carts(cart_uid=cart_uid, user=user)
+                print(user, "---------------3-----------------")
 
                 return Response({"detail": "Login success", "token": f"{AccessToken.for_user(user)}"},
                                 status=status.HTTP_200_OK)
@@ -52,7 +56,7 @@ class LoginView(APIView):
         except (ValueError, Exception) as err:
             print(err)
             # Log error
-            return Response({"detail": "Something went wrong while trying to login"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):

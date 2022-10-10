@@ -299,7 +299,7 @@ class CartProductOperationsView(APIView):
                             return Response({"detail": "Product has been added to cart"}, status=status.HTTP_201_CREATED)
                         else:
                             return Response({"detail": f"{response}"}, status=status.HTTP_400_BAD_REQUEST)
-                    return Response({"detail": "No Operation performed"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "No Operation performed"}, status=status.HTTP_400_BAD_REQUEST)
 
         except (Exception,) as err:
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
