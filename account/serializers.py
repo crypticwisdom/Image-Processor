@@ -9,7 +9,14 @@ class AddressSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.SerializerMethodField()
     addresses = serializers.SerializerMethodField()
+
+    def get_profile_picture(self, obj):
+        image = None
+        if obj.profile_picture:
+            image = obj.profile_picture.url
+        return image
 
     def get_addresses(self, obj):
         address = None

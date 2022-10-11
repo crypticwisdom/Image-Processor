@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
@@ -45,9 +45,9 @@ class LoginView(APIView):
         if user is not None:
             if cart_uid is not None:
                 merge_carts(cart_uid=cart_uid, user=user)
-            data = ProfileSerializer(Profile.objects.get(user=user)).data
+            data = ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data
 
-            return Response({"detail": "Login success", "token": f"{AccessToken.for_user(user)}", "data": data},
+            return Response({"detail": "Login success", "token": f"{RefreshToken.for_user(user).access_token}", "data": data},
                             status=status.HTTP_200_OK)
 
         return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
