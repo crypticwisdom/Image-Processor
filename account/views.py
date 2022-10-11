@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from ecommerce.utils import log_request
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
@@ -21,41 +23,44 @@ class LoginView(APIView):
     permission_classes = []
 
     def post(self, request):
-        try:
-            email_or_username = request.data.get('email_or_username', None)
-            password, user = request.data.get('password', None), None
-            cart_uid = request.data.get("cart_uid", None)
+        # try:
+        email_or_username = request.data.get('email_or_username', None)
+        password, user = request.data.get('password', None), None
+        cart_uid = request.data.get("cart_uid", None)
 
-            if email_or_username is None:
-                return Response({"detail": "Email or Username is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if email_or_username is None:
+            return Response({"detail": "Email or Username is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if password is None:
-                return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if password is None:
+            return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if '@' in email_or_username:
-                check = validate_email(email_or_username)
-                if check is False:
-                    return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
-                if User.objects.filter(email=email_or_username).exists():
-                    email_or_username = User.objects.get(email=email_or_username).username
+        if '@' in email_or_username:
+            check = validate_email(email_or_username)
+            if check is False:
+                return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
+            if User.objects.filter(email=email_or_username).exists():
+                email_or_username = User.objects.get(email=email_or_username).username
 
-            user = authenticate(request, username=email_or_username, password=password)
+        user = authenticate(request, username=email_or_username, password=password)
 
-            if not user:
-                return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
+        log_request(f"user: {user}")
 
-            # merge_carts(cart_uid=cart_uid, user=user)
+        if not user:
+            return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({
-                "detail": "Login successful",
-                "token": f"{RefreshToken.for_user(user).access_token}",
-                "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data
-            })
+        # merge_carts(cart_uid=cart_uid, user=user)
+        log_request(f"token: {RefreshToken.for_user(user).access_token}")
 
-        except (ValueError, Exception) as err:
-            print(err)
-            # Log error
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            "detail": "Login successful",
+            "token": f"{RefreshToken.for_user(user).access_token}",
+            "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data
+        })
+
+        # except (ValueError, Exception) as err:
+        #     print(err)
+        #     # Log error
+        #     return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):

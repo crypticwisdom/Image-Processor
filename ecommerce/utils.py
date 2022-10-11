@@ -1,3 +1,5 @@
+import logging
+
 from .models import Cart, Product, ProductDetail, CartProduct
 
 
@@ -84,3 +86,9 @@ def perform_operation(operation_param, product_detail, cart_product):
         # remove product and give response
         cart_product.delete()
         return True, "Cart product has been removed"
+
+
+def log_request(*args):
+    for arg in args:
+        logging.info(arg)
+
