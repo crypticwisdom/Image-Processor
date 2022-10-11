@@ -11,7 +11,7 @@ class AddressSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     addresses = serializers.SerializerMethodField()
 
-    def get_address(self, obj):
+    def get_addresses(self, obj):
         address = None
         if Address.objects.filter(customer=obj).exists():
             address = AddressSerializer(Address.objects.filter(customer=obj), many=True).data
