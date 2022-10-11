@@ -21,41 +21,39 @@ class LoginView(APIView):
     permission_classes = []
 
     def post(self, request):
-        # try:
-        email_or_username = request.data.get('email_or_username', None)
-        password, user = request.data.get('password', None), None
-        cart_uid = request.data.get("cart_uid", None)
+        try:
+            email_or_username = request.data.get('email_or_username', None)
+            password, user = request.data.get('password', None), None
+            cart_uid = request.data.get("cart_uid", None)
 
-        if email_or_username is None:
-            return Response({"detail": "Email or Username is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if email_or_username is None:
+                return Response({"detail": "Email or Username is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if password is None:
-            return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if password is None:
+                return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if validate_email(email_or_username):
-            user = User.objects.get(email=email_or_username)
-            if not check_password(password=password, encoded=user.password):
-                return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            user_instance = User.objects.get(username=email_or_username)
-            if not check_password(password=password, encoded=user_instance.password):
-                return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
+            if '@' in email_or_username:
+                check = validate_email(email_or_username)
+                if check is False:
+                    return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
             user = authenticate(request, username=email_or_username, password=password)
-        if user is not None:
-            if cart_uid is not None:
-                merge_carts(cart_uid=cart_uid, user=user)
-            data = ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data
 
-            return Response({"detail": "Login success", "token": RefreshToken.for_user(user).access_token, "data": data},
-                            status=status.HTTP_200_OK)
+            if not user:
+                return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
+            merge_carts(cart_uid=cart_uid, user=user)
 
-        # except (ValueError, Exception) as err:
-        #     print(err)
-        #     # Log error
-        #     return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                "detail": "Login successful",
+                "token": f"{RefreshToken.for_user(user).access_token}",
+                "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data
+            })
+
+        except (ValueError, Exception) as err:
+            print(err)
+            # Log error
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):
