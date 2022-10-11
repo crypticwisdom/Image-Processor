@@ -1,8 +1,8 @@
 from django.db.models import Sum, Avg
-
 from .models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo, ProductType, \
-    ProductWishlist
+    ProductWishlist, CartProduct
 from rest_framework import serializers
+
 
 # Hot New Arrivals Serializers #
 class ProductDetailSerializer(serializers.ModelSerializer):
@@ -121,6 +121,13 @@ class MallDealSerializer(serializers.ModelSerializer):
         model = Promo
         fields = ['product', ]
         depth = 1
+
+
+class CartProductSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CartProduct
+        fields = ["id", "price", "quantity", "discount", "product_detail"]
 
 
 class ProductWishlistSerializer(serializers.ModelSerializer):
