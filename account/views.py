@@ -9,10 +9,12 @@ from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import check_password, make_password
-from account import utils
 from django.utils import timezone
 from .email import forgot_password_mail
 from threading import Thread
+
+from .serializers import ProfileSerializer
+from .utils import validate_email, merge_carts, create_account
 
 
 class LoginView(APIView):
@@ -30,7 +32,7 @@ class LoginView(APIView):
             if password is None:
                 return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if utils.validate_email(email_or_username):
+            if validate_email(email_or_username):
                 user = User.objects.get(email=email_or_username)
                 if not check_password(password=password, encoded=user.password):
                     return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
@@ -40,15 +42,12 @@ class LoginView(APIView):
                     return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
 
                 user = authenticate(request, username=email_or_username, password=password)
-                print(user, "---------------1------------------")
             if user is not None:
-                print(user, "---------------2-----------------")
-
                 if cart_uid is not None:
-                    utils.merge_carts(cart_uid=cart_uid, user=user)
-                print(user, "---------------3-----------------")
+                    merge_carts(cart_uid=cart_uid, user=user)
+                data = ProfileSerializer(Profile.objects.get(user=user)).data
 
-                return Response({"detail": "Login success", "token": f"{AccessToken.for_user(user)}"},
+                return Response({"detail": "Login success", "token": f"{AccessToken.for_user(user)}", "data": data},
                                 status=status.HTTP_200_OK)
 
             return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
@@ -79,7 +78,7 @@ class SignupView(APIView):
             if email is None:
                 return Response({"detail": "Email field is required"}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                if utils.validate_email(email) is False:
+                if validate_email(email) is False:
                     return Response({"detail": "Invalid Email Format"}, status=status.HTTP_400_BAD_REQUEST)
                 email = email
 
@@ -94,9 +93,9 @@ class SignupView(APIView):
             if password != password_confirm:
                 return Response({"detail": "Password does not match"}, status=status.HTTP_400_BAD_REQUEST)
 
-            success, msg = utils.create_account(username, email, phone_number, password)
+            success, msg = create_account(username, email, phone_number, password)
             if success:
-                return Response({"detail": "User has been created"}, status=status.HTTP_201_CREATED)
+                return Response({"detail": "Account created successfully"}, status=status.HTTP_201_CREATED)
             return Response({"detail": msg}, status=status.HTTP_400_BAD_REQUEST)
 
         except (Exception,) as err:
@@ -118,7 +117,7 @@ class ForgotPasswordSendOTPView(APIView):
                 return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
 
             if '@' in email:
-                if not utils.validate_email(email):
+                if not validate_email(email):
                     return Response({"detail": "Invalid Email Format"}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Get user instance with email
