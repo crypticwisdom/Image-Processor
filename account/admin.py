@@ -2,7 +2,7 @@ from django.contrib import admin
 from account.models import Profile, ForgotPasswordOTP, Address
 
 
-class AddressStackInlineAdmin(admin.TabularInline):
+class AddressStackInlineAdmin(admin.StackedInline):
     model = Address
 
 
