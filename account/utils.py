@@ -6,9 +6,11 @@ from account.models import Profile
 from ecommerce.models import Product, ProductDetail, Cart, CartProduct, CartBill
 
 
-def create_account(username, email, phone_number, password):
+def create_account(username, email, phone_number, password, first_name, last_name):
     try:
-        user_instance = User.objects.create(username=username, email=email, password=make_password(password))
+        user_instance = User.objects.create(
+            username=username, email=email, password=make_password(password), first_name=first_name, last_name=last_name
+        )
         if user_instance:
             profile = Profile.objects.create(user=user_instance, phone_number=phone_number)
             if not profile:

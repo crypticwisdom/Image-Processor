@@ -36,13 +36,15 @@ class LoginView(APIView):
                 check = validate_email(email_or_username)
                 if check is False:
                     return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
+                if User.objects.filter(email=email_or_username).exists():
+                    email_or_username = User.objects.get(email=email_or_username).username
 
             user = authenticate(request, username=email_or_username, password=password)
 
             if not user:
                 return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-            merge_carts(cart_uid=cart_uid, user=user)
+            # merge_carts(cart_uid=cart_uid, user=user)
 
             return Response({
                 "detail": "Login successful",
@@ -62,36 +64,34 @@ class SignupView(APIView):
     def post(self, request):
         try:
             username, email = request.data.get("username", None), request.data.get("email", None)
+            f_name, l_name = request.data.get("first_name", None), request.data.get("last_name", None)
             phone_number, password = request.data.get("phone_number", None), request.data.get("password", None)
             password_confirm = request.data.get("password_confirm", None)
 
-            if username is None:
-                return Response({"detail": "Username field is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if not all([username, email, phone_number, password, password_confirm, f_name, l_name]):
+                return Response({
+                    "detail": "first name, last name, username, email, phone number, password, and "
+                              "confirm password are required fields",
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if "@" in username:
+                return Response({"detail": 'Character "@" is not allowed in username field'},
+                                status=status.HTTP_400_BAD_REQUEST)
 
             # Check username exist
             if User.objects.filter(username=username).exists():
                 return Response({"detail": "A user with this username exists already"},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            if email is None:
-                return Response({"detail": "Email field is required"}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                if validate_email(email) is False:
-                    return Response({"detail": "Invalid Email Format"}, status=status.HTTP_400_BAD_REQUEST)
-                email = email
+            if validate_email(email) is False:
+                return Response({"detail": "Invalid Email Format"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if phone_number is None:
-                return Response({"detail": "Phone Number field is required"}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                phone_number = f"+234{phone_number[-10:]}"
-
-            if password_confirm is None:
-                return Response({"detail": "Confirm password field is required"}, status=status.HTTP_400_BAD_REQUEST)
+            phone_number = f"+234{phone_number[-10:]}"
 
             if password != password_confirm:
-                return Response({"detail": "Password does not match"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": "Passwords mismatch"}, status=status.HTTP_400_BAD_REQUEST)
 
-            success, msg = create_account(username, email, phone_number, password)
+            success, msg = create_account(username, email, phone_number, password, f_name, l_name)
             if success:
                 return Response({"detail": "Account created successfully"}, status=status.HTTP_201_CREATED)
             return Response({"detail": msg}, status=status.HTTP_400_BAD_REQUEST)

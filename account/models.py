@@ -11,7 +11,7 @@ class Profile(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile-pictures', null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.user)
