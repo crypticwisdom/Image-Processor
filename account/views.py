@@ -21,41 +21,41 @@ class LoginView(APIView):
     permission_classes = []
 
     def post(self, request):
-        try:
-            email_or_username = request.data.get('email_or_username', None)
-            password, user = request.data.get('password', None), None
-            cart_uid = request.data.get("cart_uid", None)
+        # try:
+        email_or_username = request.data.get('email_or_username', None)
+        password, user = request.data.get('password', None), None
+        cart_uid = request.data.get("cart_uid", None)
 
-            if email_or_username is None:
-                return Response({"detail": "Email or Username is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if email_or_username is None:
+            return Response({"detail": "Email or Username is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if password is None:
-                return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if password is None:
+            return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if validate_email(email_or_username):
-                user = User.objects.get(email=email_or_username)
-                if not check_password(password=password, encoded=user.password):
-                    return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                user_instance = User.objects.get(username=email_or_username)
-                if not check_password(password=password, encoded=user_instance.password):
-                    return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
+        if validate_email(email_or_username):
+            user = User.objects.get(email=email_or_username)
+            if not check_password(password=password, encoded=user.password):
+                return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            user_instance = User.objects.get(username=email_or_username)
+            if not check_password(password=password, encoded=user_instance.password):
+                return Response({"detail": "Incorrect password"}, status=status.HTTP_400_BAD_REQUEST)
 
-                user = authenticate(request, username=email_or_username, password=password)
-            if user is not None:
-                if cart_uid is not None:
-                    merge_carts(cart_uid=cart_uid, user=user)
-                data = ProfileSerializer(Profile.objects.get(user=user)).data
+            user = authenticate(request, username=email_or_username, password=password)
+        if user is not None:
+            if cart_uid is not None:
+                merge_carts(cart_uid=cart_uid, user=user)
+            data = ProfileSerializer(Profile.objects.get(user=user)).data
 
-                return Response({"detail": "Login success", "token": f"{AccessToken.for_user(user)}", "data": data},
-                                status=status.HTTP_200_OK)
+            return Response({"detail": "Login success", "token": f"{AccessToken.for_user(user)}", "data": data},
+                            status=status.HTTP_200_OK)
 
-            return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-        except (ValueError, Exception) as err:
-            print(err)
-            # Log error
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+        # except (ValueError, Exception) as err:
+        #     print(err)
+        #     # Log error
+        #     return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):
