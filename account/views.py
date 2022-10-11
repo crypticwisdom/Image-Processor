@@ -47,7 +47,7 @@ class LoginView(APIView):
                 merge_carts(cart_uid=cart_uid, user=user)
             data = ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data
 
-            return Response({"detail": "Login success", "token": f"{RefreshToken.for_user(user).access_token}", "data": data},
+            return Response({"detail": "Login success", "token": RefreshToken.for_user(user).access_token, "data": data},
                             status=status.HTTP_200_OK)
 
         return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
