@@ -11,12 +11,11 @@ django-decouple==2.1
 django-elasticsearch-dsl==7.2.2
 django-environ==0.9.0
 django-filter==21.1
-django-heroku==0.3.1
 django-js-asset==1.2.2
 django-mptt==0.13.4
 django-storages==1.12.3
 djangorestframework==3.13.1
-djangorestframework-simplejwt==5.0.0
+djangorestframework-simplejwt==5.2.1
 elasticsearch==7.13.4
 elasticsearch-dsl==7.4.0
 gunicorn==20.1.0

@@ -33,24 +33,46 @@ class ProductCategory(models.Model):
         return self.name
 
 
+class ProductType(models.Model):
+    name = models.CharField(max_length=200, )
+    image = models.ImageField(upload_to='product-type-images', blank=True, null=True)
+    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    percentage_commission = models.DecimalField(max_digits=50, decimal_places=2, default=0, null=True, blank=True)
+    fixed_commission = models.DecimalField(max_digits=50, decimal_places=2, default=0, null=True, blank=True)
+    commission_applicable = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Image(models.Model):
+    image = models.ImageField(upload_to='product-images')
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return 'Image'
+
+
 class Product(models.Model):
     store = models.ForeignKey("store.Store", on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=200)
-    slug = models.CharField(max_length=500, editable=True, null=True, blank=True)
+    image = models.ForeignKey(Image, on_delete=models.SET_NULL, null=True, blank=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, blank=True, null=True, related_name='category')
     sub_category = models.ForeignKey(ProductCategory, blank=True, null=True, on_delete=models.CASCADE)
+    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, null=True, blank=True)
     tags = models.TextField(blank=True, null=True)
     status = models.CharField(choices=product_status_choices, max_length=10, default='inactive')
 
     # Recommended Product: should be updated to 'True' once the merchant makes' payment.
     is_featured = models.BooleanField(default=False)
 
-    # View Count: number of times the product is viewed by a particular user. To be updated when a user views the prod.
+    # View Count: number of times the product is viewed users.
     view_count = models.PositiveBigIntegerField(default=0)
 
     # Top Selling: The highest sold product. Field updates when this product has been successfully paid for.
     sale_count = models.IntegerField(default=0)
 
+    published_on = models.DateTimeField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
