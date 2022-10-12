@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from .choices import card_from_choices
+from .choices import card_from_choices, address_type_choices
 from location.models import Country, State, City
 
 
@@ -9,13 +9,9 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     wallet_id = models.CharField(max_length=40, null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
-    home_address = models.CharField(max_length=100, null=True, blank=True)
-    country = models.ForeignKey(Country, null=True, on_delete=models.SET_NULL, blank=True)
-    state = models.ForeignKey(State, null=True, on_delete=models.SET_NULL, blank=True)
-    city = models.ForeignKey(City, null=True, on_delete=models.SET_NULL, blank=True)
     profile_picture = models.ImageField(upload_to='profile-pictures', null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.user)
@@ -35,7 +31,6 @@ class Profile(models.Model):
 
 class UserCard(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    email = models.EmailField()
     bank = models.CharField(max_length=50, null=True)
     card_from = models.CharField(max_length=50, null=True, choices=card_from_choices, default='paystack')
     card_type = models.CharField(max_length=50, null=True)
@@ -60,3 +55,43 @@ class ForgotPasswordOTP(models.Model):
     expire_time = models.DateTimeField(help_text="Expires after 5 minutes", blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
+
+
+class Address(models.Model):
+    customer = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    type = models.CharField(max_length=10, choices=address_type_choices, default='home')
+    name = models.CharField(max_length=500)
+    mobile_number = models.CharField(max_length=17)
+    num = models.CharField(max_length=500)
+    locality = models.CharField(max_length=500, blank=True, null=True)
+    landmark = models.CharField(max_length=500, blank=True, null=True)
+    country = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    town = models.CharField(max_length=100, blank=True, null=True)
+    postal_code = models.CharField(default=0, blank=True, null=True, max_length=50)
+    longitude = models.FloatField(null=True, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    is_primary = models.BooleanField(default=False)
+    updated_on = models.DateTimeField(auto_now=True)
+
+    def get_full_address(self):
+        addr = ""
+        if self.num:
+            addr += f"{self.num}, "
+        if self.locality:
+            addr += f"{self.locality}, "
+        if self.town:
+            addr += f"{self.town}, "
+        if self.city:
+            addr += f"{self.city}, "
+        if self.state:
+            addr += f"{self.state}, "
+        return addr.strip()
+
+    def __str__(self):
+        return "{} {} {}".format(self.type, self.name, self.locality)
+
+
+
+
