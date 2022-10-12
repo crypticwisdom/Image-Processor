@@ -393,7 +393,7 @@ class RetrieveDeleteWishlistView(generics.RetrieveDestroyAPIView):
         return queryset
 
 
-class ProductView(APIView):
+class ProductView(APIView, CustomPagination):
     permission_classes = []
 
     def get(self, request, pk=None):
@@ -404,8 +404,9 @@ class ProductView(APIView):
                 product.save()
                 serializer = ProductSerializer(product, context={"request": request}).data
             else:
-                product = Product.objects.filter(status="active", store__is_active=True)
-                serializer = ProductSerializer(product, many=True, context={"request": request}).data
+                prod = self.paginate_queryset(request, Product.objects.filter(status="active", store__is_active=True))
+                queryset = ProductSerializer(prod, many=True, context={"request": request}).data
+                serializer = self.get_paginated_response(queryset).data
             return Response(serializer)
         except Exception as err:
             return Response({"detail": "Error occurred while fetching product", "error": str(err)})
