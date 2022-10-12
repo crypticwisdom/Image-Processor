@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Sum, Avg
 from .models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo, ProductType, \
     ProductWishlist, CartProduct
@@ -24,6 +25,15 @@ class ProductSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     product_detail = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
+    similar = serializers.SerializerMethodField()
+
+    def get_similar(self, obj):
+        product = Product.objects.filter(
+            store__is_active=True, status='active', product_type=obj.product_type
+        ).order_by('?').exclude(pk=obj.id).distinct()
+        if self.context.get('seller'):
+            product = product.filter(store__seller=self.context.get('seller'))
+        return ProductSerializer(product[:settings.SIMILAR_PRODUCT_LIMIT], many=True).data
 
     def get_store(self, obj):
         return {"id": obj.store.id, "name": obj.store.name}

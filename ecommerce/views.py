@@ -15,8 +15,7 @@ from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerial
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist
 from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
-from .utils import check_cart, create_cart_product, perform_operation
-
+from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories
 
 # from ecommerce.utils import add_minus_remove_product_check
 
@@ -45,28 +44,24 @@ class MallLandPageView(APIView):
             arrival_serializer = ProductSerializer(hot_new_arrivals, many=True).data
             response_container["hot_new_arrivals"] = arrival_serializer
 
-            # (3) Top-selling
-            end_date2 = timezone.timedelta(weeks=1)
-            # sale count would be updated by the Admin.
-            # here, we would fetch the updated results made by the admin.
-            top_selling = Product.objects.filter(sale_count=0, created_on__date__gte=start_date - end_date2, status="active")
-            top_selling_serializer = ProductSerializer(top_selling, many=True).data
-            response_container["top_selling"] = top_selling_serializer[:15]
+            # (3) Top weekly selling products
+            top_products = top_weekly_products()
+            response_container["top_selling"] = top_products
 
-            # (4) Top categories of the month updated
-            end_date3 = timezone.timedelta(weeks=4)
-            # sale-count would be manually updated by the Admin on his end.
-            # here, we would fetch the updated results made by the admin.
-            top_selling = Product.objects.filter(sale_count=0, created_on__date__gte=start_date - end_date3)
-            categories_serializer = ProductSerializer(top_selling, many=True, context={"request": request}).data
-            response_container["top_monthly_categories"] = categories_serializer
+            # (4) Top categories of the month
+            top_monthly_cat = top_monthly_categories()
+            response_container["top_monthly_categories"] = top_monthly_cat
 
             # (5) Recommended Products
-            recommended = ProductSerializer(Product.objects.filter(is_featured=True), many=True, context={"request": request}).data
+            recommended = ProductSerializer(Product.objects.filter(
+                is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
+            ).data
             response_container["recommended_products"] = recommended[:5]
 
             # (6) All categories - to include sub categories and product types
-            categories = CategoriesSerializer(ProductCategory.objects.filter(parent=None), many=True, context={"request": request}).data
+            categories = CategoriesSerializer(
+                ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
+            ).data
             response_container["categories"] = categories
 
             response.append(response_container)
@@ -396,3 +391,26 @@ class RetrieveDeleteWishlistView(generics.RetrieveDestroyAPIView):
     def get_queryset(self):
         queryset = ProductWishlist.objects.filter(user=self.request.user)
         return queryset
+
+
+class ProductView(APIView):
+    permission_classes = []
+
+    def get(self, request, pk=None):
+        try:
+            if pk:
+                product = Product.objects.get(id=pk, status="active", store__is_active=True)
+                product.view_count += 1
+                product.save()
+                serializer = ProductSerializer(product, context={"request": request}).data
+            else:
+                product = Product.objects.filter(status="active", store__is_active=True)
+                serializer = ProductSerializer(product, many=True, context={"request": request}).data
+            return Response(serializer)
+        except Exception as err:
+            return Response({"detail": "Error occurred while fetching product", "error": str(err)})
+
+
+
+
+

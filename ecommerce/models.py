@@ -59,6 +59,7 @@ class Product(models.Model):
     image = models.ForeignKey(Image, on_delete=models.SET_NULL, null=True, blank=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, blank=True, null=True, related_name='category')
     sub_category = models.ForeignKey(ProductCategory, blank=True, null=True, on_delete=models.CASCADE)
+    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, null=True, blank=True)
     tags = models.TextField(blank=True, null=True)
     status = models.CharField(choices=product_status_choices, max_length=10, default='inactive')
 
