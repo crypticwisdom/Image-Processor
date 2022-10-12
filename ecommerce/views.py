@@ -413,39 +413,4 @@ class ProductView(APIView):
 
 
 
-# class ProductView(generics.RetrieveAPIView):
-#     serializer_class = ProductSerializer
-#     queryset = Product.objects.all()
-#     permission_classes = ()
-#     authentication_classes = ()
-#
-#     de
-#
-#     def get_object(self):
-#         return Product.objects.get(pk=self.kwargs['product_id'])
-#
-#     def retrieve(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         instance.num_views += 1
-#         instance.save()
-#         serializer = self.get_serializer(instance).data
-#
-#         query = Q(product_type=instance.product_type, status='active')
-#         if request.GET.get('merchant_id'):
-#             merchant = get_object_or_404(Merchant, id=self.request.GET.get('merchant_id'))
-#             similar_products = Product.objects.filter(store__merchant=merchant).filter(query).order_by('?').exclude(
-#                 id=instance.id)[:settings.SIMILAR_PRODUCT_LIMIT]
-#         else:
-#             similar_products = Product.objects.filter(store__is_active=True).filter(query).order_by('?').exclude(
-#                 id=instance.id)[:settings.SIMILAR_PRODUCT_LIMIT]
-#         serializer['similar'] = self.get_serializer(similar_products, many=True).data
-#         return Response(serializer)
-#
-#     def get_serializer_context(self):
-#         context = {"member": get_member(self.request), "uid": self.request.GET.get('uid')}
-#         if self.request.GET.get('merchant_id'):
-#             merchant = get_object_or_404(Merchant, id=self.request.GET.get('merchant_id'))
-#             context.update({'merchant': merchant})
-#         return context
-
 
