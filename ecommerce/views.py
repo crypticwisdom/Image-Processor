@@ -331,7 +331,7 @@ class CartView(APIView):
             # print(cart_products)
             #
             ser = CartProductSerializer(cart_products, many=True).data
-
+            # Still building ...
             return Response({"detail": "Positive response", "data": {
                 "cart_count": cart_products.count(),
                 "ser": ser
