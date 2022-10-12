@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from ecommerce.utils import log_request
+from home.utils import log_request
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login

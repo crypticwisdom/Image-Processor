@@ -1,6 +1,8 @@
-import logging
+from django.db.models import Avg, Sum
+from django.utils import timezone
 
-from .models import Cart, Product, ProductDetail, CartProduct
+from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime
+from .models import Cart, Product, ProductDetail, CartProduct, ProductReview
 
 
 def sorted_queryset(order_by, query):
@@ -88,7 +90,34 @@ def perform_operation(operation_param, product_detail, cart_product):
         return True, "Cart product has been removed"
 
 
-def log_request(*args):
-    for arg in args:
-        logging.info(arg)
+def top_weekly_products():
+    top_products = []
+    current_date = timezone.now()
+    week_start, week_end = get_week_start_and_end_datetime(current_date)
+    query_set = Product.objects.filter(
+        created_on__gte=week_start, created_on__lte=week_end, status='active', store__is_active=True).order_by(
+        "-sale_count"
+    )[:20]
+    for product in query_set:
+        review = ProductReview.objects.filter(product=product).aggregate(Avg('rating'))['rating__avg'] or 0
+        product_detail = ProductDetail.objects.filter(product=product).last()
+        top_products.append(
+            {"id": product.id, "name": product.name, "image": product.image.get_image(), "rating": review,
+             "price": product_detail.price, "discount": product_detail.discount, "featured": product.is_featured})
+    return top_products
 
+
+def top_monthly_categories():
+    top_categories = []
+    today_date = timezone.now()
+    month_start, month_end = get_month_start_and_end_datetime(today_date)
+    queryset = Product.objects.filter(
+        created_on__gte=month_start, created_on__lte=month_end, status='active', store__is_active=True
+    ).order_by("-sale_count").values("category__id", "category__name").annotate(Sum("sale_count")).order_by("-sale_count__sum")[:7]
+    for product in queryset:
+        category = dict()
+        category['id'] = product['category__id']
+        category['name'] = product['category__name']
+        category['total_sold'] = product['sale_count__sum']
+        top_categories.append(category)
+    return top_categories

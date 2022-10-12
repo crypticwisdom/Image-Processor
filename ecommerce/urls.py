@@ -16,4 +16,8 @@ urlpatterns = [
     # Wishlist
     path("wishlist/", views.ProductWishlistView.as_view(), name="wishlist"),
     path("wishlist/<int:id>/", views.RetrieveDeleteWishlistView.as_view(), name="wishlist-detail"),
+
+    # Products
+    path("product/", views.ProductView.as_view(), name="product"),
+    path("product/<int:pk>/", views.ProductView.as_view(), name="product-detail"),
 ]
