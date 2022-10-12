@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from ecommerce.shopper_email import shopper_welcome_email
 from home.utils import log_request
 from .models import *
 from django.contrib.auth.models import User
@@ -97,6 +98,8 @@ class SignupView(APIView):
 
             success, msg = create_account(username, email, phone_number, password, f_name, l_name)
             if success:
+                # Send welcome email
+                Thread(target=shopper_welcome_email, args=[email]).start()
                 return Response({"detail": "Account created successfully"}, status=status.HTTP_201_CREATED)
             return Response({"detail": msg}, status=status.HTTP_400_BAD_REQUEST)
 
