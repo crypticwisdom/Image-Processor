@@ -33,45 +33,52 @@ def validate_email(email):
         return False
 
 
-def merge_carts(*, cart_uid, user):
+def merge_carts(cart_uid, user):
     try:
         # Get Cart by cart_uid
-        cart_instance = Cart.objects.get(cart_uid=cart_uid, status="open")
-        print(cart_instance, cart_uid, "------------")
+        """
+            - If user 
+        """
+        if Cart.objects.filter(cart_uid=cart_uid, status="open").exists():
+            cart_instance = Cart.objects.get(cart_uid=cart_uid, status="open")
 
-        # Filter CartProduct where cart_instance is found/connected to.
-        cart_product_query = CartProduct.objects.filter(cart=cart_instance)
+            # Filter CartProduct where cart_instance is found/connected to.
+            new_cart_products = CartProduct.objects.all().filter(cart=cart_instance)
 
-        # Get "open" cart that belongs to the user logged-in
-        print("=====================", cart_product_query)
+            if len(new_cart_products) < 1:
+                cart_instance.delete()
 
-        user_old_cart = Cart.objects.filter(user=user, status="open").first()
-        # if same product matches in the 2 carts, then increament the new cart by the number of that particular product
-        # inside of the order cart.
+            # Get "open" cart that belongs to the user logged-in
+            if Cart.objects.filter(user=user, status="open").exists():
+                # Since cart with this user is found, then perform merge with both new and old carts.
 
-        # if cart_product_query.count() > user_old_cart:
-            # for product in cart_product_query:
-                # if
+                # - Get cart and cart products relating to the user.
+                user_old_cart = Cart.objects.get(user=user, status="open")
+                user_old_cart_products = CartProduct.objects.all().filter(cart=user_old_cart)
 
-        print(user_old_cart, "[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]")
-        if user_old_cart:
-            print(user_old_cart, "is not empty")
-            for cart_product in cart_product_query:
-                cart_p = CartProduct.objects.get(id=cart_product.id)
-                print(cart_product.id, cart_p, "---------------------")
+                if len(user_old_cart_products) < 1:
+                    user_old_cart.delete()
 
-                old_cart = Cart.objects.get(id=user_old_cart.id)
-                print("old cart in loop")
+                if len(new_cart_products) <= len(user_old_cart_products):
+                    # If length of new cart is < or equal to length of old cart then, merge cart and delete new_cart.
 
-                cart_p.cart = old_cart
-                cart_p.save()
-                print(cart_p.cart)
-                print("cart product has been added into CART", cart_p)
+                    # - loop through carts
+                    for new_item in new_cart_products:
+                        # cart.
+                        ...
+                    # delete cart so there should be 1 cart for the user.
 
-                # Delete new cart.
-            cart_instance.delete()
-        else:
-            print(user_old_cart, "is empty")
+                else:
+                    for item in user_old_cart_products:
+                        ...
+                print(new_cart_products, user_old_cart_products, "-----------------")
+            else:
+                # Since cart with user is not found then, assign the current user to the new cart.
+                cart_instance.user = user
+                cart_instance.cart_uid = ""
+                cart_instance.save()
+                # working.
+
 
         # print(cart_product_query)
         return True, "Success"

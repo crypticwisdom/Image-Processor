@@ -71,7 +71,7 @@ def perform_operation(operation_param, product_detail, cart_product):
             return True, "Cart product has been removed"
 
         if cart_product.quantity > 1:
-            #   reduce prod_cart and give respones.
+            #   reduce prod_cart and give responses.
             cart_product.quantity -= 1
             cart_product.price -= product_detail.price
             cart_product.save()
