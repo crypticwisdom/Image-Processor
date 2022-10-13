@@ -29,6 +29,7 @@ REST_FRAMEWORK = {
 
 
 CORS_ALLOWED_ORIGINS = [
+    "https://payarenamall.tm-dev.xyz"
     "http://localhost:8080",
     "http://localhost:80",
     "http://localhost",
@@ -46,3 +47,10 @@ SIMPLE_JWT = {
 
 # SITE CONFIG
 SIMILAR_PRODUCT_LIMIT = env('SIMILAR_PRODUCT_LIMIT')
+# Email
+EMAIL_URL = env('EMAIL_URL')
+# Shipping
+SHIPPING_BASE_URL = env('SHIPPING_BASE_URL')
+SHIPPING_EMAIL = env('SHIPPING_EMAIL')
+SHIPPING_PASSWORD = env('SHIPPING_PASSWORD')
+

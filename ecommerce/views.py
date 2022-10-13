@@ -393,7 +393,7 @@ class RetrieveDeleteWishlistView(generics.RetrieveDestroyAPIView):
         return queryset
 
 
-class ProductView(APIView):
+class ProductView(APIView, CustomPagination):
     permission_classes = []
 
     def get(self, request, pk=None):
@@ -404,48 +404,14 @@ class ProductView(APIView):
                 product.save()
                 serializer = ProductSerializer(product, context={"request": request}).data
             else:
-                product = Product.objects.filter(status="active", store__is_active=True)
-                serializer = ProductSerializer(product, many=True, context={"request": request}).data
+                prod = self.paginate_queryset(request, Product.objects.filter(status="active", store__is_active=True))
+                queryset = ProductSerializer(prod, many=True, context={"request": request}).data
+                serializer = self.get_paginated_response(queryset).data
             return Response(serializer)
         except Exception as err:
             return Response({"detail": "Error occurred while fetching product", "error": str(err)})
 
 
 
-
-# class ProductView(generics.RetrieveAPIView):
-#     serializer_class = ProductSerializer
-#     queryset = Product.objects.all()
-#     permission_classes = ()
-#     authentication_classes = ()
-#
-#     de
-#
-#     def get_object(self):
-#         return Product.objects.get(pk=self.kwargs['product_id'])
-#
-#     def retrieve(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         instance.num_views += 1
-#         instance.save()
-#         serializer = self.get_serializer(instance).data
-#
-#         query = Q(product_type=instance.product_type, status='active')
-#         if request.GET.get('merchant_id'):
-#             merchant = get_object_or_404(Merchant, id=self.request.GET.get('merchant_id'))
-#             similar_products = Product.objects.filter(store__merchant=merchant).filter(query).order_by('?').exclude(
-#                 id=instance.id)[:settings.SIMILAR_PRODUCT_LIMIT]
-#         else:
-#             similar_products = Product.objects.filter(store__is_active=True).filter(query).order_by('?').exclude(
-#                 id=instance.id)[:settings.SIMILAR_PRODUCT_LIMIT]
-#         serializer['similar'] = self.get_serializer(similar_products, many=True).data
-#         return Response(serializer)
-#
-#     def get_serializer_context(self):
-#         context = {"member": get_member(self.request), "uid": self.request.GET.get('uid')}
-#         if self.request.GET.get('merchant_id'):
-#             merchant = get_object_or_404(Merchant, id=self.request.GET.get('merchant_id'))
-#             context.update({'merchant': merchant})
-#         return context
 
 
