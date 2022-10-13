@@ -34,8 +34,6 @@ class ShippingService:
             item["Name"] = products.title()
             item["Amount"] = products.title()
             item["ShipmentType"] = products.title()
-            item["Description"] = products.title()
-            item["ImageUrl"] = products.title()
             shipment.append(item)
 
         url = f"{base_url}/operations/quote"
@@ -59,7 +57,6 @@ class ShippingService:
         payload["DeliveryState"] = kwargs.get("")
         payload["Weight"] = kwargs.get("")
         payload["InstantDelivery"] = kwargs.get("")
-        payload["PickupType"] = kwargs.get("")
         payload["PickupStationId"] = kwargs.get("")
         payload["DeliveryStationId"] = kwargs.get("")
         payload["PickupCity"] = kwargs.get("")

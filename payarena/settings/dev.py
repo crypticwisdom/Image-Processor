@@ -29,9 +29,10 @@ REST_FRAMEWORK = {
 
 
 CORS_ALLOWED_ORIGINS = [
-    "https://payarenamall.tm-dev.xyz"
+    "https://payarenamall.tm-dev.xyz",
     "http://localhost:8080",
     "http://localhost:80",
+    "http://localhost:3000",
     "http://localhost",
 ]
 
