@@ -24,9 +24,9 @@ class ShippingService:
     def rating(cls, **kwargs):
         all_product = "OrderProduct.objects.filter()"
         shipment = list()
-        for products in all_product:
+        for product in all_product:
             item = dict()
-            item["PackageId"] = products.title()
+            item["PackageId"] = product.id
             item["Quantity"] = products.title()
             item["Weight"] = products.title()
             item["ItemType"] = products.title()
