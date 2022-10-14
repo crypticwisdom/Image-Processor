@@ -43,10 +43,13 @@ class SimilarProductSerializer(serializers.ModelSerializer):
         return rating
 
     def get_image(self, obj):
-        image = None
         if obj.image:
-            image = obj.image.image.url
-        return image
+            request = self.context.get('request')
+            if request:
+                image = request.build_absolute_uri(obj.image.image.url)
+                return image
+            return obj.image.image.url
+        return None
 
     class Meta:
         model = Product
@@ -69,7 +72,8 @@ class ProductSerializer(serializers.ModelSerializer):
         ).order_by('?').exclude(pk=obj.id).distinct()
         if self.context.get('seller'):
             product = product.filter(store__seller=self.context.get('seller'))
-        return SimilarProductSerializer(product[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True).data
+        return SimilarProductSerializer(product[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True,
+                                        context={"request": self.context.get("request")}).data
 
     def get_store(self, obj):
         return {"id": obj.store.id, "name": obj.store.name}
@@ -93,10 +97,13 @@ class ProductSerializer(serializers.ModelSerializer):
         return rating
 
     def get_image(self, obj):
-        image = None
         if obj.image:
-            image = obj.image.image.url
-        return image
+            request = self.context.get('request')
+            if request:
+                image = request.build_absolute_uri(obj.image.image.url)
+                return image
+            return obj.image.image.url
+        return None
 
     def get_product_detail(self, obj):
         serializer = ProductDetailSerializer(ProductDetail.objects.filter(product=obj).order_by('-stock').first())

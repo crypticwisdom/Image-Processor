@@ -41,11 +41,11 @@ class MallLandPageView(APIView):
         # (2) Hot New Arrivals in last 3 days
         end_date1 = timezone.timedelta(days=3)
         hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1, status="active")  # 3 days ago
-        arrival_serializer = ProductSerializer(hot_new_arrivals, many=True).data
+        arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
         response_container["hot_new_arrivals"] = arrival_serializer
 
         # (3) Top weekly selling products
-        top_products = top_weekly_products()
+        top_products = top_weekly_products(request)
         response_container["top_selling"] = top_products
 
         # (4) Top categories of the month
