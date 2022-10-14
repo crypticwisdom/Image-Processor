@@ -33,7 +33,7 @@ class ProductSerializer(serializers.ModelSerializer):
         ).order_by('?').exclude(pk=obj.id).distinct()
         if self.context.get('seller'):
             product = product.filter(store__seller=self.context.get('seller'))
-        return ProductSerializer(product[:settings.SIMILAR_PRODUCT_LIMIT], many=True).data
+        return ProductSerializer(product[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True).data
 
     def get_store(self, obj):
         return {"id": obj.store.id, "name": obj.store.name}
@@ -44,8 +44,9 @@ class ProductSerializer(serializers.ModelSerializer):
             return query.aggregate(Sum('stock')).get('stock__sum') or 0
 
     def get_brand(self, obj):
-        if obj.productdetail.brand:
-            return obj.productdetail.brand.name
+        if ProductDetail.objects.filter(product=obj).exists():
+            product_detail = ProductDetail.objects.filter(product=obj).first()
+            return product_detail.brand.name
         return None
 
     def get_average_rating(self, obj):

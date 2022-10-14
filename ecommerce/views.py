@@ -28,48 +28,48 @@ class MallLandPageView(APIView):
     permission_classes = []
 
     def get(self, request):
-        try:
-            response, response_container, start_date = list(), dict(), timezone.datetime.today()
-            start_date = timezone.datetime.today()
+        # try:
+        response, response_container, start_date = list(), dict(), timezone.datetime.today()
+        start_date = timezone.datetime.today()
 
-            # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
-            deal_end_date = timezone.timedelta(days=1)
-            deals_query_set = Promo.objects.filter(created_on__date__gte=start_date - deal_end_date,
-                                                   promo_type="deal").order_by("-id")[:5]
-            response_container["deals_of_the_day"] = MallDealSerializer(deals_query_set, many=True).data
+        # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
+        deal_end_date = timezone.timedelta(days=1)
+        deals_query_set = Promo.objects.filter(created_on__date__gte=start_date - deal_end_date,
+                                               promo_type="deal").order_by("-id")[:5]
+        response_container["deals_of_the_day"] = MallDealSerializer(deals_query_set, many=True).data
 
-            # (2) Hot New Arrivals in last 3 days
-            end_date1 = timezone.timedelta(days=3)
-            hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1, status="active")  # 3 days ago
-            arrival_serializer = ProductSerializer(hot_new_arrivals, many=True).data
-            response_container["hot_new_arrivals"] = arrival_serializer
+        # (2) Hot New Arrivals in last 3 days
+        end_date1 = timezone.timedelta(days=3)
+        hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1, status="active")  # 3 days ago
+        arrival_serializer = ProductSerializer(hot_new_arrivals, many=True).data
+        response_container["hot_new_arrivals"] = arrival_serializer
 
-            # (3) Top weekly selling products
-            top_products = top_weekly_products()
-            response_container["top_selling"] = top_products
+        # (3) Top weekly selling products
+        top_products = top_weekly_products()
+        response_container["top_selling"] = top_products
 
-            # (4) Top categories of the month
-            top_monthly_cat = top_monthly_categories()
-            response_container["top_monthly_categories"] = top_monthly_cat
+        # (4) Top categories of the month
+        top_monthly_cat = top_monthly_categories()
+        response_container["top_monthly_categories"] = top_monthly_cat
 
-            # (5) Recommended Products
-            recommended = ProductSerializer(Product.objects.filter(
-                is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
-            ).data
-            response_container["recommended_products"] = recommended[:5]
+        # (5) Recommended Products
+        recommended = ProductSerializer(Product.objects.filter(
+            is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
+        ).data
+        response_container["recommended_products"] = recommended[:5]
 
-            # (6) All categories - to include sub categories and product types
-            categories = CategoriesSerializer(
-                ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
-            ).data
-            response_container["categories"] = categories
+        # (6) All categories - to include sub categories and product types
+        categories = CategoriesSerializer(
+            ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
+        ).data
+        response_container["categories"] = categories
 
-            response.append(response_container)
-            return Response({"detail": response})
-        except Exception as err:
-            print(err)
-            # LOG
-            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+        response.append(response_container)
+        return Response({"detail": response})
+        # except Exception as err:
+        #     print(err)
+        #     LOG
+            # return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CategoriesView(APIView, CustomPagination):
