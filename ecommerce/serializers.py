@@ -17,6 +17,42 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class SimilarProductSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    discount = serializers.SerializerMethodField()
+
+    def get_price(self, obj):
+        query = ProductDetail.objects.filter(product=obj).first()
+        if query:
+            return query.price
+        return None
+
+    def get_discount(self, obj):
+        query = ProductDetail.objects.filter(product=obj).first()
+        if query:
+            return query.discount
+        return None
+
+    def get_average_rating(self, obj):
+        rating = 0
+        query_set = ProductReview.objects.filter(product=obj).aggregate(Avg('rating'))
+        if query_set:
+            rating = query_set['rating__avg']
+        return rating
+
+    def get_image(self, obj):
+        image = None
+        if obj.image:
+            image = obj.image.image.url
+        return image
+
+    class Meta:
+        model = Product
+        fields = ["id", "name", "is_featured", "average_rating", "image", "price", "discount"]
+
+
 class ProductSerializer(serializers.ModelSerializer):
     store = serializers.SerializerMethodField()
     total_stock = serializers.SerializerMethodField()
@@ -33,7 +69,7 @@ class ProductSerializer(serializers.ModelSerializer):
         ).order_by('?').exclude(pk=obj.id).distinct()
         if self.context.get('seller'):
             product = product.filter(store__seller=self.context.get('seller'))
-        return ProductSerializer(product[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True).data
+        return SimilarProductSerializer(product[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True).data
 
     def get_store(self, obj):
         return {"id": obj.store.id, "name": obj.store.name}
