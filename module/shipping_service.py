@@ -24,9 +24,9 @@ class ShippingService:
     def rating(cls, **kwargs):
         all_product = "OrderProduct.objects.filter()"
         shipment = list()
-        for products in all_product:
+        for product in all_product:
             item = dict()
-            item["PackageId"] = products.title()
+            item["PackageId"] = product.id
             item["Quantity"] = products.title()
             item["Weight"] = products.title()
             item["ItemType"] = products.title()
@@ -34,8 +34,6 @@ class ShippingService:
             item["Name"] = products.title()
             item["Amount"] = products.title()
             item["ShipmentType"] = products.title()
-            item["Description"] = products.title()
-            item["ImageUrl"] = products.title()
             shipment.append(item)
 
         url = f"{base_url}/operations/quote"
@@ -59,7 +57,6 @@ class ShippingService:
         payload["DeliveryState"] = kwargs.get("")
         payload["Weight"] = kwargs.get("")
         payload["InstantDelivery"] = kwargs.get("")
-        payload["PickupType"] = kwargs.get("")
         payload["PickupStationId"] = kwargs.get("")
         payload["DeliveryStationId"] = kwargs.get("")
         payload["PickupCity"] = kwargs.get("")

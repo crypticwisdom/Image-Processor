@@ -90,7 +90,7 @@ def perform_operation(operation_param, product_detail, cart_product):
         return True, "Cart product has been removed"
 
 
-def top_weekly_products():
+def top_weekly_products(request):
     top_products = []
     current_date = timezone.now()
     week_start, week_end = get_week_start_and_end_datetime(current_date)
@@ -102,7 +102,7 @@ def top_weekly_products():
         review = ProductReview.objects.filter(product=product).aggregate(Avg('rating'))['rating__avg'] or 0
         product_detail = ProductDetail.objects.filter(product=product).last()
         top_products.append(
-            {"id": product.id, "name": product.name, "image": product.image.get_image(), "rating": review,
+            {"id": product.id, "name": product.name, "image": request.build_absolute_uri(product.image.image.url), "rating": review,
              "price": product_detail.price, "discount": product_detail.discount, "featured": product.is_featured})
     return top_products
 

@@ -17,6 +17,45 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class SimilarProductSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    discount = serializers.SerializerMethodField()
+
+    def get_price(self, obj):
+        query = ProductDetail.objects.filter(product=obj).first()
+        if query:
+            return query.price
+        return None
+
+    def get_discount(self, obj):
+        query = ProductDetail.objects.filter(product=obj).first()
+        if query:
+            return query.discount
+        return None
+
+    def get_average_rating(self, obj):
+        rating = 0
+        query_set = ProductReview.objects.filter(product=obj).aggregate(Avg('rating'))
+        if query_set:
+            rating = query_set['rating__avg']
+        return rating
+
+    def get_image(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                image = request.build_absolute_uri(obj.image.image.url)
+                return image
+            return obj.image.image.url
+        return None
+
+    class Meta:
+        model = Product
+        fields = ["id", "name", "is_featured", "average_rating", "image", "price", "discount"]
+
+
 class ProductSerializer(serializers.ModelSerializer):
     store = serializers.SerializerMethodField()
     total_stock = serializers.SerializerMethodField()
@@ -33,7 +72,8 @@ class ProductSerializer(serializers.ModelSerializer):
         ).order_by('?').exclude(pk=obj.id).distinct()
         if self.context.get('seller'):
             product = product.filter(store__seller=self.context.get('seller'))
-        return ProductSerializer(product[:settings.SIMILAR_PRODUCT_LIMIT], many=True).data
+        return SimilarProductSerializer(product[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True,
+                                        context={"request": self.context.get("request")}).data
 
     def get_store(self, obj):
         return {"id": obj.store.id, "name": obj.store.name}
@@ -44,8 +84,9 @@ class ProductSerializer(serializers.ModelSerializer):
             return query.aggregate(Sum('stock')).get('stock__sum') or 0
 
     def get_brand(self, obj):
-        if obj.productdetail.brand:
-            return obj.productdetail.brand.name
+        if ProductDetail.objects.filter(product=obj).exists():
+            product_detail = ProductDetail.objects.filter(product=obj).first()
+            return product_detail.brand.name
         return None
 
     def get_average_rating(self, obj):
@@ -56,10 +97,13 @@ class ProductSerializer(serializers.ModelSerializer):
         return rating
 
     def get_image(self, obj):
-        image = None
         if obj.image:
-            image = obj.image.image.url
-        return image
+            request = self.context.get('request')
+            if request:
+                image = request.build_absolute_uri(obj.image.image.url)
+                return image
+            return obj.image.image.url
+        return None
 
     def get_product_detail(self, obj):
         serializer = ProductDetailSerializer(ProductDetail.objects.filter(product=obj).order_by('-stock').first())

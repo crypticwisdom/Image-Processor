@@ -52,6 +52,12 @@ class Image(models.Model):
     def __str__(self):
         return 'Image'
 
+    def get_image_url(self):
+        if not self.image:
+            return None
+        else:
+            return self.image.url
+
 
 class Product(models.Model):
     store = models.ForeignKey("store.Store", on_delete=models.CASCADE, null=True)
