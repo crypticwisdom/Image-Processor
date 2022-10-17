@@ -27,15 +27,15 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated']
 }
 
-
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "https://payarenamall.tm-dev.xyz",
     "http://localhost:8080",
     "http://localhost:80",
     "http://localhost",
+    "http://127.0.0.1"
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
 # CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 SIMPLE_JWT = {
