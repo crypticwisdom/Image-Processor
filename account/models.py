@@ -12,6 +12,9 @@ class Profile(models.Model):
     profile_picture = models.ImageField(upload_to='profile-pictures', null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
+    verified = models.BooleanField(default=False)
+    verification_code = models.CharField(max_length=100, null=True, blank=True)
+    code_expiration_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return str(self.user)

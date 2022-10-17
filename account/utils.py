@@ -4,12 +4,32 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from account.models import Profile
 from ecommerce.models import Product, ProductDetail, Cart, CartProduct, CartBill
+import uuid
+from django.utils import timezone
+from threading import Thread
+from ecommerce.shopper_email import shopper_signup_verification_email
 
 
-def create_account(username, email, phone_number, password, first_name, last_name):
+def send_shopper_verification_email(email, profile):
+    try:
+        # Send Verification code
+        profile.verification_code = uuid.uuid1()
+        profile.code_expiration_date = timezone.datetime.today() + timezone.timedelta(minutes=15)
+        profile.save()
+
+        Thread(target=shopper_signup_verification_email,
+               kwargs={"email": email, "profile": profile}).start()
+        return True
+    except (Exception, ) as err:
+        print(err)
+        # LOG ERROR
+        return False
+
+
+def create_account(email, phone_number, password, first_name, last_name):
     try:
         user_instance = User.objects.create(
-            username=username, email=email, password=make_password(password), first_name=first_name, last_name=last_name
+            username=email, email=email, password=make_password(password), first_name=first_name, last_name=last_name
         )
         if user_instance:
             profile = Profile.objects.create(user=user_instance, phone_number=phone_number)
@@ -80,7 +100,6 @@ def merge_carts(cart_uid, user):
                 cart_instance.cart_uid = ""
                 cart_instance.save()
                 # working.
-
 
         # print(cart_product_query)
         return True, "Success"
