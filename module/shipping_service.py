@@ -8,20 +8,52 @@ from home.utils import log_request
 base_url = settings.SHIPPING_BASE_URL
 email = settings.SHIPPING_EMAIL
 password = settings.SHIPPING_PASSWORD
-header = {'Content-Type': 'application/json'}
 
 
 class ShippingService:
     @classmethod
     def login(cls):
+        from home.utils import log_request
         url = f"{base_url}/login"
         payload = json.dumps({"email": email, "password": password})
-        response = requests.request("POST", url, headers=header, data=payload).json()
+        response = requests.request("POST", url, data=payload, headers={"Content-Type": "application/json"}).json()
         log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
+        return response["token"]
+
+    @classmethod
+    def get_header(cls):
+        token = cls.login()
+        header = dict()
+        header["Authorization"] = f"Bearer {token}"
+        header["Content-Type"] = "application/json"
+        return header
+
+    @classmethod
+    def get_states_with_stations(cls, **kwargs):
+        # header = cls.get_header()
+        url = f"{base_url}/operations/stateInfo?StateName={kwargs.get('state_name')}"
+        if kwargs.get('city_name'):
+            url = f"{base_url}/operations/stateInfo?StateName={kwargs.get('state_name')}&CityName={kwargs.get('city_name')}"
+
+        response = requests.request("GET", url).json()
+        # response = requests.request("GET", url, headers=header).json()
+        log_request(f"url: {url}", f"response: {response}")
+        # log_request(f"url: {url}", f"headers: {header}", f"response: {response}")
+        return response
+
+    @classmethod
+    def get_all_states(cls):
+        # header = cls.get_header()
+        url = f"{base_url}/operations/states"
+        response = requests.request("GET", url).json()
+        # response = requests.request("GET", url, headers=header).json()
+        log_request(f"url: {url}", f"response: {response}")
+        # log_request(f"url: {url}", f"headers: {header}", f"response: {response}")
         return response
 
     @classmethod
     def rating(cls, **kwargs):
+        header = cls.get_header()
         all_product = "OrderProduct.objects.filter()"
         shipment = list()
         for product in all_product:
@@ -64,7 +96,7 @@ class ShippingService:
         payload["ShipmentItems"] = shipment
 
         response = requests.request("POST", url, headers=header, data=payload).json()
-        log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
+        # log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
         return response
 
 

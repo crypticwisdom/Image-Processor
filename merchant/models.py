@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
-from location.models import City, State, Country
+# from location.models import City, State, Country
 from .choices import *
 
 
@@ -23,9 +23,9 @@ class Seller(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     address = models.CharField(max_length=100, null=True, blank=True)
-    city = models.ForeignKey(City, null=True, on_delete=models.SET_NULL, blank=True)
-    state = models.ForeignKey(State, null=True, on_delete=models.SET_NULL, blank=True)
-    country = models.ForeignKey(Country, null=True, on_delete=models.SET_NULL, blank=True)
+    town = models.CharField(max_length=100, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
     profile_picture = models.ImageField(null=True, blank=True, upload_to='seller-profile-picture')
     status = models.CharField(max_length=20, choices=seller_status_choices, default='pending', null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)

@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from ecommerce.models import ProductImage, ProductReview, ProductWishlist, CartProduct, CartBill, Brand, Product, \
     ProductDetail, Shipper, Cart
-from merchant.serializer import SellerSerializer
+from merchant.serializers import SellerSerializer
 from .models import *
 
 

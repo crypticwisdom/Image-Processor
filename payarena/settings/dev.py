@@ -55,3 +55,22 @@ SHIPPING_BASE_URL = env('SHIPPING_BASE_URL')
 SHIPPING_EMAIL = env('SHIPPING_EMAIL')
 SHIPPING_PASSWORD = env('SHIPPING_PASSWORD')
 
+
+AWS_ACCESS_KEY_ID = 'b95ded76045bd40bb2c2600ae55f6364c4b96c63'
+AWS_SECRET_ACCESS_KEY = 'TjvAExwWyT9NhpM/S9oM0J6Cg/8YabaqtfGNF/kd2+k='
+AWS_STORAGE_BUCKET_NAME = 'PayArena_Mall'
+AWS_LOCATION = 'payarena'
+# AWS_S3_ENDPOINT_URL = 'https://yep-us-app-tm30.fra1.digitaloceanspaces.com'
+AWS_S3_ENDPOINT_URL = 'https://objectstorage.uk-london-1.oraclecloud.com'
+AWS_S3_CUSTOM_DOMAIN = ''
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_DEFAULT_ACL = 'public-read'
+AWS_QUERYSTRING_AUTH = False
+AWS_S3_FILE_OVERWRITE = False
+
+# STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+

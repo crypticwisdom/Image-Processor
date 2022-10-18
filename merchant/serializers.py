@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Seller, SellerVerification, SellerFile
-from store.serializers import StoreSerializer
 from store.models import Store
 
 
@@ -38,6 +37,7 @@ class SellerSerializer(serializers.ModelSerializer):
         return file
 
     def get_store(self, obj):
+        from store.serializers import StoreSerializer
         if Store.objects.filter(seller=obj).exists():
             return StoreSerializer(Store.objects.get(seller=obj)).data
         return None

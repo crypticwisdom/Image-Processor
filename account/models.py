@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from .choices import card_from_choices, address_type_choices
-from location.models import Country, State, City
 
 
 class Profile(models.Model):
