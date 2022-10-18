@@ -81,18 +81,26 @@ def merge_carts(cart_uid, user):
                 if len(user_old_cart_products) < 1:
                     user_old_cart.delete()
 
-                if len(new_cart_products) <= len(user_old_cart_products):
-                    # If length of new cart is < or equal to length of old cart then, merge cart and delete new_cart.
+                # if len(user_old_cart_products) >= len(new_cart_products):
+                    # If length of old cart is > or equal to length of new cart then, merge cart and delete new_cart.
 
                     # - loop through carts
-                    for new_item in new_cart_products:
-                        # cart.
-                        ...
+                # while user_old_cart_products and new_cart_products:
+                #     print("----", user_old_cart_products, new_cart_products)
+                    # for old_item in user_old_cart_products:
+                    #     # check if 'old_item' is in New Cart
+                    #     for i in user_old_cart_products:
+                    #         ...
+                    #     ...
+                    #
+                    #     # cart.
+                    #     print(old_item)
                     # delete cart so there should be 1 cart for the user.
 
-                else:
-                    for item in user_old_cart_products:
-                        ...
+                # else:
+                #     for item in new_cart_products:
+                #         ...
+
                 print(new_cart_products, user_old_cart_products, "-----------------")
             else:
                 # Since cart with user is not found then, assign the current user to the new cart.

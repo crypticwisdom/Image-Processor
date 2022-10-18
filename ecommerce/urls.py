@@ -8,8 +8,8 @@ urlpatterns = [
     path("categories/", views.CategoriesView.as_view(), name="categories"),
     path("top-selling/", views.TopSellingProductsView.as_view(), name="top-selling"),
     path("recommended-products/", views.RecommendedProductView.as_view(), name="recommended-products"),
-    # path("cart-operation/", views.CartProductOperationsView.as_view(), name="add-to-cart"),   # POST and PUT METHODS
-    # path("update-cart-product/", CartProductOperationsView.as_view(), name="update-cart"),  # PUT, DELETE
+    path("cart-operation/", views.CartProductOperationsView.as_view(), name="add-to-cart"),
+    # path("update-cart-product/", CartProductOperationsView.as_view(), name="update-cart"),
 
     path("filtered-search/", views.FilteredSearchView.as_view(), name="product-filter"),
 
