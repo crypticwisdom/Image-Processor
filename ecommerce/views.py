@@ -124,7 +124,6 @@ class RecommendedProductView(APIView, CustomPagination):
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class CartProductOperationsView(APIView):
     """
         Used for creating cart and adding item, increasing, decreasing and removing cart-product to/from cart,
