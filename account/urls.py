@@ -11,7 +11,8 @@ urlpatterns = [
     path('sign-up/', views.SignupView.as_view(), name="sign-up"),   # POST
     path('forgot-password/', views.ForgotPasswordSendOTPView.as_view(), name="forgot-password"),   # GET and POST
     path('change-password/', views.ChangePasswordView.as_view(), name="change-password"),   # PUT
-
+    path('resend-verification/', views.ResendVerificationLinkView.as_view(), name="resend-verification-link"),
+    path('link-verification/<str:token>/', views.EmailVerificationLinkView.as_view(), name="link-verification"),
 
 ]
 

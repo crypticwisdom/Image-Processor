@@ -1,12 +1,13 @@
 import secrets
+import uuid
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from ecommerce.shopper_email import shopper_welcome_email
+from django.utils import timezone
+from ecommerce.shopper_email import shopper_welcome_email, shopper_signup_verification_email
 from home.utils import log_request
 from .models import *
 from django.contrib.auth.models import User
@@ -17,7 +18,7 @@ from .email import forgot_password_mail
 from threading import Thread
 
 from .serializers import ProfileSerializer
-from .utils import validate_email, merge_carts, create_account
+from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email
 
 
 class LoginView(APIView):
@@ -25,29 +26,31 @@ class LoginView(APIView):
 
     def post(self, request):
         try:
-            email_or_username = request.data.get('email_or_username', None)
+            email = request.data.get('email', None)
             password, user = request.data.get('password', None), None
             cart_uid = request.data.get("cart_uid", None)
 
-            if email_or_username is None:
-                return Response({"detail": "Email or Username is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if email is None:
+                return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
 
             if password is None:
                 return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if '@' in email_or_username:
-                check = validate_email(email_or_username)
+            if '@' in email:
+                check = validate_email(email)
                 if check is False:
                     return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
-                if User.objects.filter(email=email_or_username).exists():
-                    email_or_username = User.objects.get(email=email_or_username).username
 
-            user = authenticate(request, username=email_or_username, password=password)
+                user = authenticate(request, username=email, password=password)
 
             log_request(f"user: {user}")
 
             if not user:
                 return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if Profile.objects.get(user=user).verified is False:
+                return Response({"detail": "User not verified, please request a verification link."},
+                                status=status.HTTP_400_BAD_REQUEST)
 
             # merge_carts(cart_uid=cart_uid, user=user)
 
@@ -68,24 +71,24 @@ class SignupView(APIView):
 
     def post(self, request):
         try:
-            username, email = request.data.get("username", None), request.data.get("email", None)
+            email = request.data.get("email", None)
             f_name, l_name = request.data.get("first_name", None), request.data.get("last_name", None)
             phone_number, password = request.data.get("phone_number", None), request.data.get("password", None)
             password_confirm = request.data.get("password_confirm", None)
 
-            if not all([username, email, phone_number, password, password_confirm, f_name, l_name]):
+            if not all([email, phone_number, password, password_confirm, f_name, l_name]):
                 return Response({
-                    "detail": "first name, last name, username, email, phone number, password, and "
+                    "detail": "first name, last name, email, phone number, password, and "
                               "confirm password are required fields",
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            if "@" in username:
-                return Response({"detail": 'Character "@" is not allowed in username field'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            # if "@" in username:
+            #     return Response({"detail": 'Character "@" is not allowed in username field'},
+            #                     status=status.HTTP_400_BAD_REQUEST)
 
             # Check username exist
-            if User.objects.filter(username=username).exists():
-                return Response({"detail": "A user with this username exists already"},
+            if User.objects.filter(email=email).exists():
+                return Response({"detail": "A user with this email already exists"},
                                 status=status.HTTP_400_BAD_REQUEST)
 
             if validate_email(email) is False:
@@ -96,12 +99,17 @@ class SignupView(APIView):
             if password != password_confirm:
                 return Response({"detail": "Passwords mismatch"}, status=status.HTTP_400_BAD_REQUEST)
 
-            success, msg = create_account(username, email, phone_number, password, f_name, l_name)
+            success, profile_or_err_msg = create_account(email, phone_number, password, f_name, l_name)
             if success:
-                # Send welcome email
-                Thread(target=shopper_welcome_email, args=[email]).start()
-                return Response({"detail": "Account created successfully"}, status=status.HTTP_201_CREATED)
-            return Response({"detail": msg}, status=status.HTTP_400_BAD_REQUEST)
+                # Send Verification code
+                if send_shopper_verification_email(email=email, profile=profile_or_err_msg):
+                    return Response({"detail": "Account created and Verification link has been sent Successfully"},
+                                    status=status.HTTP_200_OK)
+                else:
+                    return Response({"detail": "An error occurred while sending the verification link"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({"detail": profile_or_err_msg}, status=status.HTTP_400_BAD_REQUEST)
 
         except (Exception,) as err:
             print(err)
@@ -230,3 +238,45 @@ class ChangePasswordView(APIView):
         else:
             return Response({"detail": "Password has been changed"}, status=status.HTTP_201_CREATED)
 
+
+class ResendVerificationLinkView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        try:
+            email = request.data.get("email", None)
+            if not email:
+                return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            profile = Profile.objects.get(user__email=email)
+
+            if profile is not None:
+                if send_shopper_verification_email(email=email, profile=profile):
+                    return Response({"detail": "Verification link has been sent to the specified Email"},
+                                    status=status.HTTP_200_OK)
+                else:
+                    return Response({"detail": "An error occured while send verification link"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({"detail": "No Profile is linked to the Provided email"}, status=status.HTTP_400_BAD_REQUEST)
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EmailVerificationLinkView(APIView):
+    permission_classes = []
+
+    def post(self, request, token=None):
+        try:
+            profile = Profile.objects.all().filter(verification_code=token)
+            if not profile.exists():
+                return Response({"detail": "Invalid Verification code"}, status=status.HTTP_400_BAD_REQUEST)
+
+            profile = profile.last()
+            profile.verified = True
+            profile.save()
+
+            return Response({"detail": "Your Email has been verified successfully"},
+                            status=status.HTTP_200_OK)
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)

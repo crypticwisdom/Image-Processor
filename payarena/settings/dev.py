@@ -27,17 +27,17 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated']
 }
 
-
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "https://payarenamall.tm-dev.xyz",
     "http://localhost:8080",
     "http://localhost:80",
     "http://localhost:3000",
     "http://localhost",
+    "http://127.0.0.1"
 ]
 
-# CORS_ALLOW_ALL_ORIGINS = True
-# CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
@@ -54,7 +54,6 @@ EMAIL_URL = env('EMAIL_URL')
 SHIPPING_BASE_URL = env('SHIPPING_BASE_URL')
 SHIPPING_EMAIL = env('SHIPPING_EMAIL')
 SHIPPING_PASSWORD = env('SHIPPING_PASSWORD')
-
 
 AWS_ACCESS_KEY_ID = 'b95ded76045bd40bb2c2600ae55f6364c4b96c63'
 AWS_SECRET_ACCESS_KEY = 'TjvAExwWyT9NhpM/S9oM0J6Cg/8YabaqtfGNF/kd2+k='
@@ -74,3 +73,4 @@ AWS_S3_FILE_OVERWRITE = False
 # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
+FRONTEND_VERIFICATION_URL = env('FRONTEND_VERIFICATION_URL')
