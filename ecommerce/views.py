@@ -324,12 +324,7 @@ class CartView(APIView):
                     cart = Cart.objects.get(cart_uid=cart_uid, status='open')
 
             cart_products = CartProduct.objects.all().filter(cart=cart)
-            print(cart_products)
 
-            # ser = CartProductSerializer
-
-            # print(cart_products)
-            #
             ser = CartProductSerializer(cart_products, many=True).data
             # Still building ...
             return Response({"detail": "Positive response", "data": {
