@@ -1,7 +1,9 @@
+import datetime
 import json
 
 import requests
 from django.conf import settings
+from django.db.models import Sum
 
 from home.utils import log_request
 
@@ -53,51 +55,94 @@ class ShippingService:
 
     @classmethod
     def rating(cls, **kwargs):
-        header = cls.get_header()
-        all_product = "OrderProduct.objects.filter()"
+        # header = cls.get_header()
+        # customer = kwargs.get('customer')
+        # payment_mode = kwargs.get('payment_mode')
+
+        pickup_date = datetime.datetime.today().date() + datetime.timedelta(days=2)
+        pickup_time = datetime.datetime.now().time()
+        seller = kwargs.get("seller")
+        customer = kwargs.get("customer")
+        customer_address = kwargs.get("customer_address")
+
         shipment = list()
-        for product in all_product:
+
+        prod_weight = 0
+        for product in kwargs.get("seller_prods"):
+            quantity = product.get('quantity')
+            weight = product.get("weight")
+            price = product.get("price")
+            prod_weight += (weight * quantity)
+            prod = product.get("product")
+
             item = dict()
-            item["PackageId"] = product.id
-            item["Quantity"] = products.title()
-            item["Weight"] = products.title()
-            item["ItemType"] = products.title()
-            item["WeightRange"] = products.title()
-            item["Name"] = products.title()
-            item["Amount"] = products.title()
-            item["ShipmentType"] = products.title()
+            item["PackageId"] = prod.id
+            item["Quantity"] = quantity
+            item["Weight"] = prod_weight
+            item["ItemType"] = "Normal"
+            # item["WeightRange"] = products.title()
+            item["Name"] = prod.name
+            item["Amount"] = 1000
+            item["ShipmentType"] = "Regular"
             shipment.append(item)
 
         url = f"{base_url}/operations/quote"
+
+        total_item_weight = list()
+        for data in shipment:
+            total_item_weight.append(data["Weight"])
+
+        total_weight = sum(total_item_weight)
+
         payload = dict()
-        payload["PaymentMode"] = kwargs.get("")
-        payload["Vehicle"] = kwargs.get("")
-        payload["PickupTime"] = kwargs.get("")
-        payload["PickupDate"] = kwargs.get("")
-        payload["PickupLatitude"] = kwargs.get("")
-        payload["PickupLongitude"] = kwargs.get("")
-        payload["PickupAddress"] = kwargs.get("")
-        payload["SenderPhoneNumber"] = kwargs.get("")
-        payload["SenderName"] = kwargs.get("")
-        payload["ReceiverName"] = kwargs.get("")
-        payload["DeliveryAddress"] = kwargs.get("")
-        payload["DeliveryLatitude"] = kwargs.get("")
-        payload["DeliveryLongitude"] = kwargs.get("")
-        payload["DeliveryLatitude"] = kwargs.get("")
-        payload["ReceiverPhoneNumber"] = kwargs.get("")
-        payload["PickupState"] = kwargs.get("")
-        payload["DeliveryState"] = kwargs.get("")
-        payload["Weight"] = kwargs.get("")
-        payload["InstantDelivery"] = kwargs.get("")
-        payload["PickupStationId"] = kwargs.get("")
-        payload["DeliveryStationId"] = kwargs.get("")
-        payload["PickupCity"] = kwargs.get("")
-        payload["DeliveryCity"] = kwargs.get("")
+        # payload["PaymentMode"] = payment_mode
+        # payload["Vehicle"] = kwargs.get("")
+        payload["PickupTime"] = str(pickup_time)
+        payload["PickupDate"] = str(pickup_date)
+        payload["PickupLatitude"] = 6.639438
+        payload["PickupLongitude"] = 3.330983
+        # payload["PickupLatitude"] = seller.latitude
+        # payload["PickupLongitude"] = seller.longitude
+        payload["PickupAddress"] = seller.get_full_address()
+        payload["SenderPhoneNumber"] = seller.phone_number
+        payload["SenderName"] = seller.user.get_full_name()
+        payload["ReceiverName"] = customer.user.get_full_name()
+        payload["DeliveryAddress"] = customer_address.get_full_address()
+        payload["DeliveryLatitude"] = 6.5483777
+        payload["DeliveryLongitude"] = 3.3883414
+        # payload["DeliveryLatitude"] = customer_address.latitude
+        # payload["DeliveryLongitude"] = customer_address.longitude
+        payload["ReceiverPhoneNumber"] = customer.phone_number
+        payload["PickupState"] = seller.state
+        payload["DeliveryState"] = customer_address.state
+        payload["TotalWeight"] = total_weight
+        # payload["InstantDelivery"] = 0
+        # StationID to be implemented later
+        payload["PickupStationId"] = 4
+        payload["DeliveryStationId"] = 4
+        ##################################
+        payload["PickupCity"] = seller.city
+        payload["DeliveryCity"] = customer_address.city
         payload["ShipmentItems"] = shipment
 
-        response = requests.request("POST", url, headers=header, data=payload).json()
-        # log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
+        payload = json.dumps(payload)
+
+        # response = requests.request("POST", url, headers=header, data=payload).json()
+        response = requests.request("POST", url, data=payload, headers={"Content-Type": "application/json"}).json()
+        log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
         return response
+
+    @classmethod
+    def get_shippers(cls):
+        # header = cls.get_header()
+        # url = f"{base_url}/operations/shippers"
+        # response = requests.request("GET", url).json()
+        # response = requests.request("GET", url, headers=header).json()
+        response = [{"Id": "9", "Name": "Dellyman"}, {"Id": "1", "Name": "Gig Logistics"}, {"Id": "7", "Name": "Redstar"}]
+        # log_request(f"url: {url}", f"response: {response}")
+        # log_request(f"url: {url}", f"headers: {header}", f"response: {response}")
+        return response
+
 
 
 

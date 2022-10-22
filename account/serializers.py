@@ -2,10 +2,10 @@ from rest_framework import serializers
 from .models import Profile, Address
 
 
-class AddressSerializer(serializers.ModelSerializer):
+class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        exclude = []
+        exclude = ["customer"]
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -21,7 +21,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_addresses(self, obj):
         address = None
         if Address.objects.filter(customer=obj).exists():
-            address = AddressSerializer(Address.objects.filter(customer=obj), many=True).data
+            address = CustomerAddressSerializer(Address.objects.filter(customer=obj), many=True).data
         return address
 
     class Meta:

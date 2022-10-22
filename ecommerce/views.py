@@ -8,14 +8,16 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from django.utils import timezone
 
+from account.models import Profile, Address
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
-    CartProductSerializer
+    CartProductSerializer, OrderSerializer
 
-from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist
+from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order
 from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
-from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories
+from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories, \
+    validate_product_in_cart, get_shipping_rate, order_payment, add_order_product, perform_order_cancellation
 
 # from ecommerce.utils import add_minus_remove_product_check
 
@@ -406,6 +408,87 @@ class ProductView(APIView, CustomPagination):
             return Response({"detail": "Error occurred while fetching product", "error": str(err)})
 
 
+class ProductCheckoutView(APIView):
+
+    def get(self, request):
+        try:
+            # Get customer profile
+            customer, created = Profile.objects.get_or_create(user=request.user)
+            # Validate product in cart
+            validate = validate_product_in_cart(customer)
+            if validate:
+                return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
+            # Call shipping API to get rate
+            shipping_rate = get_shipping_rate(customer)
+            return Response(shipping_rate)
+        except Exception as err:
+            return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+
+        payment_method = request.data.get("payment_method")
+        cart_id = request.data.get("cart_id")
+        address_id = request.data.get("address_id")
+        company_id = request.data.get("company_id")
+        shipper = request.data.get("shipper_name")
+
+        if not (shipper and company_id):
+            return Response({"detail": "Shipper name and company_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            customer, created = Profile.objects.get_or_create(user=request.user)
+            address = Address.objects.get(customer=customer, id=address_id)
+            cart = Cart.objects.get(user=request.user, id=cart_id, status="open")
+
+            validate = validate_product_in_cart(customer)
+            if validate:
+                return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create Order
+            order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address,
+                                                         shipper_name=shipper)
+
+            # PROCESS PAYMENT
+            success, detail = order_payment(payment_method, order)
+            if success is False:
+                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+
+            # update order
+            success, detail = add_order_product(order)
+
+            # Send order placement email to shopper
+            # Send order placement email to seller
+            # Send order placement email to admins
+
+            return Response({"detail": "Order placed successfully"})
+
+        except Exception as ex:
+            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderAPIView(APIView, CustomPagination):
+
+    def get(self, request, pk=None):
+        try:
+            if pk:
+                data = OrderSerializer(Order.objects.get(id=pk, customer__user=request.user)).data
+            else:
+                order = self.paginate_queryset(Order.objects.filter(customer__user=request.user), request)
+                serializer = OrderSerializer(order, many=True).data
+                data = self.get_paginated_response(serializer).data
+            return Response(data)
+        except Exception as err:
+            return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        try:
+            order = Order.objects.get(id=pk, customer__user=request.user)
+            success, detail = perform_order_cancellation(order, request.user)
+            if success is False:
+                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": detail})
+        except Exception as ex:
+            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

@@ -5,3 +5,14 @@ product_status_choices = (
 cart_status_choices = (
     ('open', 'Open'), ('closed', 'Closed'), ('discard', 'Discard')
 )
+
+payment_status_choices = (
+    ('success', 'Success'), ('pending', 'Pending'), ('failed', 'Failed'), ('refunded', 'Refunded')
+)
+
+order_status_choices = (
+    ('cancelled', 'Cancelled'), ('packed', 'Packed'), ('shipped', 'Shipped'), ('delivered', 'Delivered'),
+    ('returned', 'Returned'), ('paid', 'Paid'), ('refunded', 'Refunded'), ('pending', 'Pending')
+)
+
+

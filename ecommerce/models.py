@@ -2,8 +2,11 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.template.defaultfilters import slugify
 
+from account.models import Profile, Address
 from merchant.models import Seller
-from store.choices import product_status_choices, cart_status_choices
+from store.choices import product_status_choices, cart_status_choices, payment_status_choices, order_status_choices
+
+
 # from store.models import Store
 
 
@@ -185,7 +188,8 @@ class CartProduct(models.Model):
 
 class CartBill(models.Model):
     cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
-    shipper = models.ForeignKey(Shipper, on_delete=models.SET_NULL, blank=True, null=True)
+    # shipper = models.ForeignKey(Shipper, on_delete=models.SET_NULL, blank=True, null=True)
+    shipper_name = models.CharField(max_length=100, default="")
     item_total = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
     discount = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
     delivery_fee = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
@@ -232,6 +236,58 @@ class Promo(models.Model):
 
     def __str__(self):
         return f"{self.merchant} - {self.status}"
+
+
+class Order(models.Model):
+    customer = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True)
+    cart = models.ForeignKey(Cart, on_delete=models.SET_NULL, null=True)
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
+    shipper_name = models.CharField(max_length=200)
+    payment_status = models.CharField(max_length=200, choices=payment_status_choices, default="pending")
+    created_on = models.DateTimeField(auto_now_add=True)
+    updates_on = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"ID: {self.id}, {self.customer} - {self.cart_id}"
+
+
+class OrderProduct(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    product_detail = models.ForeignKey(ProductDetail, on_delete=models.SET_NULL, null=True)
+    price = models.DecimalField(max_digits=50, decimal_places=2, default=0)
+    quantity = models.IntegerField(default=1)
+    discount = models.DecimalField(max_digits=50, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=50, decimal_places=2, default=0)
+    status = models.CharField(max_length=50, choices=order_status_choices, default='paid')
+    delivery_date = models.DateField(null=True, blank=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+    cancelled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    cancelled_on = models.DateTimeField(null=True, blank=True)
+    packed_on = models.DateTimeField(null=True, blank=True)
+    shipped_on = models.DateTimeField(null=True, blank=True)
+    delivered_on = models.DateTimeField(null=True, blank=True)
+    returned_on = models.DateTimeField(null=True, blank=True)
+    payment_on = models.DateTimeField(null=True, blank=True)
+    refunded_on = models.DateTimeField(null=True, blank=True)
+    request_for_return = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name_plural = "Order Products"
+        indexes = [
+            models.Index(
+                fields=['price', 'quantity', 'discount', 'total', 'status', 'delivery_date', 'created_on',
+                        'updated_on', 'cancelled_on', 'packed_on', 'shipped_on', 'delivered_on', 'returned_on',
+                        'payment_on', 'refunded_on', 'request_for_return']
+            )
+        ]
+
+    def __str__(self):
+        return "{}: {} {}".format(self.pk, self.order, self.product_detail)
+
+
+
+
 
 
 # class ReturnReason(models.Model):

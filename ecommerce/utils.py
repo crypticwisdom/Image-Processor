@@ -1,8 +1,13 @@
+import decimal
+
+from django.db import transaction
 from django.db.models import Avg, Sum
 from django.utils import timezone
 
-from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime
-from .models import Cart, Product, ProductDetail, CartProduct, ProductReview
+from account.models import Address
+from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime, get_next_date
+from module.shipping_service import ShippingService
+from .models import Cart, Product, ProductDetail, CartProduct, ProductReview, Order, OrderProduct
 
 
 def sorted_queryset(order_by, query):
@@ -48,7 +53,7 @@ def create_cart_product(product_id, cart):
                 discount=product_detail.discount, quantity=1)
             return True, cart_product
         return False, "Something went wrong while creating cart product"
-    except (Exception, ) as err:
+    except (Exception,) as err:
         return False, f"{err}"
 
 
@@ -102,7 +107,8 @@ def top_weekly_products(request):
         review = ProductReview.objects.filter(product=product).aggregate(Avg('rating'))['rating__avg'] or 0
         product_detail = ProductDetail.objects.filter(product=product).last()
         top_products.append(
-            {"id": product.id, "name": product.name, "image": request.build_absolute_uri(product.image.image.url), "rating": review,
+            {"id": product.id, "name": product.name, "image": request.build_absolute_uri(product.image.image.url),
+             "rating": review,
              "price": product_detail.price, "discount": product_detail.discount, "featured": product.is_featured})
     return top_products
 
@@ -113,7 +119,8 @@ def top_monthly_categories():
     month_start, month_end = get_month_start_and_end_datetime(today_date)
     queryset = Product.objects.filter(
         created_on__gte=month_start, created_on__lte=month_end, status='active', store__is_active=True
-    ).order_by("-sale_count").values("category__id", "category__name").annotate(Sum("sale_count")).order_by("-sale_count__sum")[:7]
+    ).order_by("-sale_count").values("category__id", "category__name").annotate(Sum("sale_count")).order_by(
+        "-sale_count__sum")[:7]
     for product in queryset:
         category = dict()
         category['id'] = product['category__id']
@@ -121,3 +128,146 @@ def top_monthly_categories():
         category['total_sold'] = product['sale_count__sum']
         top_categories.append(category)
     return top_categories
+
+
+def validate_product_in_cart(customer):
+    response = list()
+    cart = Cart.objects.get(user=customer.user, status="open")
+    cart_products = CartProduct.objects.filter(cart=cart)
+    for product in cart_products:
+        product_detail = product.product_detail
+        if product_detail.product.status != "active" or product_detail.product.store.is_active is False:
+            response.append({"product_name": f"{product_detail.product.name}",
+                             "detail": "Product is not available for delivery at the moment"})
+
+        if product_detail.stock == 0:
+            response.append({"product_name": f"{product_detail.product.name}",
+                             "detail": "Product is out of stock"})
+
+        if product.quantity > product_detail.stock:
+            response.append(
+                {"product_name": f"{product_detail.product.name}",
+                 "detail": f"Requested quantity is more than the available in stock: {product_detail.stock}"}
+            )
+
+    return response
+
+
+def get_shipping_rate(customer):
+    response = dict()
+    shippers_list = list()
+    sellers_products = list()
+
+    if Address.objects.filter(customer=customer, is_primary=True).exists():
+        address = Address.objects.get(customer=customer, is_primary=True)
+    else:
+        address = Address.objects.filter(customer=customer).first()
+
+    cart = Cart.objects.get(user=customer.user, status="open")
+
+    # Get products in cart
+    cart_products = CartProduct.objects.filter(cart=cart)
+
+    # Get each seller in cart
+    sellers_in_cart = list()
+    for product in cart_products:
+        seller = product.product_detail.product.store.seller
+        sellers_in_cart.append(seller)
+
+    # Get products belonging to each seller
+    for seller in sellers_in_cart:
+        products_for_seller = {
+            'seller': seller,
+            'seller_id': seller.id,
+            'products': [
+                {
+                    'cart_product_id': cart_product.id,
+                    'quantity': cart_product.quantity,
+                    'weight': cart_product.product_detail.weight,
+                    'price': cart_product.product_detail.price,
+                    'product': cart_product.product_detail.product,
+                }
+                for cart_product in cart_products.distinct()
+                if cart_product.product_detail.product.store.seller == seller
+            ],
+        }
+        if products_for_seller not in sellers_products:
+            sellers_products.append(products_for_seller)
+
+    # Call shipping API per-seller
+    for item in sellers_products:
+        seller = item.get('seller')
+        seller_prods = item.get('products')
+
+        rating = ShippingService.rating(
+            seller=seller, customer=customer, customer_address=address, seller_prods=seller_prods
+        )
+
+        for rate in rating:
+            shipper = dict()
+            shipper["name"] = rate["ShipperName"]
+            shipper["shipping_fee"] = decimal.Decimal(rate["Total"])
+            shipper["company_id"] = rate["CompanyID"]
+            shippers_list.append(shipper)
+    print(shippers_list)
+
+    sub_total = cart_products.aggregate(Sum("price"))["price__sum"] or 0
+
+    response["sub_total"] = sub_total
+    response["shippers"] = shippers_list
+    return response
+
+
+def order_payment(payment_method, order):
+    # if payment_method == "success":
+    # create Transaction
+    # create cart_bill
+    # update order_payment
+    order.payment_status = "success"
+    order.save()
+
+    return True, "Payment successful"
+
+
+def add_order_product(order):
+    cart_product = CartProduct.objects.filter(cart__order=order)
+    for product in cart_product:
+        total = product.price - product.discount
+        three_days_time = get_next_date(timezone.datetime.now(), 3)
+        # Create order product instance for items in cart
+        order_product, _ = OrderProduct.objects.get_or_create(order=order, product_detail=product.product_detail)
+        order_product.price = product.price
+        order_product.quantity = product.quantity
+        order_product.discount = product.discount
+        order_product.total = total
+        order_product.delivery_date = three_days_time
+        order_product.payment_on = timezone.datetime.now()
+        order_product.save()
+
+    # Discard the cart
+    order.cart.status = "closed"
+    order.cart.save()
+
+    return True, "Order created successfully"
+
+
+def check_product_stock_level(product):
+    # This function is to be called when an Item is packed or reduced from the stock
+    product_detail = ProductDetail.objects.get(product=product)
+    if product_detail.stock <= product_detail.low_stock_threshold:
+        product_detail.out_of_stock_date = timezone.datetime.now()
+        product_detail.save()
+        # Send email to merchant
+    return True
+
+
+def perform_order_cancellation(order, user):
+    order_products = OrderProduct.objects.filter(order=order)
+    for order_product in order_products:
+        if order_product.status != "paid":
+            return False, "This order has been processed, and cannot be cancelled"
+    order_products.update(status="cancelled", cancelled_on=timezone.datetime.now(), cancelled_by=user)
+    return True, "Order cancelled successfully"
+
+
+

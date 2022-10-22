@@ -20,4 +20,10 @@ urlpatterns = [
     # Products
     path("product/", views.ProductView.as_view(), name="product"),
     path("product/<int:pk>/", views.ProductView.as_view(), name="product-detail"),
+
+    # Order
+    path("checkout/", views.ProductCheckoutView.as_view(), name="checkout"),
+    path("order/", views.OrderAPIView.as_view(), name="orders"),
+    path("order/<int:pk>/", views.OrderAPIView.as_view(), name="order-detail"),
+
 ]

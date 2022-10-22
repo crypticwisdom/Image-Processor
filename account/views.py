@@ -1,7 +1,7 @@
 import secrets
 import uuid
 
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,7 +17,7 @@ from django.utils import timezone
 from .email import forgot_password_mail
 from threading import Thread
 
-from .serializers import ProfileSerializer
+from .serializers import ProfileSerializer, CustomerAddressSerializer
 from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email
 
 
@@ -280,3 +280,21 @@ class EmailVerificationLinkView(APIView):
                             status=status.HTTP_200_OK)
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomerAddressView(generics.ListCreateAPIView):
+    serializer_class = CustomerAddressSerializer
+
+    def get_queryset(self):
+        return Address.objects.filter(customer__user=self.request.user)
+
+
+class CustomerAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CustomerAddressSerializer
+    lookup_field = "id"
+
+    def get_queryset(self):
+        return Address.objects.filter(customer__user=self.request.user)
+
+
+

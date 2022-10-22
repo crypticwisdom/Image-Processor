@@ -14,5 +14,9 @@ urlpatterns = [
     path('resend-verification/', views.ResendVerificationLinkView.as_view(), name="resend-verification-link"),
     path('link-verification/<str:token>/', views.EmailVerificationLinkView.as_view(), name="link-verification"),
 
+    # Customer Address
+    path('address/', views.CustomerAddressView.as_view(), name='customer-address'),
+    path('address/<int:id>/', views.CustomerAddressDetailView.as_view(), name='customer-address-detail'),
+
 ]
 
