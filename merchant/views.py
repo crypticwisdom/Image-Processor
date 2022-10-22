@@ -1,3 +1,5 @@
+from rest_framework.permissions import IsAuthenticated
+
 from .serializers import SellerSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -68,3 +70,27 @@ class MerchantLoginView(APIView):
     def post(self, request):
         ...
 
+
+class BecomeAMerchantView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    """
+        Note from the meeting, if a buyer signs up to become a Merchant, when logged in he should be able to see a clickable 
+        section that takes him to his Merchant profile and also his Buyer's profile.
+    """
+
+    def post(self, request):
+        try:
+            # first_name, last_name = request.data.get("first_name", None), request.data.get("last_name", None)
+            # phone_number, email = request.data.get("phone_number", None), request.data.get('email', None)
+            # business_name =
+            # product_category =
+            # business_address =
+            # business_state =
+            # business_city =
+            # business_drop_off_address =
+            # business
+
+            return Response({"detail": ""}, status=status.HTTP_200_OK)
+        except (Exception, ) as err:
+            return Response({"detail": ""}, status=status.HTTP_400_BAD_REQUEST)

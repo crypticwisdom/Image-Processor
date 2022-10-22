@@ -290,3 +290,4 @@ class EmailVerificationLinkView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
