@@ -44,7 +44,6 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             'store',
             'name',
-            'slug',
             'category',
             'sub_category',
             'tags',
@@ -130,8 +129,6 @@ class CartProductSerializer(serializers.ModelSerializer):
             'price',
             'quantity',
             'discount',
-            'status',
-            'delivery_fee',
             'created_on',
             'updated_on',
         ]

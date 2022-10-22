@@ -208,7 +208,7 @@ class CartProductOperationsView(APIView):
                             cart = Cart.objects.get(cart_uid=cart_uid, status='open')
 
                         # Get cart products that belongs to that cart.
-                        cart_products = CartProduct.objects.all().filter(cart=cart)
+                        cart_products = CartProduct.objects.filter(cart=cart)
                         # Loop through the cart-products to see if this product already exists.
                         # If True then, Simply increase the item/product by 1.
                         # Else, Add the item/product to Cart.
@@ -266,7 +266,7 @@ class CartProductOperationsView(APIView):
                     cart = Cart.objects.get(user=user, status='open')
 
                     # Get cart products that belongs to that cart.
-                    cart_products = CartProduct.objects.all().filter(cart=cart)
+                    cart_products = CartProduct.objects.filter(cart=cart)
 
                     # Loop through the cart-products to see if this product already exists.
                     # If True then, Simply increase the item/product by 1.
@@ -324,7 +324,7 @@ class CartView(APIView):
                 elif cart_uid:
                     cart = Cart.objects.get(cart_uid=cart_uid, status='open')
 
-            cart_products = CartProduct.objects.all().filter(cart=cart)
+            cart_products = CartProduct.objects.filter(cart=cart)
 
             ser = CartProductSerializer(cart_products, many=True).data
             # Still building ...

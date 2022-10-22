@@ -52,7 +52,7 @@ class LoginView(APIView):
                 return Response({"detail": "User not verified, please request a verification link."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            # merge_carts(cart_uid=cart_uid, user=user)
+            merge_carts(cart_uid=cart_uid, user=user)
 
             return Response({
                 "detail": "Login successful",
@@ -268,16 +268,25 @@ class EmailVerificationLinkView(APIView):
 
     def post(self, request, token=None):
         try:
-            profile = Profile.objects.all().filter(verification_code=token)
+            profile = Profile.objects.filter(verification_code=token)
             if not profile.exists():
                 return Response({"detail": "Invalid Verification code"}, status=status.HTTP_400_BAD_REQUEST)
 
             profile = profile.last()
-            profile.verified = True
-            profile.save()
 
-            return Response({"detail": "Your Email has been verified successfully"},
-                            status=status.HTTP_200_OK)
+            # check if verification code is expired.
+            if timezone.now() >= profile.code_expiration_date:
+                profile.verified = True
+                # Empty the verification code
+                profile.verification_code = ""
+                profile.save()
+                return Response({"detail": "Your Email has been verified successfully"}, status=status.HTTP_200_OK)
+
+            profile.verified = False
+            profile.verification_code = ""
+            profile.save()
+            return Response({"detail": "Verification code has expired"},
+                            status=status.HTTP_400_BAD_REQUEST)
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
