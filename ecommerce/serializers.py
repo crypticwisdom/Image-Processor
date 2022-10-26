@@ -199,13 +199,36 @@ class ProductWishlistSerializer(serializers.ModelSerializer):
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
+    seller_id = serializers.IntegerField(source="product_detail.product.store.seller.id")
+    store_name = serializers.CharField(source="product_detail.product.store.name")
+    product_name = serializers.CharField(source="product_detail.product.name")
+
     class Meta:
         model = OrderProduct
-        exclude = []
+        exclude = ["product_detail"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
     order_products = serializers.SerializerMethodField()
+    no_of_products = serializers.SerializerMethodField()
+    order_calculation = serializers.SerializerMethodField()
+
+    def get_order_calculation(self, obj):
+        data = dict()
+        order_product_total = OrderProduct.objects.filter(order=obj).aggregate(Sum("total"))["total__sum"] or 0
+        # This part is commented out, to be implemented when shipping fee is functioning on the shipper's module
+        # shipping_fee_total = OrderProduct.objects.filter(order=obj).aggregate(Sum("total"))["total__sum"] or 0
+        shipping_fee_total = 100
+        data["product_total"] = order_product_total
+        data["shipping_fee"] = shipping_fee_total
+        data["total"] = order_product_total + shipping_fee_total
+        return data
+
+    def get_no_of_products(self, obj):
+        prod = 0
+        if OrderProduct.objects.filter(order=obj).exists():
+            prod = OrderProduct.objects.filter(order=obj).count()
+        return prod
 
     def get_order_products(self, obj):
         if OrderProduct.objects.filter(order=obj).exists():

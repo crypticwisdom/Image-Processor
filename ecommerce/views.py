@@ -473,8 +473,13 @@ class OrderAPIView(APIView, CustomPagination):
             if pk:
                 data = OrderSerializer(Order.objects.get(id=pk, customer__user=request.user)).data
             else:
-                order = self.paginate_queryset(Order.objects.filter(customer__user=request.user), request)
-                serializer = OrderSerializer(order, many=True).data
+                order_status = request.GET.get("status")
+                if order_status:
+                    order = Order.objects.filter(orderproduct__status=order_status, customer__user=request.user).distinct()
+                else:
+                    order = Order.objects.filter(customer__user=request.user)
+                queryset = self.paginate_queryset(order, request)
+                serializer = OrderSerializer(queryset, many=True).data
                 data = self.get_paginated_response(serializer).data
             return Response(data)
         except Exception as err:
