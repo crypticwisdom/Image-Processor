@@ -280,6 +280,10 @@ class EmailVerificationLinkView(APIView):
                 # Empty the verification code
                 profile.verification_code = ""
                 profile.save()
+
+                # Send welcome email
+                email = profile.user.email
+                Thread(target=shopper_welcome_email, args=[email]).start()
                 return Response({"detail": "Your Email has been verified successfully"}, status=status.HTTP_200_OK)
 
             profile.verified = False
