@@ -1,5 +1,6 @@
 from rest_framework.permissions import IsAuthenticated
 
+from ecommerce.serializers import ProductSerializer
 from .serializers import SellerSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -94,3 +95,32 @@ class BecomeAMerchantView(APIView):
             return Response({"detail": ""}, status=status.HTTP_200_OK)
         except (Exception, ) as err:
             return Response({"detail": ""}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductAPIView(APIView):
+
+    def post(self, request):
+        try:
+            if not Seller.objects.filter(user=request.user).exists():
+                return Response({"detail": "Only merchant account can add product"}, status=status.HTTP_400_BAD_REQUEST)
+            seller = Seller.objects.get(user=request.user)
+
+            success, detail, product = create_product(request, seller)
+            if success is False:
+                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": detail, "product": ProductSerializer(product).data})
+        except Exception as err:
+            return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        try:
+            store = Store.objects.get(seller__user=request.user)
+            product = Product.objects.get(id=pk, store=store)
+            query = update_product(request, product)
+            return Response({"detail": "Product updated successfully", "product": ProductSerializer(query).data})
+        except Exception as ess:
+            return Response({"detail": "An error has occurred", "error": str(ess)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
