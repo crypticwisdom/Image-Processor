@@ -302,39 +302,54 @@ class CartProductOperationsView(APIView):
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CartView(APIView):
+class CartProductView(APIView):
     permission_classes = []
 
-    def get(self, request):
+    def get(self, request, id=None):
         try:
+            cart = CartProduct.objects.filter(cart__cart_uid=id) or CartProduct.objects.filter(cart__id=id)
 
-            cart_uid = request.data.get("cart_uid", None)
-            cart_id = request.data.get("cart_id", None)
+            if not cart:
+                return Response({"detail": "Cart is empty"}, status=status.HTTP_200_OK)
 
-            cart = None
-            print(cart, request.user)
-            if request.user.is_authenticated:
-                cart = Cart.objects.get(user=request.user, status='open')
-            else:
-                if cart_uid is None and cart_id is None:
-                    return Response({"detail": "Cart UID or ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-                if cart_id:
-                    cart = Cart.objects.get(id=cart_id, status='open')
-                elif cart_uid:
-                    cart = Cart.objects.get(cart_uid=cart_uid, status='open')
-
-            cart_products = CartProduct.objects.filter(cart=cart)
-
-            ser = CartProductSerializer(cart_products, many=True).data
-            # Still building ...
-            return Response({"detail": "Positive response", "data": {
-                "cart_count": cart_products.count(),
-                "ser": ser
-            }}, status=status.HTTP_200_OK)
-        except (Exception,) as err:
-            print(err)
+            serializer = CartProductSerializer(cart, many=True).data
+            return Response({"detail": serializer}, status=status.HTTP_200_OK)
+        except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class CartView(APIView):
+#     permission_classes = []
+#
+#     def get(self, request):
+#         try:
+#
+#             cart_uid = request.data.get("cart_uid", None)
+#             cart_id = request.data.get("cart_id", None)
+#
+#             cart = None
+#             print(cart, request.user)
+#             if request.user.is_authenticated:
+#                 cart = Cart.objects.get(user=request.user, status='open')
+#             else:
+#                 if cart_uid is None and cart_id is None:
+#                     return Response({"detail": "Cart UID or ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#                 if cart_id:
+#                     cart = Cart.objects.get(id=cart_id, status='open')
+#                 elif cart_uid:
+#                     cart = Cart.objects.get(cart_uid=cart_uid, status='open')
+#
+#             cart_products = CartProduct.objects.filter(cart=cart)
+#             serialized = CartProductSerializer(cart_products, many=True).data
+#             # Still building ...
+#             return Response({"detail": "Positive response", "data": {
+#                 "cart_count": cart_products.count(),
+#                 "ser": serialized
+#             }}, status=status.HTTP_200_OK)
+#         except (Exception,) as err:
+#             print(err)
+#             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FilteredSearchView(generics.ListAPIView):

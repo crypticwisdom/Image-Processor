@@ -3,7 +3,7 @@ from .models import *
 
 
 class SellerVerificationInline(admin.TabularInline):
-    model = SellerVerification
+    model = SellerDetail
     extra = 0
 
 
@@ -19,5 +19,8 @@ class SellerAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Seller, SellerAdmin)
+admin.site.register(SellerDetail)
+admin.site.register(SellerFile)
+admin.site.register(BankAccount)
 
 

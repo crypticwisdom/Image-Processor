@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from .models import Seller, SellerVerification, SellerFile
+from .models import Seller, SellerDetail, SellerFile
 from store.models import Store
 
 
 class SellerVerificationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SellerVerification
+        model = SellerDetail
         exclude = []
 
 
@@ -26,8 +26,8 @@ class SellerSerializer(serializers.ModelSerializer):
 
     def get_verification(self, obj):
         verified = None
-        if SellerVerification.objects.filter(seller=obj):
-            verified = SellerVerificationSerializer(SellerVerification.objects.filter(seller=obj).last()).data
+        if SellerDetail.objects.filter(seller=obj):
+            verified = SellerVerificationSerializer(SellerDetail.objects.filter(seller=obj).last()).data
         return verified
 
     def get_file(self, obj):

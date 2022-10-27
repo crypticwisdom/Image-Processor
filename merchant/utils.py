@@ -12,7 +12,7 @@ def create_update_seller(seller, request):
     seller.status = request.data.get('status')
     seller.save()
 
-    verification, created = SellerVerification.objects.get_or_create(seller=seller)
+    verification, created = SellerDetail.objects.get_or_create(seller=seller)
     verification.cac_number = request.data.get('cac_number')
     verification.save()
 
