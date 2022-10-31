@@ -55,9 +55,17 @@ class Seller(models.Model):
         return addr.strip()
 
 
+class Director(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    phone_number = models.CharField(max_length=100, null=True, blank=True)
+    address = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.phone_number}"
+
+
 class SellerDetail(models.Model):
     seller = models.OneToOneField(Seller, on_delete=models.CASCADE)
-    business_name = models.CharField(max_length=100, null=True, blank=True)
     company_name = models.CharField(max_length=100, null=True, blank=True)
     business_address = models.CharField(max_length=100, null=True, blank=True)
     business_state = models.CharField(max_length=100, null=True, blank=True)
@@ -67,6 +75,7 @@ class SellerDetail(models.Model):
     market_size = models.PositiveIntegerField(null=True, blank=True)
     number_of_outlets = models.PositiveIntegerField(null=True, blank=True)
     maximum_price_range = models.DecimalField(default=0.0, decimal_places=2, max_digits=10, null=True, blank=True)
+    director = models.ForeignKey(Director, on_delete=models.SET_NULL, null=True, blank=True)
     id_card = models.ImageField(null=True, blank=True, upload_to='seller-verification')
     id_card_verified = models.BooleanField(default=False)
     cac_number = models.CharField(null=True, blank=True, max_length=15)
@@ -97,3 +106,5 @@ class BankAccount(models.Model):
 
     def __str__(self):
         return f"{self.seller.user.first_name} - {self.bank_name} - {self.account_name}"
+
+

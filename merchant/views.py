@@ -1,4 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
+
+from account.utils import validate_email
+from ecommerce.models import ProductCategory
 from .serializers import SellerSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -70,25 +73,52 @@ class MerchantLoginView(APIView):
 
 
 class BecomeAMerchantView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
 
     """
         Note from the meeting, if a buyer signs up to become a Merchant, when logged in he should be able to see a clickable 
         section that takes him to his Merchant profile and also his Buyer's profile.
+        Any body visiting this end-point must be a user and signed in
     """
 
     def post(self, request):
         try:
-            # first_name, last_name = request.data.get("first_name", None), request.data.get("last_name", None)
-            # phone_number, email = request.data.get("phone_number", None), request.data.get('email', None)
-            # business_name =
-            # product_category =
-            # business_address =
-            # business_state =
-            # business_city =
-            # business_drop_off_address =
-            # business
+            # ------------------------------------------------
+            user = request.user
+            print(user, user.is_authenticated)
+            email = request.data.get('email', None)
+            if email is not None:
+                check = validate_email(email)
+                if not check:
+                    return Response({"detail": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({"detail": ""}, status=status.HTTP_200_OK)
-        except (Exception, ) as err:
-            return Response({"detail": ""}, status=status.HTTP_400_BAD_REQUEST)
+            if user is not None and request.user.is_authenticated:
+                msg, success = create_seller(request, user, email)
+                if success:
+                    return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
+            print('pppppppppppppppppppppppppp')
+            if request.user.is_authenticated is False:
+                password = request.data.get('password', None)
+                if not password:
+                    return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+                password_confirm = request.data.get('password_confirm', None)
+                if not password_confirm:
+                    return Response({"detail": "Password confirm field is required"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+                if password_confirm != password_confirm:
+                    return Response({"detail": "Passwords does not match"}, status=status.HTTP_400_BAD_REQUEST)
+                # I used email to fill the username field since, there would be a duplicate error if i user a value.
+                user = User.objects.create_user(username=email, email=email, password=password)
+                print(user, "----------")
+                msg, success = create_seller(request, user, email)
+                print(user, "----------", msg, success)
+
+                if success:
+                    return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
+
+            return Response({"detail": f"Something unexpected happened"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except (Exception,) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
