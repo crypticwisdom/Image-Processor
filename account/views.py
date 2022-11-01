@@ -38,14 +38,16 @@ class LoginView(APIView):
 
             if '@' in email:
                 check = validate_email(email)
+
                 if check is False:
                     return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
-                user = authenticate(request, username=email, password=password)
-
+            user = User.objects.get(email=email)
+            # print(user)
             log_request(f"user: {user}")
 
-            if not user:
+            # Check: if user is empty and password does not match.
+            if not (user and check_password(password=password, encoded=user.password)):
                 return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
             if Profile.objects.get(user=user).verified is False:
