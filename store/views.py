@@ -192,30 +192,6 @@ class ShipperView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# class CartView(APIView):
-#     permission_classes = []
-#
-#     def get(self, request):
-#         queryset = Cart.objects.all()
-#         serializer = CartSerializer(queryset, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class CartProductView(APIView):
-    permission_classes = []
-
-    def get(self, request, id=None):
-        try:
-            cart = CartProduct.objects.filter(cart__cart_uid=id) or CartProduct.objects.filter(cart__id=id)
-            if not cart:
-                return Response({"detail": "Cart is empty"}, status=status.HTTP_200_OK)
-
-            serializer = CartProductSerializer(cart, many=True).data
-            return Response({"detail": serializer}, status=status.HTTP_200_OK)
-        except (Exception, ) as err:
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
-
-
 class CartBillView(generics.ListAPIView):
     queryset = CartBill.objects.all()
     serializer_class = CartBillSerializer

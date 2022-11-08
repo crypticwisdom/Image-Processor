@@ -8,9 +8,12 @@ urlpatterns = [
     path("categories/", views.CategoriesView.as_view(), name="categories"),
     path("top-selling/", views.TopSellingProductsView.as_view(), name="top-selling"),
     path("recommended-products/", views.RecommendedProductView.as_view(), name="recommended-products"),
-    path("cart-operation/", views.CartProductOperationsView.as_view(), name="add-to-cart"),
-
     path("filtered-search/", views.FilteredSearchView.as_view(), name="product-filter"),
+
+    # CART
+    path("cart-operation/", views.CartProductOperationsView.as_view(), name="add-to-cart"),
+    path("cart-product/<str:id>", views.CartProductView.as_view(), name="cart-products"),
+
 
     # Wishlist
     path("wishlist/", views.ProductWishlistView.as_view(), name="wishlist"),
