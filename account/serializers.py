@@ -1,5 +1,12 @@
 from rest_framework import serializers
 from .models import Profile, Address
+from django.contrib.auth.models import User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email']
 
 
 class CustomerAddressSerializer(serializers.ModelSerializer):
@@ -11,6 +18,7 @@ class CustomerAddressSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     profile_picture = serializers.SerializerMethodField()
     addresses = serializers.SerializerMethodField()
+    user = UserSerializer()
 
     def get_profile_picture(self, obj):
         image = None
@@ -26,5 +34,6 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        exclude = ["user"]
+        fields = ['id', 'user', 'profile_picture', 'addresses', 'wallet_id', 'verified']
+
 

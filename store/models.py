@@ -1,5 +1,4 @@
 from django.db import models
-
 from ecommerce.models import ProductCategory
 from merchant.models import Seller
 

@@ -509,6 +509,3 @@ class OrderAPIView(APIView, CustomPagination):
             return Response({"detail": detail})
         except Exception as ex:
             return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-

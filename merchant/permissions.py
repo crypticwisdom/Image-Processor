@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from merchant.models import Seller
 
 
 class IsMerchant(BasePermission):
@@ -7,4 +8,11 @@ class IsMerchant(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated)
+        try:
+            seller = Seller.objects.filter(user=request.user)
+        except (Seller.DoesNotExist, ):
+            return False
+        else:
+            # return False
+            return bool(request.user and request.user.is_authenticated and seller is not None)
+

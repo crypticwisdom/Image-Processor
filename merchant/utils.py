@@ -37,12 +37,6 @@ def create_seller(request, user, email, phone_number):
         if not last_name:
             return "Last name is required", False
 
-        # phone_number = request.data.get('phone_number', None)
-        # if phone_number is not None and str(phone_number[-10:]).isnumeric():
-        #     phone_number = f"{+234} {phone_number[-10:]}"
-        # else:
-        #     return "Phone Number is required", False
-
         business_name: str = request.data.get("business_name", None)
         if not business_name:
             return "Business name is required", False
@@ -97,7 +91,7 @@ def create_seller(request, user, email, phone_number):
 
         # ----------------------------------------------------------------------------
 
-        directors = request.data.get("directors", [])
+        # directors = request.data.get("directors", [])
         market_size: int = request.data.get("market_size", None)
         number_of_outlets: int = request.data.get("number_of_outlets", None)
         maximum_price_range: float = request.data.get("maximum_price_range", None)  # drop-down
@@ -177,11 +171,6 @@ def create_seller(request, user, email, phone_number):
             if not maximum_price_range:
                 return "Maximum price range is required", False
 
-            # seller = Seller.objects.create(
-            #     user=user, phone_number=phone_number, address=business_address,
-            #     town=business_town, city=business_city, state=business_state,
-            #     longitude=longitude, latitude=latitude,
-            # )
             if seller is not None:
                 # Create a store instance
 

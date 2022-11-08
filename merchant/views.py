@@ -2,14 +2,15 @@ from rest_framework.permissions import IsAuthenticated
 
 from account.models import Profile
 from account.utils import validate_email
-from ecommerce.models import ProductCategory
-from .serializers import SellerSerializer
+from .serializers import SellerSerializer, MerchantProductDetailsSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from home.pagination import CustomPagination
 from .utils import *
 from .permissions import IsMerchant
+from ecommerce.models import ProductDetail, Product, ProductCategory
+from ecommerce.serializers import ProductDetailSerializer
 # Merchant is Seller
 
 
@@ -23,9 +24,9 @@ class MerchantView(APIView, CustomPagination):
                 item = Seller.objects.get(id=seller_id)
                 serializer = SellerSerializer(item)
             else:
-                item = Seller.objects.all()
-                item = self.paginate_queryset(item, request)
-                serializer = SellerSerializer(item, many=True).data
+                query_set = Seller.objects.all()
+                paginated_query_set = self.paginate_queryset(query_set, request)
+                serializer = SellerSerializer(paginated_query_set, many=True).data
                 serializer = self.get_paginated_response(serializer)
 
             return Response(serializer.data)
@@ -76,19 +77,16 @@ class MerchantLoginView(APIView):
 
 
 class BecomeAMerchantView(APIView):
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
 
     """
-        Note from the meeting, if a buyer signs up to become a Merchant, when logged in he should be able to see a clickable 
-        section that takes him to his Merchant profile and also his Buyer's profile.
-        Any body visiting this end-point must be a user and signed in
+        Authenticated users are allowed to see call this endpoint.
     """
 
     def post(self, request):
         try:
             # ------------------------------------------------
             user = request.user
-            # print(user, user.is_authenticated)
             email = request.data.get('email', None)
             if email is not None:
                 check = validate_email(email)
@@ -103,6 +101,10 @@ class BecomeAMerchantView(APIView):
 
             # Create Merchant for Authenticated User
             if user is not None and request.user.is_authenticated:
+                if Seller.objects.filter(user=user).exists():
+                    return Response({"detail": "You already have a merchant account"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
                 msg, success = create_seller(request, user, email, phone_number)
                 if success:
                     return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
@@ -144,7 +146,6 @@ class BecomeAMerchantView(APIView):
             #         return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
 
             return Response({"detail": f"Something unexpected happened"}, status=status.HTTP_400_BAD_REQUEST)
-
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -154,8 +155,26 @@ class MerchantDashboardView(APIView):
 
     def get(self, request):
         try:
-            print('------------------------------')
-            print(request.user.is_authenticated)
+            print(request.user.is_authenticated, request.user)
+            seller = Seller.objects.filter(user=request.user)
+            print(seller)
+            product_detail = ProductDetail.objects.filter()
             return Response({"detail": f""}, status=status.HTTP_200_OK)
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MerchantProductsView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated, IsMerchant]
+
+    def get(self, request):
+        try:
+            seller = Seller.objects.get(user=request.user)
+            # products = Product.objects.filter(store__seller=seller)
+            product_detail_query_set = ProductDetail.objects.filter(product__store__seller=seller).order_by('id')
+            paginated_query_set = self.paginate_queryset(product_detail_query_set, request)
+            serialized = MerchantProductDetailsSerializer(paginated_query_set, many=True).data
+            serializer = self.get_paginated_response(serialized)
+            return Response({"detail": serializer.data}, status=status.HTTP_200_OK)
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)

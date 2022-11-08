@@ -75,7 +75,7 @@ class Product(models.Model):
     # Recommended Product: should be updated to 'True' once the merchant makes' payment.
     is_featured = models.BooleanField(default=False)
 
-    # View Count: number of times the product is viewed users.
+    # View Count: number of times the product is viewed by users.
     view_count = models.PositiveBigIntegerField(default=0)
 
     # Top Selling: The highest sold product. Field updates when this product has been successfully paid for.
@@ -286,29 +286,24 @@ class OrderProduct(models.Model):
         return "{}: {} {}".format(self.pk, self.order, self.product_detail)
 
 
+class ReturnReason(models.Model):
+    reason = models.CharField(max_length=200, null=False, blank=False)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.reason)
+        super(ReturnReason, self).save()
+
+    def __str__(self):
+        return self.slug
 
 
-
-
-# class ReturnReason(models.Model):
-#     reason = models.CharField(max_length=200, null=False, blank=False)
-#     slug = models.SlugField(null=True, blank=True)
-#
-#     def save(self, *args, **kwargs):
-#         self.slug = slugify(self.reason)
-#         super(ReturnReason, self).save()
-#
-#     def __str__(self):
-#         return self.slug
-#
-#
-# RETURNED_STATUS_CHOICES = (
-#     ('pending', 'Pending'),
-#     ('approved', 'Approved'),
-#     ('success', 'Success'),
-#     ('failed', 'Failed'),
-#     ('rejected', 'Rejected'),
-# )
+RETURNED_STATUS_CHOICES = (
+    ('pending', 'Pending'),
+    ('approved', 'Approved'),
+    ('success', 'Success'),
+    ('failed', 'Failed'),
+    ('rejected', 'Rejected'),
+)
 
 
 # class ReturnedProduct(models.Model):
@@ -337,10 +332,9 @@ class OrderProduct(models.Model):
 #
 # class ReturnProductImage(models.Model):
 #     return_product = models.ForeignKey(ReturnedProduct, on_delete=models.CASCADE)
-#     image = models.FileField(storage=MComStorage(), upload_to=upload_media_to)
+#     # image = models.FileField(storage=MComStorage(), upload_to=upload_media_to)
 #     is_primary = models.BooleanField(default=False)
 #
 #     def __str__(self):
 #         return f'{self.return_product} {self.image}'
-#
 #

@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from ecommerce.models import ProductDetail
 from .models import Seller, SellerDetail, SellerFile
 from store.models import Store
 
@@ -47,6 +49,24 @@ class SellerSerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class MerchantProductDetailsSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    sales = serializers.SerializerMethodField()
+    amount = serializers.SerializerMethodField()
 
+    def get_name(self, obj):
+        return obj.product.name
 
+    def get_image(self, obj):
+        return obj.product.image.get_image_url()
 
+    def get_sales(self, obj):
+        return obj.product.sale_count
+
+    def get_amount(self, obj):
+        return self.get_sales(obj) * obj.price
+
+    class Meta:
+        model = ProductDetail
+        fields = ['id', 'name', 'color', 'image', 'price', 'description', 'sales', 'amount']
