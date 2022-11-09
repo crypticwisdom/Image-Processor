@@ -290,12 +290,8 @@ class OrderProduct(models.Model):
 class ReturnReason(models.Model):
     reason = models.CharField(max_length=200, null=False, blank=False)
 
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.reason)
-        super(ReturnReason, self).save()
-
     def __str__(self):
-        return self.slug
+        return self.reason
 
 
 RETURNED_STATUS_CHOICES = (

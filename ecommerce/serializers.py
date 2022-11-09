@@ -84,9 +84,8 @@ class ProductSerializer(serializers.ModelSerializer):
             return query.aggregate(Sum('stock')).get('stock__sum') or 0
 
     def get_brand(self, obj):
-        if ProductDetail.objects.filter(product=obj).exists():
-            product_detail = ProductDetail.objects.filter(product=obj).first()
-            return product_detail.brand.name
+        if obj.brand:
+            return obj.brand.name
         return None
 
     def get_average_rating(self, obj):
