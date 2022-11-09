@@ -7,6 +7,6 @@ urlpatterns = [
     path('login/', views.MerchantLoginView.as_view(),),
     path('create-merchant/', views.BecomeAMerchantView.as_view(), name="create-merchant"),
     path('dashboard/', views.MerchantDashboardView.as_view(), name="merchant-dashboard"),
-    path('products/', views.MerchantProductsView.as_view(), name="merchant-dashboard"),
+    path('products/', views.ProductAPIView.as_view(), name="product"),
 ]
 

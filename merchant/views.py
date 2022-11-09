@@ -1,5 +1,6 @@
 from rest_framework.permissions import IsAuthenticated
 
+from ecommerce.serializers import ProductSerializer
 from account.models import Profile
 from account.utils import validate_email
 from .serializers import SellerSerializer, MerchantProductDetailsSerializer
@@ -10,8 +11,6 @@ from home.pagination import CustomPagination
 from .utils import *
 from .permissions import IsMerchant
 from ecommerce.models import ProductDetail, Product, ProductCategory
-from ecommerce.serializers import ProductDetailSerializer
-# Merchant is Seller
 
 
 class MerchantView(APIView, CustomPagination):
@@ -20,12 +19,11 @@ class MerchantView(APIView, CustomPagination):
     def get(self, request, seller_id=None):
 
         try:
-            if id:
+            if seller_id:
                 item = Seller.objects.get(id=seller_id)
                 serializer = SellerSerializer(item)
             else:
-                query_set = Seller.objects.all()
-                paginated_query_set = self.paginate_queryset(query_set, request)
+                paginated_query_set = self.paginate_queryset(Seller.objects.all(), request)
                 serializer = SellerSerializer(paginated_query_set, many=True).data
                 serializer = self.get_paginated_response(serializer)
 
@@ -33,40 +31,6 @@ class MerchantView(APIView, CustomPagination):
         except Exception as ex:
             return Response({"detail": "Error getting object", "message": str(ex)},
                             status=status.HTTP_400_BAD_REQUEST)
-
-    def post(self, request):
-        if request.user.is_anonymous:
-            return Response({"status": False, "detail": "You must be logged in to perform this operation"},
-                            status=status.HTTP_401_UNAUTHORIZED)
-
-        try:
-            seller, created = Seller.objects.get_or_create(user=request.user)
-            success = create_update_seller(seller, request)
-            if success is True:
-                # CREATE A THREAD TO SEND NOTIFICATION TO MERCHANT HERE
-
-                serializer = SellerSerializer(seller).data
-                return Response({"success": True, "detail": serializer})
-        except Exception as ex:
-            return Response({"success": False, "detail": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request):
-        if request.user.is_anonymous:
-            return Response({"status": False,
-                             "detail": "You must be logged in to perform this option"},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        seller = Seller.objects.get(user=request.user)
-        if not seller:
-            return Response({"success": False, "detail": "Invalid account selected"},
-                            status=status.HTTP_400_BAD_REQUEST)
-        try:
-            success = create_update_seller(seller, request)
-            if success is True:
-                serializer = SellerSerializer(seller).data
-                return Response({"success": True, "detail": serializer})
-        except Exception as ex:
-            return Response({"success": False, "detail": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MerchantLoginView(APIView):
@@ -155,26 +119,47 @@ class MerchantDashboardView(APIView):
 
     def get(self, request):
         try:
-            print(request.user.is_authenticated, request.user)
-            seller = Seller.objects.filter(user=request.user)
-            print(seller)
-            product_detail = ProductDetail.objects.filter()
-            return Response({"detail": f""}, status=status.HTTP_200_OK)
+            store = Store.objects.get(seller__user=request.user)
+            return Response({"detail": get_dashboard_data(store)})
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MerchantProductsView(APIView, CustomPagination):
-    permission_classes = [IsAuthenticated, IsMerchant]
+class ProductAPIView(APIView, CustomPagination):
 
     def get(self, request):
         try:
             seller = Seller.objects.get(user=request.user)
             # products = Product.objects.filter(store__seller=seller)
-            product_detail_query_set = ProductDetail.objects.filter(product__store__seller=seller).order_by('id')
+            product_detail_query_set = ProductDetail.objects.filter(product__store__seller=seller).order_by('-id')
             paginated_query_set = self.paginate_queryset(product_detail_query_set, request)
             serialized = MerchantProductDetailsSerializer(paginated_query_set, many=True).data
             serializer = self.get_paginated_response(serialized)
-            return Response({"detail": serializer.data}, status=status.HTTP_200_OK)
+            return Response({"detail": serializer.data})
         except (Exception, ) as err:
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        try:
+            if not Seller.objects.filter(user=request.user).exists():
+                return Response({"detail": "Only merchant account can add product"}, status=status.HTTP_400_BAD_REQUEST)
+            seller = Seller.objects.get(user=request.user)
+
+            success, detail, product = create_product(request, seller)
+            if success is False:
+                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": detail, "product": ProductSerializer(product).data})
+        except Exception as err:
+            return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        try:
+            store = Store.objects.get(seller__user=request.user)
+            product = Product.objects.get(id=pk, store=store)
+            query = update_product(request, product)
+            return Response({"detail": "Product updated successfully", "product": ProductSerializer(query).data})
+        except Exception as ess:
+            return Response({"detail": "An error has occurred", "error": str(ess)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+

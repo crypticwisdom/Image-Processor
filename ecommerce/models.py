@@ -69,6 +69,7 @@ class Product(models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, blank=True, null=True, related_name='category')
     sub_category = models.ForeignKey(ProductCategory, blank=True, null=True, on_delete=models.CASCADE)
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, null=True, blank=True)
+    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.TextField(blank=True, null=True)
     status = models.CharField(choices=product_status_choices, max_length=10, default='inactive')
 
@@ -91,7 +92,6 @@ class Product(models.Model):
 
 class ProductDetail(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(help_text='Describe the product')
     sku = models.CharField(max_length=100, blank=True, null=True)
     size = models.CharField(max_length=100, blank=True, null=True)
@@ -115,7 +115,7 @@ class ProductDetail(models.Model):
 
 class ProductImage(models.Model):
     product_detail = models.ForeignKey(ProductDetail, on_delete=models.CASCADE, related_name='product_detail')
-    image = models.ImageField(upload_to='product-images')
+    image = models.ForeignKey(Image, on_delete=models.CASCADE, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -257,6 +257,7 @@ class OrderProduct(models.Model):
     price = models.DecimalField(max_digits=50, decimal_places=2, default=0)
     quantity = models.IntegerField(default=1)
     discount = models.DecimalField(max_digits=50, decimal_places=2, default=0)
+    sub_total = models.DecimalField(max_digits=50, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=50, decimal_places=2, default=0)
     status = models.CharField(max_length=50, choices=order_status_choices, default='paid')
     delivery_date = models.DateField(null=True, blank=True)
