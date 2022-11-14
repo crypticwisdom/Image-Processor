@@ -289,6 +289,7 @@ class OrderProduct(models.Model):
 
 class ReturnReason(models.Model):
     reason = models.CharField(max_length=200, null=False, blank=False)
+    slug = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return self.reason
@@ -303,35 +304,36 @@ RETURNED_STATUS_CHOICES = (
 )
 
 
-# class ReturnedProduct(models.Model):
-#     returned_by = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
-#     product = models.ForeignKey(OrderProduct, on_delete=models.CASCADE, )
-#     reason = models.ForeignKey(ReturnReason, on_delete=models.CASCADE, default='')
-#     status = models.CharField(max_length=50, choices=RETURNED_STATUS_CHOICES, default='pending', blank=True, null=True)
-#     payment_status = models.CharField(max_length=50, choices=RETURNED_STATUS_CHOICES, default='pending', blank=True,
-#                                       null=True)
-#     comment = models.TextField(null=True, blank=True)
-#     created_on = models.DateTimeField(auto_now_add=True)
-#     updated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='updated_by', blank=True, null=True,
-#                                    default='')
-#     updated_on = models.DateTimeField(auto_now=True)
-#
-#     def __str__(self):
-#         return "{} {} {}".format(self.returned_by, self.product, self.reason)
-#
-#     class Meta:
-#         indexes = [
-#             models.Index(
-#                 fields=['status', 'payment_status', 'created_on', 'updated_on']
-#             )
-#         ]
-#
-#
-# class ReturnProductImage(models.Model):
-#     return_product = models.ForeignKey(ReturnedProduct, on_delete=models.CASCADE)
-#     # image = models.FileField(storage=MComStorage(), upload_to=upload_media_to)
-#     is_primary = models.BooleanField(default=False)
-#
-#     def __str__(self):
-#         return f'{self.return_product} {self.image}'
+class ReturnedProduct(models.Model):
+    returned_by = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
+    product = models.ForeignKey(OrderProduct, on_delete=models.CASCADE, )
+    reason = models.ForeignKey(ReturnReason, on_delete=models.CASCADE, default='')
+    status = models.CharField(max_length=50, choices=RETURNED_STATUS_CHOICES, default='pending', blank=True, null=True)
+    payment_status = models.CharField(max_length=50, choices=RETURNED_STATUS_CHOICES, default='pending', blank=True,
+                                      null=True)
+    comment = models.TextField(null=True, blank=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='updated_by', blank=True, null=True,
+                                   default='')
+    updated_on = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "{} {} {}".format(self.returned_by, self.product, self.reason)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=['status', 'payment_status', 'created_on', 'updated_on']
+            )
+        ]
+
+
+class ReturnProductImage(models.Model):
+    return_product = models.ForeignKey(ReturnedProduct, on_delete=models.CASCADE)
+    image = models.FileField(upload_to="returns", null=True, blank=True)
+    is_primary = models.BooleanField(default=False)
+
+    def __str__(self):
+        # return f'{self.return_product} {self.image}'
+        return f'{self.return_product}'
 #

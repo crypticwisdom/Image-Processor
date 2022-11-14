@@ -11,7 +11,7 @@ from home.utils import log_request, get_week_start_and_end_datetime, get_month_s
 from .models import *
 from store.models import Store
 from store.utils import create_or_update_store
-
+from module import apis
 
 def create_product(request, seller):
     data = request.data
@@ -143,69 +143,121 @@ def update_product(request, product):
     return product
 
 
+def validate_bank_details(account_number: str, account_name: str, bank_name: str):
+    """
+        Validate Bank details.
+    """
+    success1, response1 = apis.get_bank_codes()
+
+    if success1 is False:
+        return False, "Error while fetching bank codes"
+
+    response1 = response1['Data']
+
+    bank_code: str = ""
+    for bank_item in response1:
+        bank_name = str(str(bank_name).lower())
+        bank_item['Name'] = str(bank_item['Name']).strip().lower()
+        if bank_name.split(" ")[0] in bank_item['Name'] and bank_name.split(" ")[1] in bank_item['Name']:
+            bank_code = bank_item['CBNCode']
+            break
+
+    if bank_code == "":
+        return False, "Bank name not found"
+
+    # Call bank enquiry
+    '/bank code/acct_number'
+    success2, response2 = apis.call_name_enquiry(bank_code=bank_code, account_number=account_number)
+    if not success2:
+        return False, response2
+
+    response2 = {
+            'NameEnquiryResponse': {
+                'ResponseCode': '200',
+                'AccountNumber': '2114616054',
+                'AccountName': 'Nwachukwu Wisdom',
+                'PhoneNumber': '08057784796',
+                'ErrorMessage': 'error'
+            }
+        }
+    account_name = account_name.lower().split(" ")
+    response_name = str(response2["NameEnquiryResponse"]["AccountName"]).lower().strip()
+
+    # Check if first or last name in 'response_name'
+    if not(account_name[0] in response_name or account_name[1] in response_name):
+        return False, "Bank name does not match"
+    return True, "Successfully validated bank details"
+
+
 def create_seller(request, user, email, phone_number):
     store, seller, seller_detail, bank_account, = None, None, None, None
     try:
-
         first_name: str = request.data.get('first_name', None)
         if not first_name:
-            return "First name is required", False
+            return False, "First name is required"
 
         last_name: str = request.data.get('last_name', None)
         if not last_name:
-            return "Last name is required", False
+            return False, "Last name is required"
 
         business_name: str = request.data.get("business_name", None)
         if not business_name:
-            return "Business name is required", False
+            return False, "Business name is required"
 
         product_category: list = request.data.get("product_category", [])  # drop-down
         if not product_category:
-            return "Product category is required", False
+            return False, "Product category is required"
 
         business_address: str = request.data.get("business_address", None)
         if not business_address:
-            return "Business address is required", False
+            return False, "Business address is required"
 
         business_town: str = request.data.get("business_town", None)
         if not business_town:
-            return "Business town is required", False
+            return False, "Business town is required"
 
         business_state: str = request.data.get("business_state", None)  # drop-down
         if not business_state:
-            return "Business State is required", False
+            return False, "Business State is required"
 
         business_city: str = request.data.get("business_city", None)  # drop-down
         if not business_city:
-            return "Business City is required", False
+            return False, "Business City is required"
 
         latitude: float = request.data.get("latitude", None)  # drop-down
         if not latitude:
-            return "Latitude is required", False
+            return False, "Latitude is required"
 
         longitude: float = request.data.get("longitude", None)  # drop-down
         if not longitude:
-            return "Longitude is required", False
+            return False, "Longitude is required"
 
         business_drop_off_address: str = request.data.get("business_drop_off_address", None)
         if not business_drop_off_address:
-            return "Business drop off address is required", False
+            return False, "Business drop off address is required"
 
         business_type: str = request.data.get("business_type", None)
         if not business_type:
-            return "Business type is required", False
+            return False, "Business type is required"
 
         bank_account_number: str = request.data.get("bank_account_number", None)
         if not bank_account_number:
-            return "Bank account number is required", False
+            return False, "Bank account number is required"
 
         bank_name: str = request.data.get("bank_name", None)  # drop-down
         if not bank_name:
-            return "Bank name is required", False
+            return False, "Bank name is required"
 
         bank_account_name: str = request.data.get("bank_account_name", None)
         if not bank_account_name:
-            return "Bank account name is required", False
+            return False, "Bank account name is required"
+        bank_account_name = bank_account_name.strip()
+        # ---------------------------- Check Bank Details ----------------------------
+        success, msg = validate_bank_details(account_number=bank_account_number, account_name=bank_account_name,
+                                             bank_name=bank_name)
+
+        if not success:
+            return False, msg
 
         # ----------------------------------------------------------------------------
 
@@ -215,8 +267,8 @@ def create_seller(request, user, email, phone_number):
         maximum_price_range: float = request.data.get("maximum_price_range", None)  # drop-down
 
         if not str(bank_account_number).isnumeric():
-            if len(bank_account_number) == 10:
-                return "Invalid account number format", False
+            if len(bank_account_number) != 10:
+                return False, "Invalid account number format"
 
         # -------------------------------------------------------------------------------------
         user.first_name = first_name.capitalize()
@@ -229,37 +281,38 @@ def create_seller(request, user, email, phone_number):
             town=business_town, city=business_city, state=business_state,
             longitude=longitude, latitude=latitude
         )
+        if seller is None or not seller:
+            return False, "Failed to create a Seller Instance"
+
         if business_type == "unregistered-individual-business":
+            # if seller is not None:
+            # Create a store instance
 
-            if seller is not None:
-                # Create a store instance
+            store = Store.objects.create(seller=seller, name=business_name.capitalize())
+            seller_detail = SellerDetail.objects.create(
+                seller=seller,
+                market_size=market_size,
+                business_type=business_type,
+                number_of_outlets=number_of_outlets,
+                maximum_price_range=maximum_price_range
+            )
 
-                store = Store.objects.create(seller=seller, name=business_name.capitalize())
-                seller_detail = SellerDetail.objects.create(
-                    seller=seller,
-                    market_size=market_size,
-                    business_type=business_type,
-                    number_of_outlets=number_of_outlets,
-                    maximum_price_range=maximum_price_range
-                )
+            bank_account = BankAccount.objects.create(
+                seller=seller, bank_name=bank_name, account_name=bank_account_name,
+                account_number=bank_account_number
+            )
 
-                bank_account = BankAccount.objects.create(
-                    seller=seller, bank_name=bank_name, account_name=bank_account_name,
-                    account_number=bank_account_number
-                )
+            # features = request.data.get("features", [])  # list of M2M id's # Copied from Ashavin
+            if product_category:
+                store.categories.clear()
 
-                # features = request.data.get("features", [])  # list of M2M id's # Copied from Ashavin
-                if product_category:
-                    store.categories.clear()
-
-                    for item in product_category:
-                        product_category = ProductCategory.objects.get(id=item)
-                        store.categories.add(product_category)
+                for item in product_category:
+                    product_category = ProductCategory.objects.get(id=item)
+                    store.categories.add(product_category)
 
             # send email notification
-            return f"Created {business_name}", True
+            return True, f"Created {business_name}"
         elif business_type == "registered-individual-business":
-
             company_name: str = request.data.get("company_name", None)
             company_type: str = request.data.get("company_type", None)
             cac_number = request.data.get("cac_number", None)
@@ -269,50 +322,49 @@ def create_seller(request, user, email, phone_number):
             maximum_price_range = request.data.get("maximum_price_range", None)  # drop-down
 
             if not company_name:
-                return "Company name is required", False
+                return False, "Company name is required"
 
             if company_type not in ['sole-proprietorship', 'partnership']:
-                return "Company type is required", False
+                return False, "Company type is required"
 
             if not cac_number:
-                return "CAC Number is required", False
+                return False, "CAC Number is required"
 
             if not company_tin_number:
-                return "Company TIN number is required", False
+                return False, "Company TIN number is required"
 
             if not market_size:
-                return "Market size is required", False
+                return False, "Market size is required"
 
             if not number_of_outlets:
-                return "Number of outlet is required", False
+                return False, "Number of outlet is required"
 
             if not maximum_price_range:
-                return "Maximum price range is required", False
+                return False, "Maximum price range is required"
 
-            if seller is not None:
-                # Create a store instance
+            # Create a store instance
 
-                store = Store.objects.create(seller=seller, name=business_name.capitalize())
+            store = Store.objects.create(seller=seller, name=business_name.capitalize())
 
-                seller_detail = SellerDetail.objects.create(
-                    seller=seller,
-                    company_name=company_name.capitalize(),
-                    company_type=company_type,
-                    market_size=market_size,
-                    business_type=business_type,
-                    cac_number=cac_number,
-                    company_tin_number=company_tin_number,
-                    number_of_outlets=number_of_outlets,
-                    maximum_price_range=maximum_price_range
-                )
+            seller_detail = SellerDetail.objects.create(
+                seller=seller,
+                company_name=company_name.capitalize(),
+                company_type=company_type,
+                market_size=market_size,
+                business_type=business_type,
+                cac_number=cac_number,
+                company_tin_number=company_tin_number,
+                number_of_outlets=number_of_outlets,
+                maximum_price_range=maximum_price_range
+            )
 
-                bank_account = BankAccount.objects.create(
-                    seller=seller, bank_name=bank_name, account_name=bank_account_name,
-                    account_number=bank_account_number
-                )
+            bank_account = BankAccount.objects.create(
+                seller=seller, bank_name=bank_name, account_name=bank_account_name,
+                account_number=bank_account_number
+            )
 
             # send email notification
-            return f"Created {business_name}", True
+            return True, f"Created {business_name}"
         elif business_type == "limited-liability-company":
 
             company_name = request.data.get("company_name", None)
@@ -325,29 +377,29 @@ def create_seller(request, user, email, phone_number):
             directors = request.data.get("directors", [])
 
             if not company_name:
-                return "Company name is required", False
+                return False, "Company name is required"
 
             # if company_type not in ['sole-proprietorship', 'partnership']:
             #     return "Company type is required", False
             company_type = "partnership"
 
             if not cac_number:
-                return "CAC Number is required", False
+                return False, "CAC Number is required"
 
             if not company_tin_number:
-                return "Company TIN number is required", False
+                return False, "Company TIN number is required"
 
             if not market_size:
-                return "Market size is required", False
+                return False, "Market size is required"
 
             if not number_of_outlets:
-                return "Number of outlet is required", False
+                return False, "Number of outlet is required"
 
             if not maximum_price_range:
-                return "Maximum price range is required", False
+                return False, "Maximum price range is required"
 
             if not directors:
-                return "Please input your partner's name and number.", False
+                return False, "Please input your partner's name and number."
 
             store = Store.objects.create(seller=seller, name=business_name.capitalize())
 
@@ -381,10 +433,10 @@ def create_seller(request, user, email, phone_number):
                 seller=seller, bank_name=bank_name, account_name=bank_account_name,
                 account_number=bank_account_number
             )
-            return f"Created {company_name}", True
+            return True, f"Created {company_name}"
 
         else:
-            return "Invalid Business Type", False
+            return False, "Invalid Business Type"
     except (Exception,) as err:
         # store, seller, seller_detail, bank_account
         message = None
@@ -407,9 +459,8 @@ def create_seller(request, user, email, phone_number):
         # Check: if this user is not an authenticated user trying to register.
         # User instance will be created for this type of 'user' but he would need to login to complete registration
         if request.user.is_authenticated is False and user is not None:
-            return "improper merchant creation", True
-
-        return f"{err}.", False
+            return True, "improper merchant creation"
+        return False, f"{err}."
 
 
 def get_total_sales(store):
@@ -516,4 +567,3 @@ def get_dashboard_data(store):
     data['top_categories'] = get_top_categories_data(store)
     data['recent_orders'] = get_recent_orders_data(store)
     return data
-

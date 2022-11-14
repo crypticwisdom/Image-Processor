@@ -1,7 +1,5 @@
 from rest_framework.permissions import IsAuthenticated
-
 from ecommerce.serializers import ProductSerializer
-from account.models import Profile
 from account.utils import validate_email
 from .serializers import SellerSerializer, MerchantProductDetailsSerializer
 from rest_framework.response import Response
@@ -26,30 +24,21 @@ class MerchantView(APIView, CustomPagination):
                 paginated_query_set = self.paginate_queryset(Seller.objects.all(), request)
                 serializer = SellerSerializer(paginated_query_set, many=True).data
                 serializer = self.get_paginated_response(serializer)
-
             return Response(serializer.data)
         except Exception as ex:
             return Response({"detail": "Error getting object", "message": str(ex)},
                             status=status.HTTP_400_BAD_REQUEST)
 
 
-class MerchantLoginView(APIView):
-    permission_classes = []
-
-    def post(self, request):
-        ...
-
-
 class BecomeAMerchantView(APIView):
     permission_classes = [IsAuthenticated]
 
     """
-        Authenticated users are allowed to see call this endpoint.
+        Authenticated users are allowed to call this endpoint.
     """
 
     def post(self, request):
         try:
-            # ------------------------------------------------
             user = request.user
             email = request.data.get('email', None)
             if email is not None:
@@ -61,7 +50,7 @@ class BecomeAMerchantView(APIView):
             if phone_number is not None and str(phone_number[-10:]).isnumeric():
                 phone_number = f"{+234} {phone_number[-10:]}"
             else:
-                return "Phone Number is required", False
+                return Response({"detail": "Phone Number is required"}, status=status.HTTP_400_BAD_REQUEST)
 
             # Create Merchant for Authenticated User
             if user is not None and request.user.is_authenticated:
@@ -69,9 +58,10 @@ class BecomeAMerchantView(APIView):
                     return Response({"detail": "You already have a merchant account"},
                                     status=status.HTTP_400_BAD_REQUEST)
 
-                msg, success = create_seller(request, user, email, phone_number)
-                if success:
-                    return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
+                success, msg = create_seller(request, user, email, phone_number)
+
+                if not success:
+                    return Response({"detail": f"{msg}"})
 
             # Create Merchant for Un-Authenticated User
             # if request.user.is_authenticated is False:
@@ -109,7 +99,7 @@ class BecomeAMerchantView(APIView):
             #     elif success is True:
             #         return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
 
-            return Response({"detail": f"Something unexpected happened"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"{msg}."})
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -162,4 +152,14 @@ class ProductAPIView(APIView, CustomPagination):
             return Response({"detail": "An error has occurred", "error": str(ess)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class MerchantAddBannerView(APIView):
+    permission_classes = [IsAuthenticated, IsMerchant]
 
+    def post(self, request):
+        try:
+            # Get image from the F.E.
+            # Process Image (Banner): Must be a certain size.
+            #
+            return Response({"detail": "..."})
+        except (Exception, ) as err:
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)

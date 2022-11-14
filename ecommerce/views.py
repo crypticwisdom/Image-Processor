@@ -1,19 +1,20 @@
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.views import APIView
 from django.utils import timezone
-
 from account.models import Profile, Address
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
-    CartProductSerializer, OrderSerializer
+    CartProductSerializer, OrderSerializer, ReturnedProductSerializer
 
-from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order
+from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
+    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage
 from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
 from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories, \
@@ -30,48 +31,49 @@ class MallLandPageView(APIView):
     permission_classes = []
 
     def get(self, request):
-        # try:
-        response, response_container, start_date = list(), dict(), timezone.datetime.today()
-        start_date = timezone.datetime.today()
+        try:
+            response, response_container, start_date = list(), dict(), timezone.datetime.today()
+            start_date = timezone.datetime.today()
 
-        # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
-        deal_end_date = timezone.timedelta(days=1)
-        deals_query_set = Promo.objects.filter(created_on__date__gte=start_date - deal_end_date,
-                                               promo_type="deal").order_by("-id")[:5]
-        response_container["deals_of_the_day"] = MallDealSerializer(deals_query_set, many=True).data
+            # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
+            deal_end_date = timezone.timedelta(days=1)
+            deals_query_set = Promo.objects.filter(created_on__date__gte=start_date - deal_end_date,
+                                                   promo_type="deal").order_by("-id")[:5]
+            response_container["deals_of_the_day"] = MallDealSerializer(deals_query_set, many=True).data
 
-        # (2) Hot New Arrivals in last 3 days
-        end_date1 = timezone.timedelta(days=3)
-        hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1, status="active")  # 3 days ago
-        arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
-        response_container["hot_new_arrivals"] = arrival_serializer
+            # (2) Hot New Arrivals in last 3 days
+            end_date1 = timezone.timedelta(days=3)
+            hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1,
+                                                      status="active")  # 3 days ago
+            arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
+            response_container["hot_new_arrivals"] = arrival_serializer
 
-        # (3) Top weekly selling products
-        top_products = top_weekly_products(request)
-        response_container["top_selling"] = top_products
+            # (3) Top weekly selling products
+            top_products = top_weekly_products(request)
+            response_container["top_selling"] = top_products
 
-        # (4) Top categories of the month
-        top_monthly_cat = top_monthly_categories()
-        response_container["top_monthly_categories"] = top_monthly_cat
+            # (4) Top categories of the month
+            top_monthly_cat = top_monthly_categories()
+            response_container["top_monthly_categories"] = top_monthly_cat
 
-        # (5) Recommended Products
-        recommended = ProductSerializer(Product.objects.filter(
-            is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
-        ).data
-        response_container["recommended_products"] = recommended[:5]
+            # (5) Recommended Products
+            recommended = ProductSerializer(Product.objects.filter(
+                is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
+            ).data
+            response_container["recommended_products"] = recommended[:5]
 
-        # (6) All categories - to include sub categories and product types
-        categories = CategoriesSerializer(
-            ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
-        ).data
-        response_container["categories"] = categories
+            # (6) All categories - to include sub categories and product types
+            categories = CategoriesSerializer(
+                ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
+            ).data
+            response_container["categories"] = categories
 
-        response.append(response_container)
-        return Response({"detail": response})
-        # except Exception as err:
-        #     print(err)
-        #     LOG
-            # return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+            response.append(response_container)
+            return Response({"detail": response})
+        except (Exception,) as err:
+            print(err)
+            # LOG
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CategoriesView(APIView, CustomPagination):
@@ -234,7 +236,8 @@ class CartProductOperationsView(APIView):
                             cart_product = CartProduct.objects.create(
                                 cart=cart, product_detail=product_detail, price=product_detail.price,
                                 discount=product_detail.discount, quantity=1)
-                            return Response({"detail": "Product has been added to cart"}, status=status.HTTP_201_CREATED)
+                            return Response({"detail": "Product has been added to cart"},
+                                            status=status.HTTP_201_CREATED)
             else:
                 # That means this user is authenticated, now a cart id / uid is not important.
                 # cart operation using the cart's id or uid
@@ -293,7 +296,8 @@ class CartProductOperationsView(APIView):
                     if operation_param == '+' and True not in check_response:
                         success, response = create_cart_product(product_id=product_id, cart=cart)
                         if success:
-                            return Response({"detail": "Product has been added to cart"}, status=status.HTTP_201_CREATED)
+                            return Response({"detail": "Product has been added to cart"},
+                                            status=status.HTTP_201_CREATED)
                         else:
                             return Response({"detail": f"{response}"}, status=status.HTTP_400_BAD_REQUEST)
             return Response({"detail": "No Operation performed"}, status=status.HTTP_400_BAD_REQUEST)
@@ -307,14 +311,16 @@ class CartProductView(APIView):
 
     def get(self, request, id=None):
         try:
-            cart = CartProduct.objects.filter(cart__cart_uid=id) or CartProduct.objects.filter(cart__id=id)
+            cart = CartProduct.objects.filter(cart__cart_uid=id)
+            if not cart.exists():
+                cart = CartProduct.objects.filter(cart__id=id)
 
             if not cart:
                 return Response({"detail": "Cart is empty"}, status=status.HTTP_200_OK)
 
             serializer = CartProductSerializer(cart, many=True).data
             return Response({"detail": serializer}, status=status.HTTP_200_OK)
-        except (Exception, ) as err:
+        except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -490,14 +496,15 @@ class OrderAPIView(APIView, CustomPagination):
             else:
                 order_status = request.GET.get("status")
                 if order_status:
-                    order = Order.objects.filter(orderproduct__status=order_status, customer__user=request.user).distinct()
+                    order = Order.objects.filter(orderproduct__status=order_status,
+                                                 customer__user=request.user).distinct()
                 else:
-                    order = Order.objects.filter(customer__user=request.user)
+                    order = Order.objects.filter(customer__user=request.user).order_by("-id")
                 queryset = self.paginate_queryset(order, request)
                 serializer = OrderSerializer(queryset, many=True).data
                 data = self.get_paginated_response(serializer).data
             return Response(data)
-        except Exception as err:
+        except (Exception,) as err:
             return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
@@ -509,3 +516,90 @@ class OrderAPIView(APIView, CustomPagination):
             return Response({"detail": detail})
         except Exception as ex:
             return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderReturnView(APIView, CustomPagination):
+    permission_classes = []
+
+    def get(self, request):
+
+        """
+            To fetch all returned order by the current logged user.
+        """
+        try:
+            # returned_products = ReturnedProduct.objects.filter(returned_by=request.user).order_by("-id")
+            returned_products = ReturnedProduct.objects.all().order_by("-id")
+            paginated_response = self.paginate_queryset(returned_products, request)
+            serialized_returned_product = ReturnedProductSerializer(instance=paginated_response, many=True,
+                                                                    context={"request": request}).data
+            final_serialized_response = self.get_paginated_response(serialized_returned_product).data
+            print(final_serialized_response)
+            return Response(final_serialized_response)
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, pk=None):
+        try:
+            reason_id = request.data.get('reason_id', None)
+            comment = request.data.get('comment', None)
+            images = request.data.getlist('images', [])
+
+            if pk is None:
+                return Response({"detail": f"Order Product ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if reason_id is None:
+                return Response({"detail": f"Order Product ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if comment is None:
+                return Response({"detail": f"Your comment is needed."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if images was passed into 'images' list
+            if all(images) is False:
+                return Response({"detail": f"Please provide an Image"}, status=status.HTTP_400_BAD_REQUEST)
+
+            order_product = OrderProduct.objects.filter(id=pk, status="delivered")
+
+            if not order_product.exists():
+                return Response({"detail": f"Order product does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+
+            order_product = order_product.last()
+
+            reason = get_object_or_404(ReturnReason, pk=reason_id)
+
+            return_product_instance = ReturnedProduct.objects.create(
+                returned_by=request.user, product=order_product, reason=reason, comment=comment)
+
+            for image in images:
+                # Pending... waiting for image processing (waiting on the image processing method to use)
+                return_product_image = ReturnProductImage(return_product=return_product_instance, image=image)
+                return_product_image.save()
+
+            # Pending... Notify admin
+            return Response({"detail": f"Your report has been submitted"})
+        except (Exception,) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomerDashboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            response = dict()
+
+            # Wallet, pending ...
+            # -----------------------
+
+            # Recent Orders
+            recent_orders = Order.objects.filter(customer__user=request.user).order_by("-id")[:10]
+            serialized = OrderSerializer(recent_orders, many=True).data
+            response['recent_orders'] = serialized
+            # ----------------------
+
+            # Recent Payment
+            # -------------------------------
+
+            return Response({"detail": response})
+
+        except (Exception,) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
