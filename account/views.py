@@ -272,7 +272,7 @@ class EmailVerificationLinkView(APIView):
             profile = profile.last()
 
             # check if verification code is expired.
-            if timezone.now() >= profile.code_expiration_date:
+            if timezone.now() <= profile.code_expiration_date:
                 profile.verified = True
                 # Empty the verification code
                 profile.verification_code = ""
