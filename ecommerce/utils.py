@@ -195,21 +195,25 @@ def get_shipping_rate(customer):
             sellers_products.append(products_for_seller)
 
     # Call shipping API per-seller
-    for item in sellers_products:
-        seller = item.get('seller')
-        seller_prods = item.get('products')
+    # for item in sellers_products:
+    #     seller = item.get('seller')
+    #     seller_prods = item.get('products')
+    #
+    #     rating = ShippingService.rating(
+    #         seller=seller, customer=customer, customer_address=address, seller_prods=seller_prods
+    #     )
+    #
+    #     for rate in rating:
+    #         shipper = dict()
+    #         shipper["name"] = rate["ShipperName"]
+    #         shipper["shipping_fee"] = decimal.Decimal(rate["Total"])
+    #         shipper["company_id"] = rate["CompanyID"]
+    #         shippers_list.append(shipper)
+    # print(shippers_list)
 
-        rating = ShippingService.rating(
-            seller=seller, customer=customer, customer_address=address, seller_prods=seller_prods
-        )
-
-        for rate in rating:
-            shipper = dict()
-            shipper["name"] = rate["ShipperName"]
-            shipper["shipping_fee"] = decimal.Decimal(rate["Total"])
-            shipper["company_id"] = rate["CompanyID"]
-            shippers_list.append(shipper)
-    print(shippers_list)
+    rating = ShippingService.rating(
+        sellers=sellers_products, customer=customer, customer_address=address
+    )
 
     sub_total = cart_products.aggregate(Sum("price"))["price__sum"] or 0
 

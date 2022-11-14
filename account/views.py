@@ -257,7 +257,7 @@ class ResendVerificationLinkView(APIView):
                     return Response({"detail": "Verification link has been sent to the specified Email"},
                                     status=status.HTTP_200_OK)
                 else:
-                    return Response({"detail": "An error occured while send verification link"},
+                    return Response({"detail": "An error occurred while send verification link"},
                                     status=status.HTTP_400_BAD_REQUEST)
 
             return Response({"detail": "No Profile is linked to the Provided email"}, status=status.HTTP_400_BAD_REQUEST)

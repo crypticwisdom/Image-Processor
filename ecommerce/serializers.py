@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db.models import Sum, Avg
 from .models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo, ProductType, \
-    ProductWishlist, CartProduct, OrderProduct, Order
+    ProductWishlist, CartProduct, OrderProduct, Order, Brand
 from rest_framework import serializers
 
 
@@ -238,4 +238,12 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         exclude = ["customer"]
         depth = 1
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        exclude = []
+
+
 
