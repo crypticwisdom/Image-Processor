@@ -13,6 +13,5 @@ class IsMerchant(BasePermission):
         except (Seller.DoesNotExist, ):
             return False
         else:
-            # return False
             return bool(request.user and request.user.is_authenticated and seller is not None)
 

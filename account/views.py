@@ -1,22 +1,17 @@
 import secrets
-import uuid
-
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.utils import timezone
 from ecommerce.shopper_email import shopper_welcome_email, shopper_signup_verification_email
 from home.utils import log_request
 from .models import *
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
 from .email import forgot_password_mail
 from threading import Thread
-
 from .serializers import ProfileSerializer, CustomerAddressSerializer
 from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email
 
@@ -310,6 +305,4 @@ class CustomerAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Address.objects.filter(customer__user=self.request.user)
-
-
 

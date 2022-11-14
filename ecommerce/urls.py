@@ -27,5 +27,10 @@ urlpatterns = [
     path("checkout/", views.ProductCheckoutView.as_view(), name="checkout"),
     path("order/", views.OrderAPIView.as_view(), name="orders"),
     path("order/<int:pk>/", views.OrderAPIView.as_view(), name="order-detail"),
+    path("order/return/<int:pk>/", views.OrderReturnView.as_view(), name="return-order-detail"),
+    path("order/return/", views.OrderReturnView.as_view(), name="return-all"),
+
+    # Customer Dashboard
+    path("dashboard/", views.CustomerDashboardView.as_view(), name="customer-dashboard"),
 
 ]

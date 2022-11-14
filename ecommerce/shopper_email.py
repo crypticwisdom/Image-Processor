@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render
-
 from module.email_service import send_email
 from django.conf import settings
 

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db.models import Sum, Avg
 from .models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo, ProductType, \
-    ProductWishlist, CartProduct, OrderProduct, Order
+    ProductWishlist, CartProduct, OrderProduct, Order, ReturnedProduct, ReturnProductImage, ReturnReason
 from rest_framework import serializers
 
 
@@ -239,4 +239,41 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         exclude = ["customer"]
         depth = 1
+
+
+class ReturnProductImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    def get_image_url(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                image = request.build_absolute_uri(obj.image.url)
+                return image
+            return obj.image.url
+        return None
+
+    class Meta:
+        model = ReturnProductImage
+        exclude = ["id", "return_product", "image"]
+
+
+class ReturnedProductSerializer(serializers.ModelSerializer):
+    return_images = serializers.SerializerMethodField()
+
+    def get_return_images(self, obj):
+        if ReturnProductImage.objects.filter(return_product=obj).exists():
+            return_product_image = ReturnProductImage.objects.filter(return_product=obj)
+            context = self.context.get("request")
+            return ReturnProductImageSerializer(return_product_image, many=True, context={"request": context}).data
+        return None
+        # if return_product_image.exists():
+        #     return_product_image = return_product_image.last()
+        #     return return_product_image.image
+
+    class Meta:
+        model = ReturnedProduct
+        fields = ['id', 'returned_by', 'return_images', 'product', 'reason', 'status', 'payment_status', 'comment', 'created_on', 'updated_by',
+                  'updated_on']
+        # fields = "__all__"
 
