@@ -8,7 +8,7 @@ from rest_framework import status
 from home.pagination import CustomPagination
 from .utils import *
 from .permissions import IsMerchant
-from ecommerce.models import ProductDetail, Product, ProductCategory
+from ecommerce.models import ProductDetail, Product
 
 
 class MerchantView(APIView, CustomPagination):

@@ -15,4 +15,9 @@ order_status_choices = (
     ('returned', 'Returned'), ('paid', 'Paid'), ('refunded', 'Refunded'), ('pending', 'Pending')
 )
 
+order_entry_status = (
+    ("packed", "Packed"), ("shipped", "Shipped"), ("delivered", "Delivered"), ("received", "Received"),
+    ("cancelled", "Cancelled"), ("returned", "Returned"), ("refunded", "Refunded")
+)
+
 

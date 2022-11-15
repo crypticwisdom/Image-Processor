@@ -18,7 +18,8 @@ from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, 
 from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
 from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories, \
-    validate_product_in_cart, get_shipping_rate, order_payment, add_order_product, perform_order_cancellation
+    validate_product_in_cart, get_shipping_rate, order_payment, add_order_product, perform_order_cancellation, \
+    perform_order_pickup
 
 # from ecommerce.utils import add_minus_remove_product_check
 
@@ -432,6 +433,7 @@ class ProductView(APIView, CustomPagination):
 class ProductCheckoutView(APIView):
 
     def get(self, request):
+        address_id = request.GET.get("address_id")
         try:
             # Get customer profile
             customer, created = Profile.objects.get_or_create(user=request.user)
@@ -440,7 +442,7 @@ class ProductCheckoutView(APIView):
             if validate:
                 return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
             # Call shipping API to get rate
-            shipping_rate = get_shipping_rate(customer)
+            shipping_rate = get_shipping_rate(customer, address_id)
             return Response(shipping_rate)
         except Exception as err:
             return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
@@ -450,24 +452,43 @@ class ProductCheckoutView(APIView):
         payment_method = request.data.get("payment_method")
         cart_id = request.data.get("cart_id")
         address_id = request.data.get("address_id")
-        company_id = request.data.get("company_id")
-        shipper = request.data.get("shipper_name")
+        sender_town_id = request.data.get("sender_town_id")
+        receiver_town_id = request.data.get("receiver_town_id")
+        shipping_information = request.data.get("shipping_information")
 
-        if not (shipper and company_id):
-            return Response({"detail": "Shipper name and company_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        # Expected shipping_information payload
+        # shipping_information = [
+        #     {
+        #         "cart_product_id": 2,
+        #         "company_id": "234",
+        #         "shipper": "GIGLOGISTICS",
+        #         "shipping_fee": "1000"
+        #     }
+        # ]
+
+        if not all([shipping_information, sender_town_id, receiver_town_id]):
+            return Response({"detail": "Shipper information, sender town, and recipient town are required"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         try:
             customer, created = Profile.objects.get_or_create(user=request.user)
             address = Address.objects.get(customer=customer, id=address_id)
             cart = Cart.objects.get(user=request.user, id=cart_id, status="open")
 
+            for product in shipping_information:
+                # Get Cart Products
+                cart_product = CartProduct.objects.get(id=product["cart_product_id"], cart=cart)
+                cart_product.company_id = product["company_id"]
+                cart_product.shipper_name = product["shipper"]
+                cart_product.delivery_fee = product["shipping_fee"]
+                cart_product.save()
+
             validate = validate_product_in_cart(customer)
             if validate:
                 return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
 
             # Create Order
-            order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address,
-                                                         shipper_name=shipper)
+            order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
 
             # PROCESS PAYMENT
             success, detail = order_payment(payment_method, order)
@@ -475,7 +496,13 @@ class ProductCheckoutView(APIView):
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
 
             # update order
-            success, detail = add_order_product(order)
+            order_products = add_order_product(order)
+            for order_product in order_products:
+                # Update payment method
+                order_product.payment_method = payment_method
+                order_product.save()
+                # Call pickup order request
+                response = perform_order_pickup(order_product, address, sender_town_id, receiver_town_id)
 
             # Send order placement email to shopper
             # Send order placement email to seller
