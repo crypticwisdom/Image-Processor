@@ -1,3 +1,4 @@
+import datetime
 import decimal
 
 from django.db import transaction
@@ -153,12 +154,14 @@ def validate_product_in_cart(customer):
     return response
 
 
-def get_shipping_rate(customer):
-    response = dict()
+def get_shipping_rate(customer, address_id=None):
+    # response = dict()
     shippers_list = list()
     sellers_products = list()
 
-    if Address.objects.filter(customer=customer, is_primary=True).exists():
+    if Address.objects.filter(id=address_id, customer=customer).exists():
+        address = Address.objects.get(id=address_id, customer=customer)
+    elif Address.objects.filter(customer=customer, is_primary=True).exists():
         address = Address.objects.get(customer=customer, is_primary=True)
     else:
         address = Address.objects.filter(customer=customer).first()
@@ -169,53 +172,74 @@ def get_shipping_rate(customer):
     cart_products = CartProduct.objects.filter(cart=cart)
 
     # Get each seller in cart
-    sellers_in_cart = list()
-    for product in cart_products:
-        seller = product.product_detail.product.store.seller
-        sellers_in_cart.append(seller)
+    # sellers_in_cart = list()
+    # for product in cart_products:
+    #     seller = product.product_detail.product.store.seller
+    #     sellers_in_cart.append(seller)
 
-    # Get products belonging to each seller
-    for seller in sellers_in_cart:
+    for product in cart_products:
         products_for_seller = {
-            'seller': seller,
-            'seller_id': seller.id,
+            'seller': product.product_detail.product.store.seller,
+            'seller_id': product.product_detail.product.store.seller_id,
             'products': [
                 {
-                    'cart_product_id': cart_product.id,
-                    'quantity': cart_product.quantity,
-                    'weight': cart_product.product_detail.weight,
-                    'price': cart_product.product_detail.price,
-                    'product': cart_product.product_detail.product,
+                    'cart_product_id': product.id,
+                    'quantity': product.quantity,
+                    'weight': product.product_detail.weight,
+                    'price': product.product_detail.price,
+                    'product': product.product_detail.product,
+                    'detail': product.product_detail.description,
                 }
-                for cart_product in cart_products.distinct()
-                if cart_product.product_detail.product.store.seller == seller
             ],
         }
         if products_for_seller not in sellers_products:
             sellers_products.append(products_for_seller)
 
-    # Call shipping API per-seller
-    for item in sellers_products:
-        seller = item.get('seller')
-        seller_prods = item.get('products')
+    # Get products belonging to each seller
+    # for seller in sellers_in_cart:
+    #     products_for_seller = {
+    #         'seller': seller,
+    #         'seller_id': seller.id,
+    #         'products': [
+    #             {
+    #                 'cart_product_id': cart_product.id,
+    #                 'quantity': cart_product.quantity,
+    #                 'weight': cart_product.product_detail.weight,
+    #                 'price': cart_product.product_detail.price,
+    #                 'product': cart_product.product_detail.product,
+    #                 'detail': cart_product.product_detail.description,
+    #             }
+    #             for cart_product in cart_products.distinct()
+    #             if cart_product.product_detail.product.store.seller == seller
+    #         ],
+    #     }
+    #     if products_for_seller not in sellers_products:
+    #         sellers_products.append(products_for_seller)
 
-        rating = ShippingService.rating(
-            seller=seller, customer=customer, customer_address=address, seller_prods=seller_prods
-        )
+    # Call shipping API
+    rating = ShippingService.rating(
+        sellers=sellers_products, customer=customer, customer_address=address
+    )
 
-        for rate in rating:
-            shipper = dict()
-            shipper["name"] = rate["ShipperName"]
-            shipper["shipping_fee"] = decimal.Decimal(rate["Total"])
-            shipper["company_id"] = rate["CompanyID"]
-            shippers_list.append(shipper)
-    print(shippers_list)
+    for rate in rating:
+        shipper = dict()
+        shipper["name"] = rate["ShipperName"]
+        detail_list = list()
+        quote_list = rate["QuoteList"]
+        for item in quote_list:
+            detail = dict()
+            detail["cart_product_id"] = item["Id"]
+            detail["company_id"] = item["CompanyID"]
+            detail["shipping_fee"] = item["Total"]
+            detail_list.append(detail)
+        # shipper["shipping_fee"] = decimal.Decimal(rate["TotalPrice"])
+        shipper["shipping_information"] = detail_list
+        shippers_list.append(shipper)
 
-    sub_total = cart_products.aggregate(Sum("price"))["price__sum"] or 0
-
-    response["sub_total"] = sub_total
-    response["shippers"] = shippers_list
-    return response
+    # sub_total = cart_products.aggregate(Sum("price"))["price__sum"] or 0
+    # response["sub_total"] = sub_total
+    # response["shippers"] = shippers_list
+    return shippers_list
 
 
 def order_payment(payment_method, order):
@@ -242,13 +266,18 @@ def add_order_product(order):
         order_product.total = total
         order_product.delivery_date = three_days_time
         order_product.payment_on = timezone.datetime.now()
+        order_product.shipper_name = product.shipper_name
+        order_product.company_id = product.company_id
+        order_product.delivery_fee = product.delivery_fee
         order_product.save()
 
     # Discard the cart
     order.cart.status = "closed"
     order.cart.save()
 
-    return True, "Order created successfully"
+    order_products = OrderProduct.objects.filter(order=order)
+
+    return order_products
 
 
 def check_product_stock_level(product):
@@ -268,6 +297,51 @@ def perform_order_cancellation(order, user):
             return False, "This order has been processed, and cannot be cancelled"
     order_products.update(status="cancelled", cancelled_on=timezone.datetime.now(), cancelled_by=user)
     return True, "Order cancelled successfully"
+
+
+def perform_order_pickup(order_product, address, sender_town_id, receiver_town_id):
+    summary = order_product.product_detail.description
+    response = ShippingService.pickup(
+        order_product=order_product, address=address, order_summary=summary, sender_town_id=sender_town_id,
+        receiver_town_id=receiver_town_id
+    )
+    # if "error" in response:
+    #     return False, "Order cannot be placed at the moment"
+    # Update OrderProduct
+    shipper = order_no = delivery_fee = waybill = ""
+
+    for data in response:
+        shipper = data["Shipper"]
+        order_no = data["OrderNo"]
+        delivery_fee = data["TotalAmount"]
+        waybill = data["TrackingNo"]
+
+    order_product.shipper_name = shipper
+    order_product.tracking_id = order_no
+    order_product.delivery_fee = delivery_fee
+    order_product.waybill_no = waybill
+    order_product.status = "packed"
+    order_product.packed_on = datetime.datetime.now()
+    order_product.save()
+
+    return True, "Pickup request was successful"
+
+
+def perform_order_tracking(order_product):
+    tracking_id = order_product.tracking_id
+    response = ShippingService.track_order(tracking_id)
+
+    if "error" in response:
+        return False, "An error occurred while tracking order. Please try again later"
+
+    detail = list()
+    for item in response:
+        data = dict()
+        data["status"] = item["Status"]
+        detail.append(data)
+
+    return True, detail
+
 
 
 

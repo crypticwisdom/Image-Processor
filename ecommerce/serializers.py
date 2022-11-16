@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db.models import Sum, Avg
 from .models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo, ProductType, \
-    ProductWishlist, CartProduct, OrderProduct, Order, ReturnedProduct, ReturnProductImage, ReturnReason
+    ProductWishlist, CartProduct, OrderProduct, Order, ReturnedProduct, ReturnProductImage, ReturnReason, Brand
 from rest_framework import serializers
 
 
@@ -84,9 +84,8 @@ class ProductSerializer(serializers.ModelSerializer):
             return query.aggregate(Sum('stock')).get('stock__sum') or 0
 
     def get_brand(self, obj):
-        if ProductDetail.objects.filter(product=obj).exists():
-            product_detail = ProductDetail.objects.filter(product=obj).first()
-            return product_detail.brand.name
+        if obj.brand:
+            return obj.brand.name
         return None
 
     def get_average_rating(self, obj):
@@ -239,6 +238,12 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         exclude = ["customer"]
         depth = 1
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        exclude = []
 
 
 class ReturnProductImageSerializer(serializers.ModelSerializer):
