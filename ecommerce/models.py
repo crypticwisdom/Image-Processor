@@ -264,6 +264,7 @@ class OrderProduct(models.Model):
     shipper_name = models.CharField(max_length=200, null=True, blank=True)
     company_id = models.CharField(max_length=200, null=True, blank=True)
     tracking_id = models.CharField(max_length=200, null=True, blank=True)
+    waybill_no = models.CharField(max_length=200, null=True, blank=True)
     payment_method = models.CharField(max_length=200, null=True, blank=True)
     delivery_fee = models.DecimalField(default=0, decimal_places=2, max_digits=50, null=True, blank=True)
     status = models.CharField(max_length=50, choices=order_status_choices, default='paid')

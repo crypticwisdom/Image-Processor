@@ -13,18 +13,18 @@ password = settings.SHIPPING_PASSWORD
 
 
 class ShippingService:
-    @classmethod
-    def login(cls):
-        from home.utils import log_request
-        url = f"{base_url}/login"
-        payload = json.dumps({"email": email, "password": password})
-        response = requests.request("POST", url, data=payload, headers={"Content-Type": "application/json"}).json()
-        log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
-        return response["token"]
+    # @classmethod
+    # def login(cls):
+    #     from home.utils import log_request
+    #     url = f"{base_url}/login"
+    #     payload = json.dumps({"email": email, "password": password})
+    #     response = requests.request("POST", url, data=payload, headers={"Content-Type": "application/json"}).json()
+    #     log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
+    #     return response["token"]
 
     @classmethod
     def get_header(cls):
-        token = cls.login()
+        token = settings.SHIPPING_TOKEN
         header = dict()
         header["Authorization"] = f"Bearer {token}"
         header["Content-Type"] = "application/json"
@@ -79,14 +79,14 @@ class ShippingService:
             # merchant["PickupCoordinate"]["Latitude"] = seller.latitude
             # merchant["PickupCoordinate"]["Longitude"] = seller.longitude
             merchant["PickupTime"] = str(pickup_time)
-            merchant["PickupDate"] = str(pickup_date)
+            merchant["PickupDate"] = str(pickup_date).replace("-", "/")
             merchant["PickupCity"] = seller.city
             merchant["PickupState"] = seller.state
             merchant["PickupStationId"] = 4
-            merchant["SenderNumber"] = seller.phone_number
+            merchant["SenderNumber"] = f"0{seller.phone_number[-10:]}"
             merchant["SenderName"] = seller.user.get_full_name()
             merchant["ReceiverName"] = customer.user.get_full_name()
-            merchant["ReceiverPhoneNumber"] = customer.phone_number
+            merchant["ReceiverPhoneNumber"] = f"0{customer.phone_number[-10:]}"
             merchant["DeliveryAddress"] = customer_address.get_full_address()
             merchant["DeliveryCoordinate"] = dict()
             merchant["DeliveryCoordinate"]["Latitude"] = 6.5483777
@@ -174,7 +174,7 @@ class ShippingService:
         detail["Summary"] = order_product.product_detail.description
         detail["DeliveryRequestedTime"] = "06 AM to 09 PM"
         detail["PickupTime"] = str(pickup_time)
-        detail["PickupDate"] = str(pickup_date)
+        detail["PickupDate"] = str(pickup_date).replace("-", "/")
         detail["PickupCoordinate"] = dict()
         detail["PickupCoordinate"]["Latitude"] = 6.639438
         detail["PickupCoordinate"]["Longitude"] = 3.330983
@@ -182,7 +182,7 @@ class ShippingService:
         # detail["PickupCoordinate"]["Longitude"] = seller.longitude
         detail["PickUpLandmark"] = seller.town
         detail["PickupAddress"] = seller.get_full_address()
-        detail["SenderNumber"] = seller.phone_number
+        detail["SenderPhoneNumber"] = f"0{seller.phone_number[-10:]}"
         detail["SenderName"] = seller.user.get_full_name()
         detail["SenderEmail"] = seller.user.email
         detail["RecipientEmail"] = customer.user.email
@@ -194,7 +194,7 @@ class ShippingService:
         # detail["DeliveryCoordinate"]["Longitude"] = address.longitude
         detail["DeliveryType"] = "Normal"
         detail["DeliveryTime"] = "4 AM to 7 PM"
-        detail["ReceiverPhoneNumber"] = customer.phone_number
+        detail["ReceiverPhoneNumber"] = f"0{customer.phone_number[-10:]}"
         detail["ReceiverName"] = customer.user.get_full_name()
         detail["PickupState"] = seller.state
         detail["DeliveryState"] = address.state
@@ -222,7 +222,7 @@ class ShippingService:
         shipment_item["ShipmentType"] = "Regular"
         shipment_item["PickUpGooglePlaceAddress"] = seller.get_full_address()
         shipment_item["DeliveryContactName"] = customer.user.get_full_name()
-        shipment_item["DeliveryContactNumber"] = customer.phone_number
+        shipment_item["DeliveryContactNumber"] = f"0{customer.phone_number[-10:]}"
         shipment_item["DeliveryGooglePlaceAddress"] = address.get_full_address()
         shipment_item["DeliveryLandmark"] = address.town
         shipment_item["DeliveryState"] = address.state
@@ -242,6 +242,13 @@ class ShippingService:
         log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
         return response
 
+    @classmethod
+    def track_order(cls, tracking_id):
+        header = cls.get_header()
+        url = f"{base_url}/operations/trackShipment?orderNo={tracking_id}"
+        response = requests.request("GET", url, headers=header).json()
+        log_request(f"url: {url}", f"headers: {header}", f"response: {response}")
+        return response
 
 
 

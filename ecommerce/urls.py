@@ -25,6 +25,7 @@ urlpatterns = [
 
     # Order
     path("checkout/", views.ProductCheckoutView.as_view(), name="checkout"),
+    path("track-order", views.TrackOrderAPIView.as_view(), name="track-order"),
     path("order/", views.OrderAPIView.as_view(), name="orders"),
     path("order/<int:pk>/", views.OrderAPIView.as_view(), name="order-detail"),
     path("order/return/<int:pk>/", views.OrderReturnView.as_view(), name="return-order-detail"),

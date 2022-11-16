@@ -1,3 +1,4 @@
+import datetime
 import decimal
 
 from django.db import transaction
@@ -298,12 +299,49 @@ def perform_order_cancellation(order, user):
     return True, "Order cancelled successfully"
 
 
-def perform_order_pickup(order_product, address,sender_town_id, receiver_town_id):
+def perform_order_pickup(order_product, address, sender_town_id, receiver_town_id):
     summary = order_product.product_detail.description
-    pickup = ShippingService.pickup(
+    response = ShippingService.pickup(
         order_product=order_product, address=address, order_summary=summary, sender_town_id=sender_town_id,
         receiver_town_id=receiver_town_id
     )
-    return pickup
+    # if "error" in response:
+    #     return False, "Order cannot be placed at the moment"
+    # Update OrderProduct
+    shipper = order_no = delivery_fee = waybill = ""
+
+    for data in response:
+        shipper = data["Shipper"]
+        order_no = data["OrderNo"]
+        delivery_fee = data["TotalAmount"]
+        waybill = data["TrackingNo"]
+
+    order_product.shipper_name = shipper
+    order_product.tracking_id = order_no
+    order_product.delivery_fee = delivery_fee
+    order_product.waybill_no = waybill
+    order_product.status = "packed"
+    order_product.packed_on = datetime.datetime.now()
+    order_product.save()
+
+    return True, "Pickup request was successful"
+
+
+def perform_order_tracking(order_product):
+    tracking_id = order_product.tracking_id
+    response = ShippingService.track_order(tracking_id)
+
+    if "error" in response:
+        return False, "An error occurred while tracking order. Please try again later"
+
+    detail = list()
+    for item in response:
+        data = dict()
+        data["status"] = item["Status"]
+        detail.append(data)
+
+    return True, detail
+
+
 
 

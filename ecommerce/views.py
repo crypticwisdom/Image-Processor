@@ -19,7 +19,7 @@ from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
 from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories, \
     validate_product_in_cart, get_shipping_rate, order_payment, add_order_product, perform_order_cancellation, \
-    perform_order_pickup
+    perform_order_pickup, perform_order_tracking
 
 # from ecommerce.utils import add_minus_remove_product_check
 
@@ -466,8 +466,8 @@ class ProductCheckoutView(APIView):
         #     }
         # ]
 
-        if not all([shipping_information, sender_town_id, receiver_town_id]):
-            return Response({"detail": "Shipper information, sender town, and recipient town are required"},
+        if not all([shipping_information, sender_town_id, receiver_town_id, address_id]):
+            return Response({"detail": "Shipper information, address, sender town, and recipient town are required"},
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -501,8 +501,13 @@ class ProductCheckoutView(APIView):
                 # Update payment method
                 order_product.payment_method = payment_method
                 order_product.save()
+
                 # Call pickup order request
-                response = perform_order_pickup(order_product, address, sender_town_id, receiver_town_id)
+                success, response = perform_order_pickup(order_product, address, sender_town_id, receiver_town_id)
+                # if success is False:
+                #     # Process refund to customer wallet
+                #     return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
+                # print(response)
 
             # Send order placement email to shopper
             # Send order placement email to seller
@@ -630,3 +635,23 @@ class CustomerDashboardView(APIView):
 
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TrackOrderAPIView(APIView):
+
+    def get(self, request):
+        order_prod_id = request.GET.get("order_product_id")
+
+        try:
+            order_product = OrderProduct.objects.get(id=order_prod_id, order__customer__user=request.user)
+            if order_product.tracking_id:
+                # Track Order
+                success, detail = perform_order_tracking(order_product)
+                if success is False:
+                    return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(detail)
+            else:
+                return Response({"detail": "Tracking ID not found for selected order"})
+        except Exception as er:
+            return Response({"detail": f"{er}"}, status=status.HTTP_400_BAD_REQUEST)
+
