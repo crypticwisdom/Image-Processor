@@ -133,3 +133,4 @@ def merge_carts(cart_uid, user):
     except (Exception,) as err:
         print(err, "-------------- 2 ---------------")
         return False, f"{err}"
+

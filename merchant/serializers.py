@@ -85,6 +85,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
     order_id = serializers.SerializerMethodField()
     customer_name = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
 
     def get_order_id(self, obj):
         if obj:
@@ -99,7 +100,30 @@ class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
             )
         return None
 
+    def get_date(self, obj):
+        """
+            Dates are returned based on the status of the Ordered Prouct.
+            Return Delivery Date when the Ordered product is pending.
+        """
+        if obj:
+            if obj.status == "delivered":
+                return obj.delivered_on
+            elif obj.status == "cancelled":
+                return obj.cancelled_on
+            elif obj.status == "pending":
+                return obj.delivery_date
+            elif obj.status == "paid":
+                return obj.payment_on
+            elif obj.status == "returned":
+                return obj.returned_on
+            elif obj.status == "shipped":
+                return obj.refunded
+            elif obj.status == "refunded":
+                return obj.refunded_on
+            elif obj.status == "packed":
+                return obj.packed_on
+        return obj.created_on
+
     class Meta:
         model = OrderProduct
-        fields = ['order_id', 'customer_name', 'tracking', 'payment_method', 'date', 'status', 'amount']
-
+        fields = ['order_id', 'customer_name', 'tracking_id', 'payment_method', 'date', 'status', 'total']

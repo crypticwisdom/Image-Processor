@@ -122,7 +122,6 @@ class ProductAPIView(APIView, CustomPagination):
     def get(self, request):
         try:
             seller = Seller.objects.get(user=request.user)
-            # products = Product.objects.filter(store__seller=seller)
             product_detail_query_set = ProductDetail.objects.filter(product__store__seller=seller).order_by('-id')
             paginated_query_set = self.paginate_queryset(product_detail_query_set, request)
             serialized = MerchantProductDetailsSerializer(paginated_query_set, many=True, context={"request": request}).data
@@ -154,6 +153,7 @@ class ProductAPIView(APIView, CustomPagination):
             return Response({"detail": "An error has occurred", "error": str(ess)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Haven't written this "Ashavin said it should be handle by the Admin"
 class MerchantAddBannerView(APIView):
     permission_classes = [IsAuthenticated, IsMerchant]
 
@@ -167,20 +167,52 @@ class MerchantAddBannerView(APIView):
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MerchantOrdersView(APIView):
+class MerchantOrdersView(APIView, CustomPagination):
     permission_classes = [IsAuthenticated, IsMerchant]
 
     def get(self, request, name=None):
         try:
-            filter_by_date, filter_by_status = request.GET.get("date", None), request.GET.get("date", None)
+            filter_by_date, filter_by_status = request.GET.get("date", None), request.GET.get("status", None)
+            query = Q(order__customer=request.user.profile)
 
-            # if filter_by_status and filter_by_date:
-            #     Q(created_on=)
-            print(request.user, request.user.profile)
-            orders = OrderProduct.objects.filter(order__customer=request.user.profile)
-            print(orders)
-            # sserializer = OrderProductSerializer()
+            if filter_by_status and filter_by_date:
+                query &= Q(status=filter_by_status)
+
+                if filter_by_status == "paid":
+                    query &= Q(payment_on__date=filter_by_date)
+                elif filter_by_status == "delivered":
+                    query &= Q(delivered_on__date=filter_by_date)
+                elif filter_by_status == "cancelled":
+                    query &= Q(cancelled_on__date=filter_by_date)
+                elif filter_by_status == "returned":
+                    query &= Q(returned_on__date=filter_by_date)
+                elif filter_by_status == "pending":
+                    query &= Q(created_on__date=filter_by_date)
+                elif filter_by_status == "shipped":
+                    query &= Q(shipped_on__date=filter_by_date)
+                elif filter_by_status == "refunded":
+                    query &= Q(refunded_on__date=filter_by_date)
+                elif filter_by_status == "packed":
+                    query &= Q(packed_on__date=filter_by_date)
+
+            elif filter_by_status:
+                query &= Q(status=filter_by_status)
+            elif filter_by_date:
+                # If only 'date' is passed then this filters by all available dates "created_on", "cancelled_on",
+                # "shipped_on", "delivered_on", "returned_on", "payment_on", "refunded_on", "packed_on"
+                query = Q(created_on__date=filter_by_date)
+                query |= Q(cancelled_on__date=filter_by_date)
+                query |= Q(shipped_on__date=filter_by_date)
+                query |= Q(delivered_on__date=filter_by_date)
+                query |= Q(returned_on__date=filter_by_date)
+                query |= Q(payment_on__date=filter_by_date)
+                query |= Q(refunded_on__date=filter_by_date)
+                query |= Q(packed_on__date=filter_by_date)
+
+            orders = OrderProduct.objects.filter(query).order_by("-id")
+            paginated_query_set = self.paginate_queryset(orders, request)
             serializer = MerchantDashboardOrderProductSerializer(instance=orders, many=True).data
-            return Response({"detail": serializer})
+            paginated_serializer = self.get_paginated_response(serializer).data
+            return Response({"detail": paginated_serializer})
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
