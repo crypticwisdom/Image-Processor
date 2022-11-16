@@ -17,6 +17,5 @@ urlpatterns = [
     # Customer Address
     path('address/', views.CustomerAddressView.as_view(), name='customer-address'),
     path('address/<int:id>/', views.CustomerAddressDetailView.as_view(), name='customer-address-detail'),
-
 ]
 

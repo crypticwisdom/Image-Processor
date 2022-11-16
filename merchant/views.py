@@ -1,14 +1,16 @@
+from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from ecommerce.serializers import ProductSerializer
 from account.utils import validate_email
-from .serializers import SellerSerializer, MerchantProductDetailsSerializer
+from .serializers import SellerSerializer, MerchantProductDetailsSerializer, OrderSerializer, \
+    MerchantDashboardOrderProductSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from home.pagination import CustomPagination
 from .utils import *
 from .permissions import IsMerchant
-from ecommerce.models import ProductDetail, Product, ProductCategory
+from ecommerce.models import ProductDetail, Product, ProductCategory, OrderProduct, Order
 
 
 class MerchantView(APIView, CustomPagination):
@@ -123,7 +125,7 @@ class ProductAPIView(APIView, CustomPagination):
             # products = Product.objects.filter(store__seller=seller)
             product_detail_query_set = ProductDetail.objects.filter(product__store__seller=seller).order_by('-id')
             paginated_query_set = self.paginate_queryset(product_detail_query_set, request)
-            serialized = MerchantProductDetailsSerializer(paginated_query_set, many=True).data
+            serialized = MerchantProductDetailsSerializer(paginated_query_set, many=True, context={"request": request}).data
             serializer = self.get_paginated_response(serialized)
             return Response({"detail": serializer.data})
         except (Exception, ) as err:
@@ -163,3 +165,22 @@ class MerchantAddBannerView(APIView):
             return Response({"detail": "..."})
         except (Exception, ) as err:
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MerchantOrdersView(APIView):
+    permission_classes = [IsAuthenticated, IsMerchant]
+
+    def get(self, request, name=None):
+        try:
+            filter_by_date, filter_by_status = request.GET.get("date", None), request.GET.get("date", None)
+
+            # if filter_by_status and filter_by_date:
+            #     Q(created_on=)
+            print(request.user, request.user.profile)
+            orders = OrderProduct.objects.filter(order__customer=request.user.profile)
+            print(orders)
+            # sserializer = OrderProductSerializer()
+            serializer = MerchantDashboardOrderProductSerializer(instance=orders, many=True).data
+            return Response({"detail": serializer})
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)

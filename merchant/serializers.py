@@ -1,6 +1,5 @@
 from rest_framework import serializers
-
-from ecommerce.models import ProductDetail
+from ecommerce.models import ProductDetail, OrderProduct, Order
 from .models import Seller, SellerDetail, SellerFile
 from store.models import Store
 
@@ -51,15 +50,20 @@ class SellerSerializer(serializers.ModelSerializer):
 
 class MerchantProductDetailsSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
-    image = serializers.SerializerMethodField()
     sales = serializers.SerializerMethodField()
     amount = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     def get_name(self, obj):
         return obj.product.name
 
     def get_image(self, obj):
-        return obj.product.image.get_image_url()
+        if obj.product.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.product.image.image.url)
+            return obj.product.image
+        return None
 
     def get_sales(self, obj):
         return obj.product.sale_count
@@ -70,3 +74,32 @@ class MerchantProductDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductDetail
         fields = ['id', 'name', 'color', 'image', 'price', 'description', 'sales', 'amount']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = "__all__"
+
+
+class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
+    order_id = serializers.SerializerMethodField()
+    customer_name = serializers.SerializerMethodField()
+
+    def get_order_id(self, obj):
+        if obj:
+            return OrderProduct.objects.get(id=obj.id).order.id
+        return None
+
+    def get_customer_name(self, obj):
+        if obj:
+            return "{} {}".format(
+                OrderProduct.objects.get(id=obj.id).order.customer.user.last_name,
+                OrderProduct.objects.get(id=obj.id).order.customer.user.first_name
+            )
+        return None
+
+    class Meta:
+        model = OrderProduct
+        fields = ['order_id', 'customer_name', 'tracking', 'payment_method', 'date', 'status', 'amount']
+
