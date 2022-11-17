@@ -1,4 +1,6 @@
 import secrets
+import time
+
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -13,7 +15,9 @@ from django.utils import timezone
 from .email import forgot_password_mail
 from threading import Thread
 from .serializers import ProfileSerializer, CustomerAddressSerializer
-from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email
+from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email, register_payarena_user, \
+    login_payarena_user, change_payarena_user_password, get_wallet_info, validate_phone_number_for_wallet_creation, \
+    create_user_wallet
 
 
 class LoginView(APIView):
@@ -45,16 +49,23 @@ class LoginView(APIView):
             if not (user and check_password(password=password, encoded=user.password)):
                 return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if Profile.objects.get(user=user).verified is False:
+            profile = Profile.objects.get(user=user)
+            if profile.verified is False:
                 return Response({"detail": "User not verified, please request a verification link."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
             merge_carts(cart_uid=cart_uid, user=user)
 
+            # Login to PayArena Auth Engine
+            Thread(target=login_payarena_user, args=[profile, email, password]).start()
+            time.sleep(2)
+            wallet_balance = get_wallet_info(profile)
+
             return Response({
                 "detail": "Login successful",
                 "token": f"{RefreshToken.for_user(user).access_token}",
-                "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data
+                "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
+                "wallet_information": wallet_balance
             })
 
         except (ValueError, Exception) as err:
@@ -96,12 +107,15 @@ class SignupView(APIView):
             if password != password_confirm:
                 return Response({"detail": "Passwords mismatch"}, status=status.HTTP_400_BAD_REQUEST)
 
+            success, detail = register_payarena_user(email, phone_number, f_name, l_name, password)
+            if success is False:
+                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+
             success, profile_or_err_msg = create_account(email, phone_number, password, f_name, l_name)
             if success:
                 # Send Verification code
                 if send_shopper_verification_email(email=email, profile=profile_or_err_msg):
-                    return Response({"detail": "Account created and Verification link has been sent Successfully"},
-                                    status=status.HTTP_200_OK)
+                    return Response({"detail": "Account created and Verification link has been sent Successfully"})
                 else:
                     return Response({"detail": "An error occurred while sending the verification link"},
                                     status=status.HTTP_400_BAD_REQUEST)
@@ -226,6 +240,10 @@ class ChangePasswordView(APIView):
                 return Response({"detail": "Old password does not match your current password"},
                                 status=status.HTTP_400_BAD_REQUEST)
             user = request.user
+            user_profile = Profile.objects.get(user=user)
+            # Change Password on PayArena Auth Engine
+            # change_payarena_user_password(profile, old_password, new_password)
+            Thread(target=change_payarena_user_password, args=[user_profile, old_password, new_password]).start()
             user.password = make_password(confirm_new_password)
             user.save()
 
@@ -306,3 +324,28 @@ class CustomerAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Address.objects.filter(customer__user=self.request.user)
 
+
+class CreateCustomerWalletAPIView(APIView):
+
+    def get(self, request):
+        try:
+            profile = Profile.objects.get(user=request.user)
+            if profile.has_wallet is True:
+                return Response({"detail": "This account already has a wallet"}, status=status.HTTP_400_BAD_REQUEST)
+            response = validate_phone_number_for_wallet_creation(profile)
+            return Response({"detail": str(response)})
+        except Exception as err:
+            return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        try:
+            wallet_pin = request.data.get("pin")
+            otp = request.data.get("otp")
+
+            profile = Profile.objects.get(user=request.user)
+            success, response = create_user_wallet(profile, wallet_pin, otp)
+            if success is False:
+                return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": response})
+        except Exception as ex:
+            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)

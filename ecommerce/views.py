@@ -9,6 +9,7 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from django.utils import timezone
 from account.models import Profile, Address
+from account.utils import get_wallet_info
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
     CartProductSerializer, OrderSerializer, ReturnedProductSerializer
@@ -618,13 +619,15 @@ class CustomerDashboardView(APIView):
         try:
             response = dict()
 
-            # Wallet, pending ...
-            # -----------------------
+            # Wallet Information
+            profile = Profile.objects.get(user=request.user)
+            wallet_bal = get_wallet_info(profile)
 
             # Recent Orders
             recent_orders = Order.objects.filter(customer__user=request.user).order_by("-id")[:10]
             serialized = OrderSerializer(recent_orders, many=True).data
             response['recent_orders'] = serialized
+            response['wallet_information'] = wallet_bal
             # ----------------------
 
             # Recent Payment

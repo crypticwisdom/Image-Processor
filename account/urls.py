@@ -18,5 +18,8 @@ urlpatterns = [
     path('address/', views.CustomerAddressView.as_view(), name='customer-address'),
     path('address/<int:id>/', views.CustomerAddressDetailView.as_view(), name='customer-address-detail'),
 
+    # Wallet
+    path('wallet/', views.CustomerAddressView.as_view(), name='customer-address'),
+
 ]
 
