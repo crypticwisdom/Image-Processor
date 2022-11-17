@@ -177,10 +177,35 @@ class MallDealSerializer(serializers.ModelSerializer):
 
 
 class CartProductSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    item_price = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        if obj:
+            return obj.product_detail.product.name
+        return None
+
+    def get_description(self, obj):
+        if obj:
+            return obj.product_detail.description
+        return None
+
+    def get_item_price(self, obj):
+        if obj:
+            return obj.product_detail.price * obj.quantity
+        return None
+
+    def get_image(self, obj):
+        if self.context.get('request'):
+            request = self.context.get('request')
+            return request.build_absolute_uri(obj.product_detail.product.image.get_image_url())
+        return obj.product_detail.product.image.get_image_url() or None
 
     class Meta:
         model = CartProduct
-        fields = ["id", "price", "quantity", "discount", "product_detail"]
+        fields = ["id", "name", "image", "description", "price", "quantity", "item_price", "discount", "product_detail"]
 
 
 class ProductWishlistSerializer(serializers.ModelSerializer):
@@ -189,8 +214,9 @@ class ProductWishlistSerializer(serializers.ModelSerializer):
     def get_product(self, obj):
         product = None
         if obj.product:
-            product = ProductSerializer(obj.product).data
+            product = ProductSerializer(obj.product, context={"request": self.context.get("request")}).data
         return product
+
 
     class Meta:
         model = ProductWishlist

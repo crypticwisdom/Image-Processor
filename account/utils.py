@@ -229,5 +229,3 @@ def create_user_wallet(profile, pin, otp):
 
 
 
-
-

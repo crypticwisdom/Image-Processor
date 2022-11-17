@@ -21,7 +21,6 @@ import uuid
 from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories, \
     validate_product_in_cart, get_shipping_rate, order_payment, add_order_product, perform_order_cancellation, \
     perform_order_pickup, perform_order_tracking
-
 # from ecommerce.utils import add_minus_remove_product_check
 
 
@@ -320,7 +319,7 @@ class CartProductView(APIView):
             if not cart:
                 return Response({"detail": "Cart is empty"}, status=status.HTTP_200_OK)
 
-            serializer = CartProductSerializer(cart, many=True).data
+            serializer = CartProductSerializer(cart, many=True, context={"request": request}).data
             return Response({"detail": serializer}, status=status.HTTP_200_OK)
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -384,7 +383,17 @@ class FilteredSearchView(generics.ListAPIView):
         return queryset
 
 
-class ProductWishlistView(APIView):
+class ProductWishlistView(APIView, CustomPagination):
+
+    def get(self, request):
+        try:
+            product_wishlist = ProductWishlist.objects.filter(user=request.user).order_by("-id")
+            paginated_queryset = self.paginate_queryset(product_wishlist, request)
+            serialized_queryset = ProductWishlistSerializer(paginated_queryset, many=True, context={"request": request}).data
+            serializer = self.get_paginated_response(serialized_queryset).data
+            return Response({"detail": serializer})
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
         product_id = request.data.get('product_id', '')
@@ -394,7 +403,7 @@ class ProductWishlistView(APIView):
         try:
             product = Product.objects.get(pk=product_id)
             product_wishlist, created = ProductWishlist.objects.get_or_create(user=request.user, product=product)
-            data = ProductWishlistSerializer(product_wishlist).data
+            data = ProductWishlistSerializer(product_wishlist, context={"request": request}).data
 
             return Response({"detail": "Added to wishlist", "data": data})
         except Exception as ex:
