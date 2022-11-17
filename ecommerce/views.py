@@ -382,7 +382,17 @@ class FilteredSearchView(generics.ListAPIView):
         return queryset
 
 
-class ProductWishlistView(APIView):
+class ProductWishlistView(APIView, CustomPagination):
+
+    def get(self, request):
+        try:
+            product_wishlist = ProductWishlist.objects.filter(user=request.user).order_by("-id")
+            paginated_queryset = self.paginate_queryset(product_wishlist, request)
+            serialized_queryset = ProductWishlistSerializer(paginated_queryset, many=True, context={"request": request}).data
+            serializer = self.get_paginated_response(serialized_queryset).data
+            return Response({"detail": serializer})
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
         product_id = request.data.get('product_id', '')

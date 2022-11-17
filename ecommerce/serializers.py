@@ -210,24 +210,17 @@ class CartProductSerializer(serializers.ModelSerializer):
 
 class ProductWishlistSerializer(serializers.ModelSerializer):
     product = serializers.SerializerMethodField()
-    image = serializers.SerializerMethodField()
 
     def get_product(self, obj):
         product = None
         if obj.product:
-            product = ProductSerializer(obj.product).data
+            product = ProductSerializer(obj.product, context={"request": self.context.get("request")}).data
         return product
 
-    def get_image(self, obj):
-        if self.context.get("request"):
-            request = self.context.get("request")
-            return request.build_absolute_uri(obj.product.image.get_image_url())
-        return None
 
     class Meta:
         model = ProductWishlist
-        # exclude = []
-        fields = ['id', 'product', 'image']
+        exclude = []
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
