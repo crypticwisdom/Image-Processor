@@ -339,7 +339,7 @@ class CreateCustomerWalletAPIView(APIView):
 
     def post(self, request):
         try:
-            wallet_pin = request.data.get("pin")
+            wallet_pin = request.data.get("wallet_pin")
             otp = request.data.get("otp")
 
             profile = Profile.objects.get(user=request.user)
