@@ -300,29 +300,26 @@ def perform_order_cancellation(order, user):
 
 
 def perform_order_pickup(order_product, address, sender_town_id, receiver_town_id):
-    summary = order_product.product_detail.description
+    summary = f"Shipment Request to {address.get_full_address()}"
     response = ShippingService.pickup(
-        order_product=order_product, address=address, order_summary=summary, sender_town_id=sender_town_id,
+        order_products=order_product, address=address, order_summary=summary, sender_town_id=sender_town_id,
         receiver_town_id=receiver_town_id
     )
-    # if "error" in response:
-    #     return False, "Order cannot be placed at the moment"
-    # Update OrderProduct
-    shipper = order_no = delivery_fee = waybill = ""
 
+    if "error" in response:
+        return False, "Order cannot be placed at the moment"
+
+    # Update OrderProduct
     for data in response:
-        shipper = data["Shipper"]
+        shipper = str(data["Shipper"]).upper()
         order_no = data["OrderNo"]
         delivery_fee = data["TotalAmount"]
         waybill = data["TrackingNo"]
 
-    order_product.shipper_name = shipper
-    order_product.tracking_id = order_no
-    order_product.delivery_fee = delivery_fee
-    order_product.waybill_no = waybill
-    order_product.status = "packed"
-    order_product.packed_on = datetime.datetime.now()
-    order_product.save()
+        order_product.filter(shipper_name=shipper).update(
+            tracking_id=order_no, delivery_fee=delivery_fee, waybill_no=waybill, status="packed",
+            packed_on=datetime.datetime.now()
+        )
 
     return True, "Pickup request was successful"
 
