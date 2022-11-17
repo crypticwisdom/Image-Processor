@@ -20,7 +20,6 @@ import uuid
 from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories, \
     validate_product_in_cart, get_shipping_rate, order_payment, add_order_product, perform_order_cancellation, \
     perform_order_pickup, perform_order_tracking
-
 # from ecommerce.utils import add_minus_remove_product_check
 
 
@@ -319,7 +318,7 @@ class CartProductView(APIView):
             if not cart:
                 return Response({"detail": "Cart is empty"}, status=status.HTTP_200_OK)
 
-            serializer = CartProductSerializer(cart, many=True).data
+            serializer = CartProductSerializer(cart, many=True, context={"request": request}).data
             return Response({"detail": serializer}, status=status.HTTP_200_OK)
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -393,7 +392,7 @@ class ProductWishlistView(APIView):
         try:
             product = Product.objects.get(pk=product_id)
             product_wishlist, created = ProductWishlist.objects.get_or_create(user=request.user, product=product)
-            data = ProductWishlistSerializer(product_wishlist).data
+            data = ProductWishlistSerializer(product_wishlist, context={"request": request}).data
 
             return Response({"detail": "Added to wishlist", "data": data})
         except Exception as ex:

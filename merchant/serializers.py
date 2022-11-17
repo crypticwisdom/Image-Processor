@@ -110,8 +110,8 @@ class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
                 return obj.delivered_on
             elif obj.status == "cancelled":
                 return obj.cancelled_on
-            elif obj.status == "pending":
-                return obj.delivery_date
+            # elif obj.status == "pending":  Ashavin: we don't need pending
+            #     return obj.delivery_date
             elif obj.status == "paid":
                 return obj.payment_on
             elif obj.status == "returned":
