@@ -41,8 +41,13 @@ class LoginView(APIView):
                 if check is False:
                     return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Check if user is on UP USER ENGINE
+            if not User.objects.filter(email=email).exists():
+                profile = login_payarena_user(profile=None, email=email, password=password)
+                if profile is not None:
+                    user = profile.user
+
             user = User.objects.get(email=email)
-            print(user)
             log_request(f"user: {user}")
 
             # Check: if user is empty and password does not match.
