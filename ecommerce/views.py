@@ -9,6 +9,7 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from django.utils import timezone
 from account.models import Profile, Address
+from account.utils import get_wallet_info
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
     CartProductSerializer, OrderSerializer, ReturnedProductSerializer
@@ -483,53 +484,52 @@ class ProductCheckoutView(APIView):
             return Response({"detail": "Shipper information, address, sender town, and recipient town are required"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            customer, created = Profile.objects.get_or_create(user=request.user)
-            address = Address.objects.get(customer=customer, id=address_id)
-            cart = Cart.objects.get(user=request.user, id=cart_id, status="open")
+        # try:
+        customer, created = Profile.objects.get_or_create(user=request.user)
+        address = Address.objects.get(customer=customer, id=address_id)
+        cart = Cart.objects.get(user=request.user, id=cart_id, status="open")
 
-            for product in shipping_information:
-                # Get Cart Products
-                cart_product = CartProduct.objects.get(id=product["cart_product_id"], cart=cart)
+        for product in shipping_information:
+            # Get Cart Products
+            cart_product = CartProduct.objects.get(id=product["cart_product_id"], cart=cart)
+            if str(product["company_id"]).isnumeric():
                 cart_product.company_id = product["company_id"]
-                cart_product.shipper_name = product["shipper"]
-                cart_product.delivery_fee = product["shipping_fee"]
-                cart_product.save()
+            cart_product.shipper_name = str(product["shipper"]).upper()
+            cart_product.delivery_fee = product["shipping_fee"]
+            cart_product.save()
 
-            validate = validate_product_in_cart(customer)
-            if validate:
-                return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
+        validate = validate_product_in_cart(customer)
+        if validate:
+            return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Create Order
-            order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
+        # Create Order
+        order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
 
-            # PROCESS PAYMENT
-            success, detail = order_payment(payment_method, order)
-            if success is False:
-                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+        # PROCESS PAYMENT
+        success, detail = order_payment(payment_method, order)
+        if success is False:
+            return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
 
-            # update order
-            order_products = add_order_product(order)
-            for order_product in order_products:
-                # Update payment method
-                order_product.payment_method = payment_method
-                order_product.save()
+        # update order
+        order_products = add_order_product(order)
+        # Update payment method
+        order_products.update(payment_method=payment_method)
+        # Call pickup order request
 
-                # Call pickup order request
-                success, response = perform_order_pickup(order_product, address, sender_town_id, receiver_town_id)
-                # if success is False:
-                #     # Process refund to customer wallet
-                #     return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
-                # print(response)
+        success, response = perform_order_pickup(order_products, address, sender_town_id, receiver_town_id)
 
-            # Send order placement email to shopper
-            # Send order placement email to seller
-            # Send order placement email to admins
+        if success is False:
+            # Process refund to customer wallet
+            return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({"detail": "Order placed successfully"})
+        # Send order placement email to shopper
+        # Send order placement email to seller
+        # Send order placement email to admins
 
-        except Exception as ex:
-            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Order placed successfully"})
+
+        # except Exception as ex:
+        #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OrderAPIView(APIView, CustomPagination):
@@ -631,19 +631,21 @@ class CustomerDashboardView(APIView):
         try:
             response = dict()
 
-            # Wallet, pending ...
-            # -----------------------
+            # Wallet Information
+            profile = Profile.objects.get(user=request.user)
+            wallet_bal = get_wallet_info(profile)
 
             # Recent Orders
             recent_orders = Order.objects.filter(customer__user=request.user).order_by("-id")[:10]
             serialized = OrderSerializer(recent_orders, many=True).data
             response['recent_orders'] = serialized
+            response['wallet_information'] = wallet_bal
             # ----------------------
 
             # Recent Payment
             # -------------------------------
 
-            return Response({"detail": response})
+            return Response(response)
 
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)

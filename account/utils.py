@@ -8,6 +8,10 @@ import uuid
 from django.utils import timezone
 from threading import Thread
 from ecommerce.shopper_email import shopper_signup_verification_email
+from ecommerce.utils import encrypt_text, decrypt_text
+from home.utils import log_request
+
+from module.payarena_service import PayArenaServices
 
 
 def send_shopper_verification_email(email, profile):
@@ -133,4 +137,96 @@ def merge_carts(cart_uid, user):
     except (Exception,) as err:
         print(err, "-------------- 2 ---------------")
         return False, f"{err}"
+
+
+def register_payarena_user(email, phone_number, f_name, l_name, password):
+    # Check if user is available on Payarena Portal
+    phone_no = f"0{phone_number[-10:]}"
+    response = PayArenaServices.register(
+        email=email, phone_no=phone_no, first_name=f_name, last_name=l_name, password=password
+    )
+    if "Success" in response:
+        if response["Success"] is False:
+            if response["Message"] == f"User name '{email}' is already taken.":
+                pass
+            else:
+                return False, str(response["Message"])
+
+    return True, "Account Created"
+
+
+def login_payarena_user(profile, email, password):
+    response = PayArenaServices.login(email, password)
+    user_token = password
+    if "Success" in response:
+        if response["Success"] is True and response['Data']:
+            user_token = response['Data']["access_token"]
+
+    # Encrypt token
+    token = encrypt_text(user_token)
+    profile.pay_auth = token
+    profile.save()
+
+    return True
+
+
+def change_payarena_user_password(profile, old_password, new_password):
+    response = PayArenaServices.change_password(profile, old_password, new_password)
+    if "Success" in response:
+        if response["Success"] is False:
+            log_request(f"Error logging request on User Engine.", f"error_message: {response['Message']}")
+            return False
+        else:
+            log_request(f"Password changed on User Engine.", f"message: {response['Message']}")
+            return True
+    return True
+
+
+def get_wallet_info(profile):
+    response = PayArenaServices.get_wallet_info(profile)
+    balance = dict()
+    if "Success" in response:
+        if response["Success"] is False:
+            balance["detail"] = response["Message"]
+        if response["Success"] is True:
+            profile.has_wallet = True
+            profile.save()
+            balance["detail"] = response["Message"]
+            balance["wallet"] = response["Data"]
+    return balance
+
+
+def validate_phone_number_for_wallet_creation(profile):
+    response = PayArenaServices.validate_number(profile)
+    message = ""
+    if "Success" in response:
+        if response["Success"] is False:
+            message = response["Message"]
+        if response["Success"] is True:
+            token = response["Data"]["Token"]
+            profile.pay_token = encrypt_text(token)
+            profile.save()
+            message = "A verification OTP has been sent to your mobile number"
+    return message
+
+
+def create_user_wallet(profile, pin, otp):
+    one_time_token = decrypt_text(profile.pay_token)
+    response = PayArenaServices.create_wallet(profile, wallet_pin=pin, otp=otp, ott=one_time_token)
+    success = False
+    message = "Error creating wallet, please try again later"
+    if "Success" in response:
+        if response["Success"] is False:
+            message = response["Message"]
+        if response["Success"] is True:
+            success = True
+            message = response["Message"]
+            profile.has_wallet = True
+            profile.save()
+
+    return success, message
+
+
+
+
 

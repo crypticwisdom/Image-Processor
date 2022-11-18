@@ -6,12 +6,14 @@ from .choices import card_from_choices, address_type_choices
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    wallet_id = models.CharField(max_length=40, null=True, blank=True)
+    has_wallet = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile-pictures', null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     verified = models.BooleanField(default=False)
+    pay_auth = models.TextField(blank=True, null=True)
+    pay_token = models.TextField(blank=True, null=True)
     verification_code = models.CharField(max_length=100, null=True, blank=True)
     code_expiration_date = models.DateTimeField(null=True, blank=True)
 
