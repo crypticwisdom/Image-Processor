@@ -7,6 +7,11 @@ class OrderProductTabularInlineAdmin(admin.TabularInline):
     model = OrderProduct
 
 
+class OrderProductModelAdmin(admin.ModelAdmin):
+    model = OrderProduct
+    list_filter = ["status"]
+
+
 class OrderAdmin(admin.ModelAdmin):
     list_display = ["id", "customer", "payment_status"]
     list_filter = ["payment_status"]
@@ -22,3 +27,4 @@ admin.site.register(ReturnReason)
 admin.site.register(ReturnedProduct)
 admin.site.register(ReturnProductImage)
 admin.site.register(Order, OrderAdmin)
+admin.site.register(OrderProduct, OrderProductModelAdmin)
