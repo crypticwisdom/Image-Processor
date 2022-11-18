@@ -189,20 +189,20 @@ class CartProduct(models.Model):
         return "{}: {} {}".format(self.id, self.cart, self.product_detail)
 
 
-class CartBill(models.Model):
-    cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
-    # shipper = models.ForeignKey(Shipper, on_delete=models.SET_NULL, blank=True, null=True)
-    shipper_name = models.CharField(max_length=100, default="")
-    item_total = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
-    discount = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
-    delivery_fee = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
-    management_fee = models.DecimalField(decimal_places=2, max_digits=10, default=0.0)
-    total = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "{} {}".format(self.cart, self.total)
+# class CartBill(models.Model):
+#     cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
+#     # shipper = models.ForeignKey(Shipper, on_delete=models.SET_NULL, blank=True, null=True)
+#     shipper_name = models.CharField(max_length=100, default="")
+#     item_total = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
+#     discount = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
+#     delivery_fee = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
+#     management_fee = models.DecimalField(decimal_places=2, max_digits=10, default=0.0)
+#     total = models.DecimalField(default=0.0, decimal_places=2, max_digits=10)
+#     created_on = models.DateTimeField(auto_now_add=True)
+#     updated_on = models.DateTimeField(auto_now=True)
+#
+#     def __str__(self):
+#         return "{} {}".format(self.cart, self.total)
 
 
 DEAL_DISCOUNT_TYPE_CHOICES = (

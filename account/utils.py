@@ -3,7 +3,7 @@ import re
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from account.models import Profile
-from ecommerce.models import Product, ProductDetail, Cart, CartProduct, CartBill
+from ecommerce.models import Product, ProductDetail, Cart, CartProduct
 import uuid
 from django.utils import timezone
 from threading import Thread
