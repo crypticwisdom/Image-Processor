@@ -642,7 +642,7 @@ class CustomerDashboardView(APIView):
             # Recent Payment
             # -------------------------------
 
-            return Response({"detail": response})
+            return Response(response)
 
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)

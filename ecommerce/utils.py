@@ -274,6 +274,13 @@ def add_order_product(order):
         order_product.delivery_fee = product.delivery_fee
         order_product.save()
 
+        # Increase sale count
+        order_product.product_detail.product.sale_count += order_product.quantity
+        order_product.product_detail.product.save()
+        # Reduce Item stock
+        order_product.product_detail.stock -= order_product.quantity
+        order_product.product_detail.save()
+
     # Discard the cart
     order.cart.status = "closed"
     order.cart.save()

@@ -141,15 +141,16 @@ def merge_carts(cart_uid, user):
 
 def register_payarena_user(email, phone_number, f_name, l_name, password):
     # Check if user is available on Payarena Portal
+    phone_no = f"0{phone_number[-10:]}"
     response = PayArenaServices.register(
-        email=email, phone_no=phone_number, first_name=f_name, last_name=l_name, password=password
+        email=email, phone_no=phone_no, first_name=f_name, last_name=l_name, password=password
     )
     if "Success" in response:
         if response["Success"] is False:
             if response["Message"] == f"User name '{email}' is already taken.":
                 pass
             else:
-                return False, "Error occurred while creating account. Please try again later"
+                return False, str(response["Message"])
 
     return True, "Account Created"
 
