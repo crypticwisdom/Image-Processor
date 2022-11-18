@@ -319,7 +319,11 @@ class CartProductView(APIView):
                 return Response({"detail": "Cart is empty"}, status=status.HTTP_200_OK)
 
             serializer = CartProductSerializer(cart, many=True, context={"request": request}).data
-            return Response({"detail": serializer}, status=status.HTTP_200_OK)
+
+            # Sum all price fields in the QuerySet
+            total_price = sum(cart.values_list('price', flat=True))
+
+            return Response({"detail": serializer, "order_summary": total_price}, status=status.HTTP_200_OK)
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -662,4 +666,3 @@ class TrackOrderAPIView(APIView):
                 return Response({"detail": "Tracking ID not found for selected order"})
         except Exception as er:
             return Response({"detail": f"{er}"}, status=status.HTTP_400_BAD_REQUEST)
-

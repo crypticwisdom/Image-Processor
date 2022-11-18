@@ -49,7 +49,7 @@ class LoginView(APIView):
                 return Response({"detail": "User not verified, please request a verification link."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            merge_carts(cart_uid=cart_uid, user=user)
+            has_merged = merge_carts(cart_uid=cart_uid, user=user)
 
             return Response({
                 "detail": "Login successful",

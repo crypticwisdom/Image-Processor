@@ -203,6 +203,7 @@ class CartProductSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.product_detail.product.image.get_image_url())
         return obj.product_detail.product.image.get_image_url() or None
 
+
     class Meta:
         model = CartProduct
         fields = ["id", "name", "image", "description", "price", "quantity", "item_price", "discount", "product_detail"]
