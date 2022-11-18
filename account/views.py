@@ -42,7 +42,7 @@ class LoginView(APIView):
                     return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
             user = User.objects.get(email=email)
-            print(user)
+
             log_request(f"user: {user}")
 
             # Check: if user is empty and password does not match.
