@@ -246,12 +246,13 @@ def get_shipping_rate(customer, address_id=None):
 
 
 def order_payment(payment_method, order):
-    # if payment_method == "success":
-    # create Transaction
-    # create cart_bill
+    # if payment_method == "wallet":
+    # do something
+    # if payment_method == "card"
     # update order_payment
     order.payment_status = "success"
     order.save()
+    # create Transaction
 
     return True, "Payment successful"
 

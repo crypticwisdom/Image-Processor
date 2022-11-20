@@ -3,7 +3,7 @@ import re
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from account.models import Profile
-from ecommerce.models import Product, ProductDetail, Cart, CartProduct, CartBill
+from ecommerce.models import Product, ProductDetail, Cart, CartProduct
 import uuid
 from django.utils import timezone
 from threading import Thread
@@ -158,16 +158,28 @@ def register_payarena_user(email, phone_number, f_name, l_name, password):
 def login_payarena_user(profile, email, password):
     response = PayArenaServices.login(email, password)
     user_token = password
+    user_profile = profile
     if "Success" in response:
         if response["Success"] is True and response['Data']:
             user_token = response['Data']["access_token"]
+            if user_profile is None:
+                # Create User
+                user_email = response["Data"]["userProfile"]["Email"]
+                first_name = response["Data"]["userProfile"]["FirstName"]
+                last_name = response["Data"]["userProfile"]["Surname"]
+                phone_no = response["Data"]["userProfile"]["PhoneNumber"]
+                user = User.objects.create(username=user_email, first_name=first_name, last_name=last_name, password=make_password(password), email=user_email)
+                user_profile = Profile.objects.create(user=user)
+                user_profile.verified = True
+                user_profile.phone_number = phone_no
+                user_profile.save()
 
     # Encrypt token
     token = encrypt_text(user_token)
-    profile.pay_auth = token
-    profile.save()
+    user_profile.pay_auth = token
+    user_profile.save()
 
-    return True
+    return user_profile
 
 
 def change_payarena_user_password(profile, old_password, new_password):

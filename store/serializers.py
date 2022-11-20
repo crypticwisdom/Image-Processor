@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ecommerce.models import ProductImage, ProductReview, ProductWishlist, CartProduct, CartBill, Brand, Product, \
+from ecommerce.models import ProductImage, ProductReview, ProductWishlist, CartProduct, Brand, Product, \
     ProductDetail, Shipper, Cart
 from merchant.serializers import SellerSerializer
 from .models import *
@@ -134,21 +134,5 @@ class CartProductSerializer(serializers.ModelSerializer):
         ]
 
 
-class CartBillSerializer(serializers.ModelSerializer):
-    shipper = ShipperSerializer(many=False)
-
-    class Meta:
-        model = CartBill
-        fields = [
-            'cart',
-            'shipper',
-            'item_total',
-            'discount',
-            'delivery_fee',
-            'management_fee',
-            'total',
-            'created_on',
-            'updated_on',
-        ]
 
 

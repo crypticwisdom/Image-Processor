@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        exclude = ["customer"]
+        exclude = []
 
 
 class ProfileSerializer(serializers.ModelSerializer):

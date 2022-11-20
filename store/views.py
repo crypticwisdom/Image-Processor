@@ -192,6 +192,3 @@ class ShipperView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CartBillView(generics.ListAPIView):
-    queryset = CartBill.objects.all()
-    serializer_class = CartBillSerializer
