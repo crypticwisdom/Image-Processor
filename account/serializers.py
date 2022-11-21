@@ -4,9 +4,17 @@ from django.contrib.auth.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    phone_number = serializers.SerializerMethodField()
+
+    def get_phone_number(self, obj):
+        phone_no = None
+        if Profile.objects.filter(user=obj).exists():
+            phone_no = Profile.objects.get(user=obj).phone_number
+        return phone_no
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'phone_number']
 
 
 class CustomerAddressSerializer(serializers.ModelSerializer):
@@ -34,4 +42,4 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified', 'phone_number']
+        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified']

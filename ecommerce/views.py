@@ -12,7 +12,7 @@ from account.models import Profile, Address
 from account.utils import get_wallet_info
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
-    CartProductSerializer, OrderSerializer, ReturnedProductSerializer
+    CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
     OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage
@@ -633,8 +633,8 @@ class CustomerDashboardView(APIView):
             wallet_bal = get_wallet_info(profile)
 
             # Recent Orders
-            recent_orders = Order.objects.filter(customer__user=request.user).order_by("-id")[:10]
-            serialized = OrderSerializer(recent_orders, many=True).data
+            recent_orders = OrderProduct.objects.filter(order__customer=profile).order_by("-id")[:10]
+            serialized = OrderProductSerializer(recent_orders, many=True).data
             response['recent_orders'] = serialized
             response['wallet_information'] = wallet_bal
             # ----------------------
