@@ -4,7 +4,8 @@ from . import views
 app_name = "transaction"
 
 urlpatterns = [
-    # path("", views.Tra.as_view(), name="dashboard"),
+    path("", views.TransactionListAPIView.as_view(), name="transaction"),
+    path("<id>/", views.TransactionDetailRetrieveAPIView.as_view(), name="transaction-detail"),
 
 ]
 
