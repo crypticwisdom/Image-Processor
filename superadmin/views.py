@@ -13,6 +13,7 @@ from ecommerce.utils import top_monthly_categories
 from home.utils import get_previous_date, get_month_start_and_end_datetime, get_year_start_and_end_datetime, \
     get_week_start_and_end_datetime
 from merchant.models import Seller
+from store.serializers import ProductCategorySerializer
 
 
 class DashboardAPIView(APIView):
@@ -151,6 +152,19 @@ class BrandDetailRetrieveAPIView(generics.RetrieveAPIView):
 
 # Brand End
 
-# class ProductCate
+# ProductCategory Start
+class ProductCategoryListAPIView(generics.ListAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = ProductCategorySerializer
+    queryset = ProductCategory.objects.all().order_by('-id')
+    pagination_class = CustomPagination
 
+
+class ProductCategoryDetailRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = ProductCategorySerializer
+    queryset = ProductCategory.objects.all()
+    lookup_field = "id"
+
+# ProductCategory End
 

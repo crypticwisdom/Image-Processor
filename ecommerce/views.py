@@ -320,7 +320,11 @@ class CartProductView(APIView):
                 return Response({"detail": "Cart is empty"}, status=status.HTTP_200_OK)
 
             serializer = CartProductSerializer(cart, many=True, context={"request": request}).data
-            return Response({"detail": serializer}, status=status.HTTP_200_OK)
+
+            # Sum all price fields in the QuerySet
+            total_price = sum(cart.values_list('price', flat=True))
+
+            return Response({"detail": serializer, "order_summary": total_price}, status=status.HTTP_200_OK)
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -535,7 +539,7 @@ class OrderAPIView(APIView, CustomPagination):
             if pk:
                 data = OrderSerializer(Order.objects.get(id=pk, customer__user=request.user)).data
             else:
-                order_status = request.GET.get("status")
+                order_status = request.GET.get("status", None)
                 if order_status:
                     order = Order.objects.filter(orderproduct__status=order_status,
                                                  customer__user=request.user).distinct()
@@ -563,19 +567,18 @@ class OrderReturnView(APIView, CustomPagination):
     permission_classes = []
 
     def get(self, request):
-
         """
             To fetch all returned order by the current logged user.
         """
         try:
-            # returned_products = ReturnedProduct.objects.filter(returned_by=request.user).order_by("-id")
-            returned_products = ReturnedProduct.objects.all().order_by("-id")
+            returned_products = ReturnedProduct.objects.filter(returned_by=request.user).order_by("-id")
+            # returned_products = ReturnedProduct.objects.all().order_by("-id")
             paginated_response = self.paginate_queryset(returned_products, request)
             serialized_returned_product = ReturnedProductSerializer(instance=paginated_response, many=True,
                                                                     context={"request": request}).data
             final_serialized_response = self.get_paginated_response(serialized_returned_product).data
             print(final_serialized_response)
-            return Response(final_serialized_response)
+            return Response({"detail": final_serialized_response})
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -665,4 +668,3 @@ class TrackOrderAPIView(APIView):
                 return Response({"detail": "Tracking ID not found for selected order"})
         except Exception as er:
             return Response({"detail": f"{er}"}, status=status.HTTP_400_BAD_REQUEST)
-

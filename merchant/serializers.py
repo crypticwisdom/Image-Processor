@@ -117,7 +117,7 @@ class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
             elif obj.status == "returned":
                 return obj.returned_on
             elif obj.status == "shipped":
-                return obj.refunded
+                return obj.shipped_on
             elif obj.status == "refunded":
                 return obj.refunded_on
             elif obj.status == "packed":

@@ -203,6 +203,7 @@ class CartProductSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.product_detail.product.image.get_image_url())
         return obj.product_detail.product.image.get_image_url() or None
 
+
     class Meta:
         model = CartProduct
         fields = ["id", "name", "image", "description", "price", "quantity", "item_price", "discount", "product_detail"]
@@ -289,8 +290,22 @@ class ReturnProductImageSerializer(serializers.ModelSerializer):
         exclude = ["id", "return_product", "image"]
 
 
+class ReturnReasonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReturnReason
+        fields = ['id', 'reason']
+
+
 class ReturnedProductSerializer(serializers.ModelSerializer):
     return_images = serializers.SerializerMethodField()
+    return_date = serializers.SerializerMethodField()
+    reason = ReturnReasonSerializer()
+
+
+    def get_return_date(self, obj):
+        if obj:
+            return obj.created_on
+        return None
 
     def get_return_images(self, obj):
         if ReturnProductImage.objects.filter(return_product=obj).exists():
@@ -298,13 +313,9 @@ class ReturnedProductSerializer(serializers.ModelSerializer):
             context = self.context.get("request")
             return ReturnProductImageSerializer(return_product_image, many=True, context={"request": context}).data
         return None
-        # if return_product_image.exists():
-        #     return_product_image = return_product_image.last()
-        #     return return_product_image.image
 
     class Meta:
         model = ReturnedProduct
-        fields = ['id', 'returned_by', 'return_images', 'product', 'reason', 'status', 'payment_status', 'comment', 'created_on', 'updated_by',
-                  'updated_on']
-        # fields = "__all__"
+        fields = ['id', 'returned_by', 'return_images', 'product', 'reason', 'status', 'payment_status', 'comment',
+                  'return_date', 'updated_by', 'updated_on']
 

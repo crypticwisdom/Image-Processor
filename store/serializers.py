@@ -14,6 +14,20 @@ class BrandSerializer(serializers.ModelSerializer):
 
 class ProductCategorySerializer(serializers.ModelSerializer):
     brands = BrandSerializer(many=True)
+    total_products = serializers.SerializerMethodField()
+    total_variants = serializers.SerializerMethodField()
+
+    def get_total_products(self, obj):
+        total = 0
+        if Product.objects.filter(category=obj).exists():
+            total = Product.objects.filter(category=obj).count()
+        return total
+
+    def get_total_variants(self, obj):
+        variants = 0
+        if ProductDetail.objects.filter(product__category=obj).exists():
+            variants = ProductDetail.objects.filter(product__category=obj).count()
+        return variants
 
     class Meta:
         model = ProductCategory
