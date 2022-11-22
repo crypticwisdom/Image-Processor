@@ -61,81 +61,75 @@ def validate_email(email):
 
 def merge_carts(cart_uid, user):
     try:
-        # Get Cart by cart_uid
         """
-            - If user 
+            Synopsis:
+            - If cart A (Unauthenticated cart instance) is empty delete it.
+            - If cart B (Authenticated cart instance) is empty delete it.
+            
+            - Merge Functionality:
+                - Sum the 2 query sets to get 1.
+                - create a 'basket' / 'container' to holder values during merging.
+                - 'basket' should hold the item's Product ID as key and Item (CartProduct) as value.
+                - go through the merged queryset to check if item's ID is found in basket.
+                - if found, then merge item's 'price' and 'quantity'
+                - else add item's Product ID as key and item as value.
         """
         if Cart.objects.filter(cart_uid=cart_uid, status="open").exists():
-            cart_instance = Cart.objects.get(cart_uid=cart_uid, status="open")
+            unauthenticated_cart_instance = Cart.objects.get(cart_uid=cart_uid, status="open")
 
-            # Filter CartProduct where cart_instance is found/connected to.
-            new_cart_products = CartProduct.objects.filter(cart=cart_instance)
+            # Filter CartProduct where 'unauthenticated_cart_instance' is found/connected to.
+            unauthenticated_cart_instance_products = CartProduct.objects.filter(cart=unauthenticated_cart_instance)
 
-            if len(new_cart_products) < 1:
-                cart_instance.delete()
+            # Delete cart instance (Cart created by unauthenticated user) if it has not cart-product.
+            if len(unauthenticated_cart_instance_products) < 1:
+                unauthenticated_cart_instance.delete()
+                # Return 'True' after deleting newly created empty cart because it is empty and we can't merge an empty
+                # can't perform the merge operation with an empty cart.
+                return True, 'cart instance is empty and has been deleted'
 
             # Get "open" cart that belongs to the user logged-in
             if Cart.objects.filter(user=user, status="open").exists():
-                # Since cart with this user is found, then perform merge with both new and old carts.
+                # Since cart with this user is found, then perform merge with both new and authenticated_carts.
 
                 # - Get cart and cart products relating to the user.
-                user_old_cart = Cart.objects.get(user=user, status="open")
-                user_old_cart_products = CartProduct.objects.filter(cart=user_old_cart)
+                authenticated_cart_instance = Cart.objects.get(user=user, status="open")
 
-                if len(user_old_cart_products) < 1:
-                    user_old_cart.delete()
+                authenticated_cart_instance_products = CartProduct.objects.filter(cart=authenticated_cart_instance)
 
-                if len(user_old_cart_products) >= len(new_cart_products):
-                    # If length of old cart is > or equal to length of new cart then, merge cart and delete new_cart.
-                    # - loop through carts.
+                if len(authenticated_cart_instance_products) < 1:
+                    # if 'authenticated_cart_instance' is empty, delete and assign the user's instance to the new
+                    # 'unauthenticated_cart_instance'.
+                    authenticated_cart_instance.delete()
 
-                    for old_item in user_old_cart_products:
-                        # check if 'old_item' is in New Cart
-                        # print(old_item)
+                    unauthenticated_cart_instance.user = user
+                    unauthenticated_cart_instance.cart_uid = ""
+                    unauthenticated_cart_instance.save()
+                    return True, 'old instance is empty and has been deleted and has been assigned to user'
 
-                        for new_item in new_cart_products:
+                # Merge the 2 carts together to get 1.
+                sum_carts = authenticated_cart_instance_products | unauthenticated_cart_instance_products
 
-                            # print(new_item.product_detail.product.id, '---', old_item.product_detail.product.id, "--")
-                            if new_item.product_detail.product.id == old_item.product_detail.product.id:
-                                #  if product
-                                print("found")
-                                new_item_quantity, old_item_quantity = new_item.quantity, old_item.quantity
-                                item_stock_sum = new_item_quantity + old_item_quantity
-
-                                # check if this item (cart product is available in the summed quantity)
-                                # 'new_item.product_detail.stock' can be swapped with 'old_item.product_detail.stock'
-                                if old_item.product_detail.stock == item_stock_sum:
-                                    # If product is enough in stock.
-                                    print("available")
-                                    # merge cart to old_cart (which is the cart linked to a user instance)
-                                else:
-                                    # If product is not available in stock.
-                                    print("not enough")
-                                print(new_item_quantity, old_item_quantity, "-==-==-")
-                            else:
-                                print("some")
-                    #     for i in user_old_cart_products:
-                    #         print(old_item.name, i.name)
-                    #     cart.
-                    # delete cart so there should be 1 cart for the user.
-
+                basket = {}
+                # Main merge functionality using 'basket: dict'
+                for item in sum_carts:
+                    if item.product_detail.product.id in basket:
+                        basket[item.product_detail.product.id].price += item.price
+                        basket[item.product_detail.product.id].quantity += item.quantity
+                        basket[item.product_detail.product.id].save()
+                    else:
+                        basket[item.product_detail.product.id] = item
                 else:
-                    print("----")
-                    # for item in new_cart_products:
-                    #     ...
-                    # print(new_cart_products, user_old_cart_products, "-----------------")
-                    ...
-            else:
-                # Since cart with user is not found then, assign the current user to the new cart.
-                cart_instance.user = user
-                cart_instance.cart_uid = ""
-                cart_instance.save()
-                # working.
+                    # Delete the previous carts to have a new 'cart' instance.
+                    unauthenticated_cart_instance.delete()
+                    authenticated_cart_instance.delete()
 
-        # print(cart_product_query)
+                    cart = Cart.objects.create(user=user)
+                    for key, value in basket.items():
+                        value.cart = cart
+                        value.save()
+
         return True, "Success"
     except (Exception,) as err:
-        print(err, "-------------- 2 ---------------")
         return False, f"{err}"
 
 
@@ -237,8 +231,3 @@ def create_user_wallet(profile, pin, otp):
             profile.save()
 
     return success, message
-
-
-
-
-

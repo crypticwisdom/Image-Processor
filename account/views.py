@@ -51,7 +51,7 @@ class LoginView(APIView):
             log_request(f"user: {user}")
 
             # Check: if user is empty and password does not match.
-            if not (user and check_password(password=password, encoded=user.password)):
+            if not user.check_password(password):
                 return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
             profile = Profile.objects.get(user=user)
@@ -59,7 +59,8 @@ class LoginView(APIView):
                 return Response({"detail": "User not verified, please request a verification link."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            has_merged = merge_carts(cart_uid=cart_uid, user=user)
+            has_merged, message = merge_carts(cart_uid=cart_uid, user=user)
+            # Log 'message'
 
             # Login to PayArena Auth Engine
             Thread(target=login_payarena_user, args=[profile, email, password]).start()
