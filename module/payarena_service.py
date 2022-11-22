@@ -82,13 +82,3 @@ class PayArenaServices:
         response = requests.request("POST", url, headers=header, data=payload).json()
         log_request(f"url: {url}", f"headers: {header}", f"payload: {payload}", f"response: {response}")
         return response
-
-
-
-
-
-
-
-
-
-
