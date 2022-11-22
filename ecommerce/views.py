@@ -429,19 +429,19 @@ class ProductView(APIView, CustomPagination):
     permission_classes = []
 
     def get(self, request, pk=None):
-        # try:
-        if pk:
-            product = Product.objects.get(id=pk, status="active", store__is_active=True)
-            product.view_count += 1
-            product.save()
-            serializer = ProductSerializer(product, context={"request": request}).data
-        else:
-            prod = self.paginate_queryset(Product.objects.filter(status="active", store__is_active=True), request)
-            queryset = ProductSerializer(prod, many=True, context={"request": request}).data
-            serializer = self.get_paginated_response(queryset).data
-        return Response(serializer)
-        # except Exception as err:
-        #     return Response({"detail": "Error occurred while fetching product", "error": str(err)})
+        try:
+            if pk:
+                product = Product.objects.get(id=pk, status="active", store__is_active=True)
+                product.view_count += 1
+                product.save()
+                serializer = ProductSerializer(product, context={"request": request}).data
+            else:
+                prod = self.paginate_queryset(Product.objects.filter(status="active", store__is_active=True), request)
+                queryset = ProductSerializer(prod, many=True, context={"request": request}).data
+                serializer = self.get_paginated_response(queryset).data
+            return Response(serializer)
+        except Exception as err:
+            return Response({"detail": "Error occurred while fetching product", "error": str(err)})
 
 
 class ProductCheckoutView(APIView):
