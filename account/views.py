@@ -64,15 +64,15 @@ class LoginView(APIView):
             # Log 'message'
 
             # Login to PayArena Auth Engine
-            Thread(target=login_payarena_user, args=[profile, email, password]).start()
-            time.sleep(2)
-            wallet_balance = get_wallet_info(profile)
+            # Thread(target=login_payarena_user, args=[profile, email, password]).start()
+            # time.sleep(2)
+            # wallet_balance = get_wallet_info(profile)
 
             return Response({
                 "detail": "Login successful",
                 "token": f"{RefreshToken.for_user(user).access_token}",
                 "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
-                "wallet_information": wallet_balance
+                # "wallet_information": wallet_balance
             })
 
         except (ValueError, Exception) as err:

@@ -10,6 +10,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
     def get_image(self, obj):
+        if obj.image:
+            ...
         return [str(instance.image.url) for instance in ProductImage.objects.filter(product_detail=obj)]
 
     class Meta:

@@ -1,10 +1,10 @@
 import datetime
 
 from dateutil.relativedelta import relativedelta
-from django.db.models import Sum
+from django.db.models import Sum, F
 
 from ecommerce.models import Product, ProductCategory, ProductType, ProductDetail, Brand, ProductImage, Image, \
-    OrderProduct
+    OrderProduct, ReturnedProduct
 from ecommerce.serializers import OrderProductSerializer
 from home.utils import log_request, get_week_start_and_end_datetime, get_month_start_and_end_datetime, \
     get_year_start_and_end_datetime
@@ -12,6 +12,7 @@ from .models import *
 from store.models import Store
 from store.utils import create_or_update_store
 from module import apis
+from merchant.serializers import ProductLowAndOutOffStockSerializer
 
 def create_product(request, seller):
     data = request.data
@@ -172,19 +173,19 @@ def validate_bank_details(account_number: str, account_name: str, bank_name: str
         return False, response2
 
     response2 = {
-            'NameEnquiryResponse': {
-                'ResponseCode': '200',
-                'AccountNumber': '2114616054',
-                'AccountName': 'Nwachukwu Wisdom',
-                'PhoneNumber': '08057784796',
-                'ErrorMessage': 'error'
-            }
+        'NameEnquiryResponse': {
+            'ResponseCode': '200',
+            'AccountNumber': '2114616054',
+            'AccountName': 'Nwachukwu Wisdom',
+            'PhoneNumber': '08057784796',
+            'ErrorMessage': 'error'
         }
+    }
     account_name = account_name.lower().split(" ")
     response_name = str(response2["NameEnquiryResponse"]["AccountName"]).lower().strip()
 
     # Check if first or last name in 'response_name'
-    if not(account_name[0] in response_name or account_name[1] in response_name):
+    if not (account_name[0] in response_name or account_name[1] in response_name):
         return False, "Bank name does not match"
     return True, "Successfully validated bank details"
 
@@ -465,8 +466,9 @@ def create_seller(request, user, email, phone_number):
 
 def get_total_sales(store):
     total_sales = 0
-    total_sales_data = OrderProduct.objects.filter(product_detail__product__store=store, order__payment_status="success"
-                                                   ).aggregate(total_sales=Sum('sub_total'))['total_sales']
+    total_sales_data: OrderProduct = \
+        OrderProduct.objects.filter(product_detail__product__store=store, order__payment_status="success"
+                                    ).aggregate(total_sales=Sum('sub_total'))['total_sales']
     if total_sales_data:
         total_sales = total_sales_data
     return total_sales
@@ -487,7 +489,6 @@ def get_sales_data(store):
         year_date = current_date - relativedelta(years=delta)
         week_start, week_end = get_week_start_and_end_datetime(week_date)
         month_start, month_end = get_month_start_and_end_datetime(month_date)
-        print(month_start, month_end)
         year_start, year_end = get_year_start_and_end_datetime(year_date)
         # print(year_start, year_end)
         total_sales = OrderProduct.objects.filter(product_detail__product__store=store, created_on__gte=week_start,
@@ -556,13 +557,33 @@ def get_recent_orders_data(store):
     return serializer.data
 
 
-def get_dashboard_data(store):
+def get_low_in_stock(store, request):
+    # used the F() to compare 'low_stock_threshold' and 'stock' fields in ProductDetail, it returns a queryset of
+    # ProductDetail instances that their 'low_stock_threshold' fields are greater than their 'stock' fields.
+    low_in_stock = ProductDetail.objects.filter(product__store=store,
+                                                low_stock_threshold__gte=F('stock')).order_by('id')[:10]
+    serialized_data = ProductLowAndOutOffStockSerializer(low_in_stock, many=True, context={"request": request})
+    return serialized_data.data
+
+
+def out_of_stock(store, request):
+    out_off_stock = ProductDetail.objects.filter(product__store=store, stock__lte=0).order_by('id')[:10]
+    serialized_data = ProductLowAndOutOffStockSerializer(out_off_stock, many=True, context={"request": request})
+    return serialized_data.data
+
+
+def get_dashboard_data(store, request):
     data = dict()
     data['total_orders'] = OrderProduct.objects.filter(product_detail__product__store=store,
                                                        order__payment_status="success").count()
     data['total_sales'] = get_total_sales(store)
     data['product_views'] = Product.objects.filter(store=store).aggregate(Sum('view_count'))['view_count__sum']
+    data['total_product'] = ProductDetail.objects.filter(product__store=store).aggregate(Sum('stock'))['stock__sum']
+    data['returned_product_count'] = ReturnedProduct.objects.filter(product__product_detail__product__store=store,
+                                                                    status="approved").count()
     data['sales'] = get_sales_data(store)
+    data['low_in_stock'] = get_low_in_stock(store, request)
+    data['out_of_stock'] = out_of_stock(store, request)
     data['best_sellers'] = get_best_sellers_data(store)
     data['top_categories'] = get_top_categories_data(store)
     data['recent_orders'] = get_recent_orders_data(store)

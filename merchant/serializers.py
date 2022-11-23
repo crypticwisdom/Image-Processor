@@ -127,3 +127,31 @@ class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderProduct
         fields = ['order_id', 'customer_name', 'tracking_id', 'payment_method', 'date', 'status', 'total']
+
+
+class ProductLowAndOutOffStockSerializer(serializers.ModelSerializer):
+
+    product_name = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    def get_product_name(self, obj):
+        if obj:
+            return obj.product.name
+        return None
+
+    def get_image(self, obj):
+        if obj.product.image and self.context.get("request"):
+            request = self.context.get("request")
+            return request.build_absolute_uri(obj.product.image.image.url)
+        return obj.product.image.get_image_url()
+        # if obj and self.context.get():
+        #     return
+
+
+    class Meta:
+        """
+            ID, product_name, image, price, discount, stock
+        """
+
+        model = ProductDetail
+        fields = ['id', 'product_name', 'image', 'stock', 'price', 'discount']
