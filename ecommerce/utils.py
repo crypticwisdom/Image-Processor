@@ -11,6 +11,7 @@ from django.utils import timezone
 from account.models import Address
 from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime, get_next_date
 from module.shipping_service import ShippingService
+from transaction.models import Transaction
 from .models import Cart, Product, ProductDetail, CartProduct, ProductReview, Order, OrderProduct
 
 
@@ -246,13 +247,26 @@ def get_shipping_rate(customer, address_id=None):
 
 
 def order_payment(payment_method, order):
+    # create Transaction
+    # get order amount
+    product_amount = CartProduct.objects.filter(cart__order=order).aggregate(Sum("price"))["price__sum"] or 0
+    delivery_amount = CartProduct.objects.filter(cart__order=order).aggregate(
+        Sum("delivery_fee"))["delivery_fee__sum"] or 0
+
+    amount = product_amount + delivery_amount
+    trans = Transaction.objects.create(order=order, payment_method=payment_method, amount=amount)
+
     # if payment_method == "wallet":
     # do something
     # if payment_method == "card"
+
+    # Update transaction status
+    trans.status = "success"
+    trans.save()
+
     # update order_payment
     order.payment_status = "success"
     order.save()
-    # create Transaction
 
     return True, "Payment successful"
 

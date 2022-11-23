@@ -19,6 +19,8 @@ class Transaction(models.Model):
     status = models.CharField(max_length=100, choices=payment_status_choices, default="pending")
     transaction_reference = models.CharField(max_length=200, blank=True, null=True)
     transaction_detail = models.TextField(blank=True, null=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.order} - {self.status}"

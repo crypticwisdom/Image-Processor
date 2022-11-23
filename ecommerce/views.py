@@ -12,7 +12,7 @@ from account.models import Profile, Address
 from account.utils import get_wallet_info
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
-    CartProductSerializer, OrderSerializer, ReturnedProductSerializer
+    CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
     OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage
@@ -429,19 +429,19 @@ class ProductView(APIView, CustomPagination):
     permission_classes = []
 
     def get(self, request, pk=None):
-        # try:
-        if pk:
-            product = Product.objects.get(id=pk, status="active", store__is_active=True)
-            product.view_count += 1
-            product.save()
-            serializer = ProductSerializer(product, context={"request": request}).data
-        else:
-            prod = self.paginate_queryset(Product.objects.filter(status="active", store__is_active=True), request)
-            queryset = ProductSerializer(prod, many=True, context={"request": request}).data
-            serializer = self.get_paginated_response(queryset).data
-        return Response(serializer)
-        # except Exception as err:
-        #     return Response({"detail": "Error occurred while fetching product", "error": str(err)})
+        try:
+            if pk:
+                product = Product.objects.get(id=pk, status="active", store__is_active=True)
+                product.view_count += 1
+                product.save()
+                serializer = ProductSerializer(product, context={"request": request}).data
+            else:
+                prod = self.paginate_queryset(Product.objects.filter(status="active", store__is_active=True), request)
+                queryset = ProductSerializer(prod, many=True, context={"request": request}).data
+                serializer = self.get_paginated_response(queryset).data
+            return Response(serializer)
+        except Exception as err:
+            return Response({"detail": "Error occurred while fetching product", "error": str(err)})
 
 
 class ProductCheckoutView(APIView):
@@ -636,8 +636,8 @@ class CustomerDashboardView(APIView):
             wallet_bal = get_wallet_info(profile)
 
             # Recent Orders
-            recent_orders = Order.objects.filter(customer__user=request.user).order_by("-id")[:10]
-            serialized = OrderSerializer(recent_orders, many=True).data
+            recent_orders = OrderProduct.objects.filter(order__customer=profile).order_by("-id")[:10]
+            serialized = OrderProductSerializer(recent_orders, many=True).data
             response['recent_orders'] = serialized
             response['wallet_information'] = wallet_bal
             # ----------------------

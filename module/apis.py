@@ -128,4 +128,17 @@ def call_name_enquiry(bank_code: str, account_number: str):
         return False, str(err)
 
 
+def make_payment():
+    url = "https://test.payarena.com/FAVE"
+    payload = {
+                "amount": 400,
+                "currency": 566,
+                "description": "Description of product or service",
+                "returnUrl": "http://testurl.com/response/",
+                "secretKey": "82A60EE5FBB2B5309166A0ADF60B5FE1E445AB9A2EB35C0D",
+                "fee": 0
+            }
+    response = requests.request("POST", url, data=payload).json()
+    return response
+
 

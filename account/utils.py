@@ -181,11 +181,11 @@ def change_payarena_user_password(profile, old_password, new_password):
     if "Success" in response:
         if response["Success"] is False:
             log_request(f"Error logging request on User Engine.", f"error_message: {response['Message']}")
-            return False
+            return False, f"{response['Message']}"
         else:
             log_request(f"Password changed on User Engine.", f"message: {response['Message']}")
-            return True
-    return True
+            return True, f"{response['Message']}"
+    return True, ""
 
 
 def get_wallet_info(profile):

@@ -48,11 +48,10 @@ class LoginView(APIView):
                     user = profile.user
 
             user = User.objects.get(email=email)
-
             log_request(f"user: {user}")
 
             # Check: if user is empty and password does not match.
-            if not (user and check_password(password=password, encoded=user.password)):
+            if not user.check_password(password):
                 return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
             profile = Profile.objects.get(user=user)
@@ -249,8 +248,10 @@ class ChangePasswordView(APIView):
             user = request.user
             user_profile = Profile.objects.get(user=user)
             # Change Password on PayArena Auth Engine
-            # change_payarena_user_password(profile, old_password, new_password)
-            Thread(target=change_payarena_user_password, args=[user_profile, old_password, new_password]).start()
+            success, message = change_payarena_user_password(user_profile, old_password, new_password)
+            if success is False:
+                return Response({"detail": "An error occurred while changing password, please try again later",
+                                 "error": str(message)}, status=status.HTTP_400_BAD_REQUEST)
             user.password = make_password(confirm_new_password)
             user.save()
 
