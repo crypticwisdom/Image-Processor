@@ -21,7 +21,6 @@ import uuid
 from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories, \
     validate_product_in_cart, get_shipping_rate, order_payment, add_order_product, perform_order_cancellation, \
     perform_order_pickup, perform_order_tracking
-# from ecommerce.utils import add_minus_remove_product_check
 
 
 # Create your views here.
@@ -329,40 +328,6 @@ class CartProductView(APIView):
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class CartView(APIView):
-#     permission_classes = []
-#
-#     def get(self, request):
-#         try:
-#
-#             cart_uid = request.data.get("cart_uid", None)
-#             cart_id = request.data.get("cart_id", None)
-#
-#             cart = None
-#             print(cart, request.user)
-#             if request.user.is_authenticated:
-#                 cart = Cart.objects.get(user=request.user, status='open')
-#             else:
-#                 if cart_uid is None and cart_id is None:
-#                     return Response({"detail": "Cart UID or ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-#
-#                 if cart_id:
-#                     cart = Cart.objects.get(id=cart_id, status='open')
-#                 elif cart_uid:
-#                     cart = Cart.objects.get(cart_uid=cart_uid, status='open')
-#
-#             cart_products = CartProduct.objects.filter(cart=cart)
-#             serialized = CartProductSerializer(cart_products, many=True).data
-#             # Still building ...
-#             return Response({"detail": "Positive response", "data": {
-#                 "cart_count": cart_products.count(),
-#                 "ser": serialized
-#             }}, status=status.HTTP_200_OK)
-#         except (Exception,) as err:
-#             print(err)
-#             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
-
-
 class FilteredSearchView(generics.ListAPIView):
     permission_classes = []
     pagination_class = DesktopResultsSetPagination
@@ -564,7 +529,7 @@ class OrderAPIView(APIView, CustomPagination):
 
 
 class OrderReturnView(APIView, CustomPagination):
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         """
@@ -572,12 +537,10 @@ class OrderReturnView(APIView, CustomPagination):
         """
         try:
             returned_products = ReturnedProduct.objects.filter(returned_by=request.user).order_by("-id")
-            # returned_products = ReturnedProduct.objects.all().order_by("-id")
             paginated_response = self.paginate_queryset(returned_products, request)
             serialized_returned_product = ReturnedProductSerializer(instance=paginated_response, many=True,
                                                                     context={"request": request}).data
             final_serialized_response = self.get_paginated_response(serialized_returned_product).data
-            print(final_serialized_response)
             return Response({"detail": final_serialized_response})
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -597,7 +560,7 @@ class OrderReturnView(APIView, CustomPagination):
             if comment is None:
                 return Response({"detail": f"Your comment is needed."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if images was passed into 'images' list
+            # Check if images was passed into 'images' list.
             if all(images) is False:
                 return Response({"detail": f"Please provide an Image"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -610,8 +573,11 @@ class OrderReturnView(APIView, CustomPagination):
 
             reason = get_object_or_404(ReturnReason, pk=reason_id)
 
-            return_product_instance = ReturnedProduct.objects.create(
-                returned_by=request.user, product=order_product, reason=reason, comment=comment)
+            return_product_instance, success = ReturnedProduct.objects.get_or_create(
+                returned_by=request.user, product=order_product)
+            return_product_instance.reason = reason
+            return_product_instance.comment = comment
+            return_product_instance.save()
 
             for image in images:
                 # Pending... waiting for image processing (waiting on the image processing method to use)

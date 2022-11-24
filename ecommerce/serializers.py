@@ -205,7 +205,6 @@ class CartProductSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.product_detail.product.image.get_image_url())
         return obj.product_detail.product.image.get_image_url() or None
 
-
     class Meta:
         model = CartProduct
         fields = ["id", "name", "image", "description", "price", "quantity", "item_price", "discount", "product_detail"]
@@ -219,7 +218,6 @@ class ProductWishlistSerializer(serializers.ModelSerializer):
         if obj.product:
             product = ProductSerializer(obj.product, context={"request": self.context.get("request")}).data
         return product
-
 
     class Meta:
         model = ProductWishlist
@@ -302,7 +300,6 @@ class ReturnedProductSerializer(serializers.ModelSerializer):
     return_images = serializers.SerializerMethodField()
     return_date = serializers.SerializerMethodField()
     reason = ReturnReasonSerializer()
-
 
     def get_return_date(self, obj):
         if obj:

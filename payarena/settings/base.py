@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     # INSTALLED APPS
     'rest_framework',
     'rest_framework.authtoken',
-    # 'django-filter',
+    # 'django_filters',
     'corsheaders',
     'django_crontab',
     'storages',

@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from ecommerce.models import ProductDetail, OrderProduct, Order
+from ecommerce.models import ProductDetail, OrderProduct, Order, ReturnedProduct, ReturnProductImage
+from ecommerce.serializers import ReturnReasonSerializer, ReturnProductImageSerializer
 from .models import Seller, SellerDetail, SellerFile
 from store.models import Store
 
@@ -144,14 +145,56 @@ class ProductLowAndOutOffStockSerializer(serializers.ModelSerializer):
             request = self.context.get("request")
             return request.build_absolute_uri(obj.product.image.image.url)
         return obj.product.image.get_image_url()
-        # if obj and self.context.get():
-        #     return
-
 
     class Meta:
-        """
-            ID, product_name, image, price, discount, stock
-        """
-
         model = ProductDetail
         fields = ['id', 'product_name', 'image', 'stock', 'price', 'discount']
+
+
+class MerchantReturnedProductSerializer(serializers.ModelSerializer):
+    returned_by = serializers.SerializerMethodField()
+    attachment_images = serializers.SerializerMethodField()
+    return_date = serializers.SerializerMethodField()
+    product_name = serializers.SerializerMethodField()
+    product_image = serializers.SerializerMethodField()
+    updated_by = serializers.SerializerMethodField()
+    reason = ReturnReasonSerializer()
+
+    def get_return_date(self, obj):
+        if obj:
+            return obj.created_on
+        return None
+
+    def get_returned_by(self, obj):
+        if obj.returned_by:
+            return obj.returned_by.first_name
+        return None
+
+    def get_attachment_images(self, obj):
+        if ReturnProductImage.objects.filter(return_product=obj).exists():
+            return_product_image = ReturnProductImage.objects.filter(return_product=obj)
+            request = self.context.get("request")
+            if request:
+                return ReturnProductImageSerializer(return_product_image, many=True, context={"request": request}).data
+        return None
+
+    def get_product_name(self, obj):
+        if obj.product.product_detail.product.name:
+            return obj.product.product_detail.product.name
+        return None
+
+    def get_product_image(self, obj):
+        if obj.product.product_detail.product.image:
+            request = self.context.get("request")
+            return request.build_absolute_uri(obj.product.product_detail.product.image.get_image_url())
+        return obj.product.product_detail.product.image.get_image_url()
+
+    def get_updated_by(self, obj):
+        if obj:
+            return obj.updated_by.first_name
+        return None
+
+    class Meta:
+        model = ReturnedProduct
+        fields = ['id', 'returned_by', 'attachment_images', 'product_name', 'product_image', 'reason', 'status',
+                  'payment_status', 'comment', 'return_date', 'updated_by', 'updated_on']

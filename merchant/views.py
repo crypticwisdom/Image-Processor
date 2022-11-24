@@ -1,9 +1,9 @@
-from django.db.models import Q
+from django.db.models import Q, F
 from rest_framework.permissions import IsAuthenticated
-from ecommerce.serializers import ProductSerializer
+from ecommerce.serializers import ProductSerializer, ReturnedProductSerializer
 from account.utils import validate_email
 from .serializers import SellerSerializer, MerchantProductDetailsSerializer, OrderSerializer, \
-    MerchantDashboardOrderProductSerializer
+    MerchantDashboardOrderProductSerializer, MerchantReturnedProductSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -206,3 +206,55 @@ class MerchantOrdersView(APIView, CustomPagination):
             return Response(paginated_serializer)
         except (Exception, ) as err:
             return Response({"detail": f"{err}d"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Completed
+class LowAndOutOfStockView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated, IsMerchant]
+
+    def get(self, request):
+        try:
+            stock_type = request.data.get("stock_type", None)
+
+            if stock_type is None:
+                return Response({"detail": f"Stock Type is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            store, query_set = Store.objects.get(seller__user=request.user), None
+            if stock_type in ["low_in_stock", "low"]:
+                query_set = ProductDetail.objects.filter(product__store=store,
+                                                         low_stock_threshold__gte=F('stock')).order_by('-id')
+
+            elif stock_type in ["out_of_stock", "out"]:
+                query_set = ProductDetail.objects.filter(product__store=store, stock__lte=0).order_by('-id')
+
+            else:
+                return Response({"detail": f"Invalid stock type value passed."}, status=status.HTTP_400_BAD_REQUEST)
+
+            paginated_query_set = self.paginate_queryset(query_set, request)
+            serialized_data = ProductLowAndOutOffStockSerializer(paginated_query_set, many=True,
+                                                                 context={"request": request}).data
+            response = self.get_paginated_response(serialized_data).data
+
+            return Response({"detail": response})
+        except (Exception, TypeError) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MerchantReturnsAndRejectView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated, IsMerchant]
+
+    def get(self, request):
+        try:
+            # store = Store.objects.get(seller__user=request.user)
+
+            # Filter all ReturnedProduct where this Merchant is the owner of the Store.
+            query_set = ReturnedProduct.objects.filter(product__product_detail__product__store__seller__user=request.user,
+                                                       status="approved").order_by("-id")
+
+            paginated_query_set = self.paginate_queryset(query_set, request)
+            serialized_data = MerchantReturnedProductSerializer(paginated_query_set, many=True,
+                                                                context={"request": request}).data
+            response = self.get_paginated_response(serialized_data).data
+            return Response({"detail": response})
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
