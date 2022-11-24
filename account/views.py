@@ -17,7 +17,7 @@ from threading import Thread
 from .serializers import ProfileSerializer, CustomerAddressSerializer
 from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email, register_payarena_user, \
     login_payarena_user, change_payarena_user_password, get_wallet_info, validate_phone_number_for_wallet_creation, \
-    create_user_wallet
+    create_user_wallet, make_payment_for_wallet
 
 
 class LoginView(APIView):
@@ -357,3 +357,22 @@ class CreateCustomerWalletAPIView(APIView):
             return Response({"detail": response})
         except Exception as ex:
             return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FundWalletAPIView(APIView):
+
+    def post(self, request):
+        amount = request.data.get("amount")
+        if not amount:
+            return Response({"detail": "Amount is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            profile = Profile.objects.get(user=request.user)
+            payment_link = make_payment_for_wallet(profile, amount)
+            if payment_link is None:
+                return Response({"detail": "Error occurred while generating payment link"})
+            return Response({"detail": payment_link})
+        except Exception as ex:
+            return Response(
+                {"detail": "Error occurred while generating payment link", "error": str(ex)},
+                status=status.HTTP_400_BAD_REQUEST
+            )

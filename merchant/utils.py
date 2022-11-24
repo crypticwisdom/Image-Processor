@@ -143,49 +143,58 @@ def update_product(request, product):
     return product
 
 
-def validate_bank_details(account_number: str, account_name: str, bank_name: str):
+def get_all_banks():
+    success, response = apis.get_bank_codes()
+
+    if success is False:
+        return False, "An error occurred while fetching banks"
+
+    return True, response['Data']
+
+
+def validate_bank_details(account_number: str, account_name: str, bank_code: str):
     """
         Validate Bank details.
     """
-    success1, response1 = apis.get_bank_codes()
+    # success1, response1 = apis.get_bank_codes()
 
-    if success1 is False:
-        return False, "Error while fetching bank codes"
+    # if success1 is False:
+    #     return False, "Error while fetching bank codes"
+    #
+    # response1 = response1['Data']
 
-    response1 = response1['Data']
-
-    bank_code: str = ""
-    for bank_item in response1:
-        bank_name = str(str(bank_name).lower())
-        bank_item['Name'] = str(bank_item['Name']).strip().lower()
-        if bank_name.split(" ")[0] in bank_item['Name'] and bank_name.split(" ")[1] in bank_item['Name']:
-            bank_code = bank_item['CBNCode']
-            break
-
-    if bank_code == "":
-        return False, "Bank name not found"
+    # bank_code: str = ""
+    # for bank_item in response1:
+    #     bank_name = str(str(bank_name).lower())
+    #     bank_item['Name'] = str(bank_item['Name']).strip().lower()
+    #     if bank_name.split(" ")[0] in bank_item['Name'] and bank_name.split(" ")[1] in bank_item['Name']:
+    #         bank_code = bank_item['CBNCode']
+    #         break
+    #
+    # if bank_code == "":
+    #     return False, "Bank name not found"
 
     # Call bank enquiry
-    '/bank code/acct_number'
-    success2, response2 = apis.call_name_enquiry(bank_code=bank_code, account_number=account_number)
-    if not success2:
-        return False, response2
+    # '/bank code/acct_number'
+    success, response = apis.call_name_enquiry(bank_code=bank_code, account_number=account_number)
+    if not success:
+        return False, response
 
-    response2 = {
-            'NameEnquiryResponse': {
-                'ResponseCode': '200',
-                'AccountNumber': '2114616054',
-                'AccountName': 'Nwachukwu Wisdom',
-                'PhoneNumber': '08057784796',
-                'ErrorMessage': 'error'
-            }
-        }
+    # response = {
+    #         'NameEnquiryResponse': {
+    #             'ResponseCode': '200',
+    #             'AccountNumber': '2114616054',
+    #             'AccountName': 'Nwachukwu Wisdom',
+    #             'PhoneNumber': '08057784796',
+    #             'ErrorMessage': 'error'
+    #         }
+    #     }
     account_name = account_name.lower().split(" ")
-    response_name = str(response2["NameEnquiryResponse"]["AccountName"]).lower().strip()
+    response_name = str(response["NameEnquiryResponse"]["AccountName"]).lower().strip()
 
     # Check if first or last name in 'response_name'
     if not(account_name[0] in response_name or account_name[1] in response_name):
-        return False, "Bank name does not match"
+        return False, "Bank account validation failed"
     return True, "Successfully validated bank details"
 
 
@@ -244,9 +253,9 @@ def create_seller(request, user, email, phone_number):
         if not bank_account_number:
             return False, "Bank account number is required"
 
-        bank_name: str = request.data.get("bank_name", None)  # drop-down
-        if not bank_name:
-            return False, "Bank name is required"
+        bank_code: str = request.data.get("bank_code", None)  # drop-down
+        if not bank_code:
+            return False, "Bank is required"
 
         bank_account_name: str = request.data.get("bank_account_name", None)
         if not bank_account_name:
@@ -254,7 +263,13 @@ def create_seller(request, user, email, phone_number):
         bank_account_name = bank_account_name.strip()
         # ---------------------------- Check Bank Details ----------------------------
         success, msg = validate_bank_details(account_number=bank_account_number, account_name=bank_account_name,
-                                             bank_name=bank_name)
+                                             bank_code=bank_code)
+        # Get bank name
+        success, detail = get_all_banks()
+        bank_name = ""
+        if success is True:
+            result = [bank["Name"] for bank in detail if bank["CBNCode"] == bank_code]
+            bank_name = str(result[0])
 
         if not success:
             return False, msg

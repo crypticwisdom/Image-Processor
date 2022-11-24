@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('', views.HomeView.as_view(), name='homepage'),
+    path('banks/', views.ListAllBanksAPIView.as_view(), name='banks'),
 
 ]
 
