@@ -13,99 +13,21 @@ get_banks_url = settings.BANK_URL
 credit_wallet_url = settings.PAYMENT_CREDIT_WALLET_URL
 
 
-def get_bank_codes():
+def get_bank_codes(token):
     """
         Call PayArena's API to fetch all bank codes.
     """
     try:
         # requests.exceptions.RequestException
-        response = requests.get(url=get_banks_url)
-        log_request(f"url: {response.url}, response: {response.json()}")
+        header = {
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json'
+        }
+        response = requests.get(url=get_banks_url, headers=header)
+        log_request(f"url: {response.url}, headers: {header}, response: {response.json()}")
         if response.status_code != 200:
             return False, "Request was not successful"
         response = response.json()
-        # response = {
-        #     "Success": True,
-        #     "Message": "Successful",
-        #     "Data": [
-        #         {
-        #             "CBNCode": "044",
-        #             "Name": "Access Bank"
-        #         },
-        #         {
-        #             "CBNCode": "011",
-        #             "Name": "First Bank"
-        #         },
-        #         {
-        #             "CBNCode": "058",
-        #             "Name": "GTBank"
-        #         },
-        #         {
-        #             "CBNCode": "057",
-        #             "Name": "Zenith Bank"
-        #         },
-        #         {
-        #             "CBNCode": "033",
-        #             "Name": "United Bank of Africa"
-        #         },
-        #         {
-        #             "CBNCode": "063",
-        #             "Name": "Diamond Bank"
-        #         },
-        #         {
-        #             "CBNCode": "068",
-        #             "Name": "Standard Chartered"
-        #         },
-        #         {
-        #             "CBNCode": "082",
-        #             "Name": "Keystone Bank"
-        #         },
-        #         {
-        #             "CBNCode": "076",
-        #             "Name": "Polaris Bank"
-        #         },
-        #         {
-        #             "CBNCode": "070",
-        #             "Name": "Fidelity Bank"
-        #         },
-        #         {
-        #             "CBNCode": "214",
-        #             "Name": "FCMB Bank"
-        #         },
-        #         {
-        #             "CBNCode": "035",
-        #             "Name": "Wema Bank"
-        #         },
-        #         {
-        #             "CBNCode": "032",
-        #             "Name": "Union Bank"
-        #         },
-        #         {
-        #             "CBNCode": "215",
-        #             "Name": "Unity Bank"
-        #         },
-        #         {
-        #             "CBNCode": "232",
-        #             "Name": "Sterling Bank"
-        #         },
-        #         {
-        #             "CBNCode": "050",
-        #             "Name": "Ecobank"
-        #         },
-        #         {
-        #             "CBNCode": "102",
-        #             "Name": "Titan"
-        #         },
-        #         {
-        #             "CBNCode": "306",
-        #             "Name": "etranzact"
-        #         },
-        #         {
-        #             "CBNCode": "565",
-        #             "Name": "Hope PSB"
-        #         }
-        #     ]
-        # }
         if response['Success']:
             return True, response
         return False, "Request was not successful"

@@ -13,7 +13,7 @@ class BrandSerializer(serializers.ModelSerializer):
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
-    brands = BrandSerializer(many=True)
+    brands = BrandSerializer(many=True, read_only=True, )
     total_products = serializers.SerializerMethodField()
     total_variants = serializers.SerializerMethodField()
 

@@ -103,7 +103,7 @@ class TopSellingProductsView(APIView, CustomPagination):
             queryset = Product.objects.filter(sale_count=0, created_on__date__gte=start_date - end_date2).order_by(
                 "-id")
             paginated_query = self.paginate_queryset(queryset, request)
-            data = self.get_paginated_response(ProductSerializer(paginated_query, many=True).data).data
+            data = self.get_paginated_response(ProductSerializer(paginated_query, many=True, context={"request": request}).data).data
 
             return Response({"detail": data})
         except (Exception,) as err:
@@ -118,7 +118,7 @@ class RecommendedProductView(APIView, CustomPagination):
     def get(self, request):
         try:
             query_set = Product.objects.filter(is_featured=True).order_by("-id")
-            data = ProductSerializer(query_set, many=True).data
+            data = ProductSerializer(query_set, many=True, context={"request": request}).data
 
             paginated_query = self.paginate_queryset(query_set, request)
             data = self.get_paginated_response(data=data).data

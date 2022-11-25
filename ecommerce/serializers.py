@@ -10,7 +10,9 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
     def get_image(self, obj):
-        return [str(instance.image.url) for instance in ProductImage.objects.filter(product_detail=obj)]
+        request = self.context.get("request")
+        return [str(request.build_absolute_uri(instance.image.image.url))
+                for instance in ProductImage.objects.filter(product_detail=obj)]
 
     class Meta:
         model = ProductDetail
@@ -105,7 +107,9 @@ class ProductSerializer(serializers.ModelSerializer):
         return None
 
     def get_product_detail(self, obj):
-        serializer = ProductDetailSerializer(ProductDetail.objects.filter(product=obj).order_by('-stock').first())
+        request = self.context.get("request")
+        serializer = ProductDetailSerializer(ProductDetail.objects.filter(product=obj).order_by('-stock').first(),
+                                             context={"request": request})
         return serializer.data
 
     def get_category(self, obj):

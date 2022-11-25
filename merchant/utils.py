@@ -3,15 +3,17 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Sum
 
+from account.models import Profile
 from ecommerce.models import Product, ProductCategory, ProductType, ProductDetail, Brand, ProductImage, Image, \
     OrderProduct
 from ecommerce.serializers import OrderProductSerializer
+from ecommerce.utils import decrypt_text
 from home.utils import log_request, get_week_start_and_end_datetime, get_month_start_and_end_datetime, \
     get_year_start_and_end_datetime
 from .models import *
 from store.models import Store
-from store.utils import create_or_update_store
 from module import apis
+
 
 def create_product(request, seller):
     data = request.data
@@ -19,7 +21,6 @@ def create_product(request, seller):
 
     # Product Information
     name = data.get("name")
-    image = data.get("image")
     cat_id = data.get("category_id")
     sub_cat_id = data.get("sub_category_id")
     prod_type_id = data.get("product_type_id")
@@ -27,7 +28,7 @@ def create_product(request, seller):
     image_id = data.get('image_id', '')
     tag = data.get("tags", [])
 
-    if not all([name, image, cat_id, sub_cat_id, prod_type_id, brand_id, image_id]):
+    if not all([name, cat_id, sub_cat_id, prod_type_id, brand_id, image_id]):
         return False, "Name, image, category, sub category, brand, and product type are required fields", None
 
     category = ProductCategory.objects.get(id=cat_id)
@@ -109,8 +110,8 @@ def update_product(request, product):
     data = request.data
     if 'name' in data:
         product.name = data.get('name', '')
-    if 'status' in data:
-        product.status = data.get('status', '')
+    # if 'status' in data:
+    #     product.status = data.get('status', '')
     if 'category_id' in data:
         category_id = data.get('category_id', '')
         category = ProductCategory.objects.get(pk=category_id)
@@ -143,8 +144,10 @@ def update_product(request, product):
     return product
 
 
-def get_all_banks():
-    success, response = apis.get_bank_codes()
+def get_all_banks(profile):
+    # Get Auth code
+    token = decrypt_text(profile.pay_auth)
+    success, response = apis.get_bank_codes(token)
 
     if success is False:
         return False, "An error occurred while fetching banks"
@@ -176,19 +179,22 @@ def validate_bank_details(account_number: str, account_name: str, bank_code: str
 
     # Call bank enquiry
     # '/bank code/acct_number'
-    success, response = apis.call_name_enquiry(bank_code=bank_code, account_number=account_number)
-    if not success:
-        return False, response
 
-    # response = {
-    #         'NameEnquiryResponse': {
-    #             'ResponseCode': '200',
-    #             'AccountNumber': '2114616054',
-    #             'AccountName': 'Nwachukwu Wisdom',
-    #             'PhoneNumber': '08057784796',
-    #             'ErrorMessage': 'error'
-    #         }
-    #     }
+    # success, response = apis.call_name_enquiry(bank_code=bank_code, account_number=account_number)
+    # if not success:
+    #     return False, response
+
+    # BELOW SHOULD BE USED BEFORE GOING LIVE
+    response = {
+            'NameEnquiryResponse': {
+                'ResponseCode': '200',
+                'AccountNumber': '2114616054',
+                'AccountName': 'Nwachukwu Wisdom',
+                'PhoneNumber': '08057784796',
+                'ErrorMessage': 'error'
+            }
+        }
+
     account_name = account_name.lower().split(" ")
     response_name = str(response["NameEnquiryResponse"]["AccountName"]).lower().strip()
 
@@ -264,16 +270,16 @@ def create_seller(request, user, email, phone_number):
         # ---------------------------- Check Bank Details ----------------------------
         success, msg = validate_bank_details(account_number=bank_account_number, account_name=bank_account_name,
                                              bank_code=bank_code)
+        if not success:
+            return False, msg
+
         # Get bank name
-        success, detail = get_all_banks()
+        profile = Profile.objects.get(user=user)
+        success, detail = get_all_banks(profile)
         bank_name = ""
         if success is True:
             result = [bank["Name"] for bank in detail if bank["CBNCode"] == bank_code]
             bank_name = str(result[0])
-
-        if not success:
-            return False, msg
-
         # ----------------------------------------------------------------------------
 
         # directors = request.data.get("directors", [])
@@ -475,6 +481,171 @@ def create_seller(request, user, email, phone_number):
         # User instance will be created for this type of 'user' but he would need to login to complete registration
         if request.user.is_authenticated is False and user is not None:
             return True, "improper merchant creation"
+        return False, f"{err}."
+
+
+def update_seller(request, seller_id):
+    store, seller, seller_detail, bank_account, = None, None, None, None
+    seller = Seller.objects.get(id=seller_id)
+    try:
+        business_name: str = request.data.get("business_name")
+        product_category: list = request.data.get("product_category", [])  # drop-down
+        business_address: str = request.data.get("business_address")
+        business_town: str = request.data.get("business_town")
+        business_state: str = request.data.get("business_state")  # drop-down
+        business_city: str = request.data.get("business_city")  # drop-down
+        latitude: float = request.data.get("latitude")  # drop-down
+        longitude: float = request.data.get("longitude")  # drop-down
+        business_drop_off_address: str = request.data.get("business_drop_off_address")
+        business_type: str = request.data.get("business_type")
+        bank_account_number: str = request.data.get("bank_account_number")
+        bank_code: str = request.data.get("bank_code")  # drop-down
+        bank_account_name: str = request.data.get("bank_account_name")
+        bank_account_name = bank_account_name.strip()
+        # ---------------------------- Check Bank Details ----------------------------
+        bank_name = ""
+        if bank_account_name and bank_code:
+            success, msg = validate_bank_details(
+                account_number=bank_account_number, account_name=bank_account_name, bank_code=bank_code
+            )
+            if not success:
+                return False, msg
+
+            # Get bank name
+            profile = Profile.objects.get(user=seller.user)
+            success, detail = get_all_banks(profile)
+            if success is True:
+                result = [bank["Name"] for bank in detail if bank["CBNCode"] == bank_code]
+                bank_name = str(result[0])
+
+        # ----------------------------------------------------------------------------
+
+        # directors = request.data.get("directors", [])
+        market_size: int = request.data.get("market_size")
+        number_of_outlets: int = request.data.get("number_of_outlets")
+        maximum_price_range: float = request.data.get("maximum_price_range")  # drop-down
+
+        if not str(bank_account_number).isnumeric():
+            if len(bank_account_number) != 10:
+                return False, "Invalid account number format"
+
+        # -------------------------------------------------------------------------------------
+
+        if business_type == "unregistered-individual-business":
+            # if seller is not None:
+            # Get a store instance
+
+            store = Store.objects.get(seller=seller, name=business_name.capitalize())
+            seller_detail = SellerDetail.objects.get(seller=seller)
+            seller_detail.market_size = market_size
+            seller_detail.business_type = business_type
+            seller_detail.number_of_outlets = number_of_outlets
+            seller_detail.maximum_price_range = maximum_price_range
+            seller_detail.save()
+
+            bank_account = BankAccount.objects.get(seller=seller)
+            bank_account.bank_name = bank_name
+            bank_account.account_name = bank_account_name
+            bank_account.account_number = bank_account_number
+            bank_account.save()
+
+            # features = request.data.get("features", [])  # list of M2M id's # Copied from Ashavin
+            if product_category:
+                store.categories.clear()
+
+                for item in product_category:
+                    product_category = ProductCategory.objects.get(id=item)
+                    store.categories.add(product_category)
+
+            # send email notification
+            return True, f"Created {business_name}"
+        elif business_type == "registered-individual-business":
+            company_name: str = request.data.get("company_name")
+            company_type: str = request.data.get("company_type")
+            cac_number = request.data.get("cac_number")
+            company_tin_number = request.data.get("company_tin_number")
+            market_size = request.data.get("market_size")
+            number_of_outlets = request.data.get("number_of_outlets")
+            maximum_price_range = request.data.get("maximum_price_range")  # drop-down
+
+            # GET store instance
+
+            store = Store.objects.get(seller=seller, name=business_name.capitalize())
+
+            seller_detail = SellerDetail.objects.get(seller=seller)
+            seller_detail.company_name = company_name.capitalize()
+            seller_detail.company_type = company_type
+            seller_detail.market_size = market_size
+            seller_detail.business_type = business_type
+            seller_detail.cac_number = cac_number
+            seller_detail.company_tin_number = company_tin_number
+            seller_detail.number_of_outlets = number_of_outlets
+            seller_detail.maximum_price_range = maximum_price_range
+            seller_detail.save()
+
+            bank_account = BankAccount.objects.get(seller=seller)
+            bank_account.bank_name = bank_name
+            bank_account.account_name = bank_account_name
+            bank_account.account_number = bank_account_number
+            bank_account.save()
+
+            # send email notification
+            return True, f"Created {business_name}"
+        elif business_type == "limited-liability-company":
+
+            company_name = request.data.get("company_name")
+            # company_type = request.data.get("company_type", None)
+            cac_number = request.data.get("cac_number")
+            company_tin_number = request.data.get("company_tin_number")
+            market_size = request.data.get("market_size")
+            number_of_outlets = request.data.get("number_of_outlets")
+            maximum_price_range = request.data.get("maximum_price_range")  # drop-down
+            directors = request.data.get("directors", [])
+
+
+            # if company_type not in ['sole-proprietorship', 'partnership']:
+            #     return "Company type is required", False
+            company_type = "partnership"
+
+
+            store = Store.objects.get(seller=seller, name=business_name.capitalize())
+
+            # directors // expect a dictionary --> [
+            #          ->                             {
+            #                                               'name': 'Nwachukwu Wisdom',
+            #          ->                                   'phone number': 08057784796
+            #                                           }
+            #          ->                          ]
+
+            seller_detail = SellerDetail.objects.get(seller=seller)
+            seller_detail.company_name = company_name
+            seller_detail.company_type = company_type
+            seller_detail.market_size = market_size
+            seller_detail.business_type = business_type
+            seller_detail.cac_number = cac_number
+            seller_detail.company_tin_number = company_tin_number
+            seller_detail.number_of_outlets = number_of_outlets
+            seller_detail.maximum_price_range = maximum_price_range
+            seller_detail.save()
+
+            for item in directors:
+                if item['name'] and item['phone_number'] and ['address']:
+                    direct = Director.objects.create(name=item['name'],
+                                                     phone_number=f"+234{item['phone_number'][-10:]}")
+                    seller_detail.director = direct
+            seller_detail.save()
+
+            bank_account = BankAccount.objects.get(seller=seller)
+            bank_account.bank_name = bank_name
+            bank_account.account_name = bank_account_name
+            bank_account.account_number = bank_account_number
+            bank_account.save()
+
+            return True, f"Created {company_name}"
+
+        else:
+            return False, "Invalid Business Type"
+    except (Exception,) as err:
         return False, f"{err}."
 
 

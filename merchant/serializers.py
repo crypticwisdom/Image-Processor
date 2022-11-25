@@ -1,3 +1,5 @@
+import json
+
 from rest_framework import serializers
 from ecommerce.models import ProductDetail, OrderProduct, Order
 from .models import Seller, SellerDetail, SellerFile
@@ -28,19 +30,26 @@ class SellerSerializer(serializers.ModelSerializer):
     def get_verification(self, obj):
         verified = None
         if SellerDetail.objects.filter(seller=obj):
-            verified = SellerVerificationSerializer(SellerDetail.objects.filter(seller=obj).last()).data
+            verified = SellerVerificationSerializer(SellerDetail.objects.filter(seller=obj).last(), context=self.context).data
         return verified
 
     def get_file(self, obj):
         file = None
         if SellerFile.objects.filter(seller=obj).exists():
-            file = SellerFileSerializer(SellerFile.objects.filter(seller=obj), many=True).data
+            file = SellerFileSerializer(SellerFile.objects.filter(seller=obj), many=True, context=self.context).data
         return file
 
     def get_store(self, obj):
-        from store.serializers import StoreSerializer
         if Store.objects.filter(seller=obj).exists():
-            return StoreSerializer(Store.objects.get(seller=obj)).data
+            request = self.context.get("request")
+            store = [{
+                "name": store.name,
+                "logo": request.build_absolute_uri(store.logo.url),
+                "description": store.name,
+                # "categories": store.categories,
+                "active": store.is_active
+            } for store in Store.objects.filter(seller=obj)]
+            return store
         return None
 
     class Meta:

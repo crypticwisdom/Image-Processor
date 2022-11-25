@@ -8,6 +8,9 @@ urlpatterns = [
     path('add-banner/', views.MerchantAddBannerView.as_view(), name="add-banner"),
     path('dashboard/', views.MerchantDashboardView.as_view(), name="merchant-dashboard"),
     path('products/', views.ProductAPIView.as_view(), name="product"),
+    path('products/<int:pk>/', views.ProductAPIView.as_view(), name="product"),
+
+    path('product/image/', views.ProductImageView.as_view(), name="product-image"),
 
     # Orders
     path('orders/', views.MerchantOrdersView.as_view(), name="merchant-orders"),
