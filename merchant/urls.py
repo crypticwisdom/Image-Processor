@@ -10,6 +10,7 @@ urlpatterns = [
     path('products/', views.ProductAPIView.as_view(), name="product"),
     path('stock-values/', views.LowAndOutOfStockView.as_view(), name="low-and-out-off-stock"),
     path('returns/', views.MerchantReturnsAndRejectView.as_view(), name="returns-and-reject"),
+    path('transactions/', views.MerchantTransactionView.as_view(), name="merchant-transaction"),
 
     # Orders
     path('orders/', views.MerchantOrdersView.as_view(), name="merchant-orders"),

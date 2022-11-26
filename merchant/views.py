@@ -2,6 +2,7 @@ from django.db.models import Q, F
 from rest_framework.permissions import IsAuthenticated
 from ecommerce.serializers import ProductSerializer, ReturnedProductSerializer
 from account.utils import validate_email
+from transaction.models import Transaction
 from .serializers import SellerSerializer, MerchantProductDetailsSerializer, OrderSerializer, \
     MerchantDashboardOrderProductSerializer, MerchantReturnedProductSerializer
 from rest_framework.response import Response
@@ -11,6 +12,9 @@ from home.pagination import CustomPagination
 from .utils import *
 from .permissions import IsMerchant
 from ecommerce.models import ProductDetail, Product, ProductCategory, OrderProduct, Order
+from rest_framework.generics import ListAPIView
+from django_filters import rest_framework as filters
+from .filters import MerchantOrderProductFilter
 
 
 class MerchantView(APIView, CustomPagination):
@@ -168,44 +172,61 @@ class MerchantAddBannerView(APIView):
 
 
 # The date range filter is not working as expected.  filter by status and category id works.
-class MerchantOrdersView(APIView, CustomPagination):
+# class MerchantOrdersView(APIView, CustomPagination):
+#     permission_classes = [IsAuthenticated, IsMerchant]
+#
+#     def get(self, request, name=None):
+#         try:
+#
+#             filter_by_date_from, filter_by_date_to = request.GET.get("date_from", None), request.GET.get("date_to", None)
+#             filter_by_status = request.GET.get("status", None)
+#             category_id = request.GET.get("category_id", None)
+#
+#             # Get Store instance for this user.
+#             query = Q(product_detail__product__store__seller__user=request.user)
+#
+#             # if category_id is not None:
+#             #     query &= Q(product_detail__product__category=category_id)
+#
+#             # if filter_by_status:
+#             #     query &= Q(status=filter_by_status)
+#
+#             if filter_by_date_from is not None and filter_by_date_to is not None:
+#                 # Not really working as expected, will check later
+#                 query &= Q(delivered_on__range=[filter_by_date_from, filter_by_date_to])
+#                 query &= Q(shipped_on__range=[filter_by_date_from, filter_by_date_to])
+#                 query &= Q(returned_on__range=[filter_by_date_from, filter_by_date_to])
+#                 query &= Q(payment_on__range=[filter_by_date_from, filter_by_date_to])
+#                 query &= Q(refunded_on__range=[filter_by_date_from, filter_by_date_to])
+#                 query &= Q(packed_on__range=[filter_by_date_from, filter_by_date_to])
+#                 query &= Q(cancelled_on__range=[filter_by_date_from, filter_by_date_to])
+#                 query &= Q(created_on__range=[filter_by_date_from, filter_by_date_to])
+#
+#             orders = OrderProduct.objects.filter(query).order_by("-id")
+#             paginated_query_set = self.paginate_queryset(orders, request)
+#             serializer = MerchantDashboardOrderProductSerializer(instance=paginated_query_set, many=True).data
+#             paginated_serializer = self.get_paginated_response(serializer).data
+#
+#             return Response(paginated_serializer)
+#         except (Exception, ) as err:
+#             return Response({"detail": f"{err}d"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MerchantOrdersView(ListAPIView):
     permission_classes = [IsAuthenticated, IsMerchant]
+    queryset = OrderProduct.objects.all().order_by("-id")
+    pagination_class = CustomPagination
+    serializer_class = MerchantDashboardOrderProductSerializer
+    filter_backends = (filters.DjangoFilterBackend, )
+    filterset_class = MerchantOrderProductFilter
+    # filterset_fields = {
+    #     'cancelled_on': ['cancelled_on__date']
+    # }
 
-    def get(self, request, name=None):
-        try:
-
-            filter_by_date_from, filter_by_date_to = request.GET.get("date_from", None), request.GET.get("date_to", None)
-            filter_by_status = request.GET.get("status", None)
-            category_id = request.GET.get("category_id", None)
-
-            # Get Store instance for this user.
-            query = Q(product_detail__product__store__seller__user=request.user)
-
-            # if category_id is not None:
-            #     query &= Q(product_detail__product__category=category_id)
-
-            # if filter_by_status:
-            #     query &= Q(status=filter_by_status)
-
-            if filter_by_date_from is not None and filter_by_date_to is not None:
-                # Not really working as expected, will check later
-                query &= Q(delivered_on__range=[filter_by_date_from, filter_by_date_to])
-                query &= Q(shipped_on__range=[filter_by_date_from, filter_by_date_to])
-                query &= Q(returned_on__range=[filter_by_date_from, filter_by_date_to])
-                query &= Q(payment_on__range=[filter_by_date_from, filter_by_date_to])
-                query &= Q(refunded_on__range=[filter_by_date_from, filter_by_date_to])
-                query &= Q(packed_on__range=[filter_by_date_from, filter_by_date_to])
-                query &= Q(cancelled_on__range=[filter_by_date_from, filter_by_date_to])
-                query &= Q(created_on__range=[filter_by_date_from, filter_by_date_to])
-
-            orders = OrderProduct.objects.filter(query).order_by("-id")
-            paginated_query_set = self.paginate_queryset(orders, request)
-            serializer = MerchantDashboardOrderProductSerializer(instance=paginated_query_set, many=True).data
-            paginated_serializer = self.get_paginated_response(serializer).data
-
-            return Response(paginated_serializer)
-        except (Exception, ) as err:
-            return Response({"detail": f"{err}d"}, status=status.HTTP_400_BAD_REQUEST)
+    # def get_queryset(self):
+    #     # queryset = OrderProduct.objects.filter(product_detail__product__store__user=self.request.user).order_by("-id")
+    #     print('queryset')
+    #     return 'queryset'
 
 
 # Completed
@@ -223,10 +244,8 @@ class LowAndOutOfStockView(APIView, CustomPagination):
             if stock_type in ["low_in_stock", "low"]:
                 query_set = ProductDetail.objects.filter(product__store=store,
                                                          low_stock_threshold__gte=F('stock')).order_by('-id')
-
             elif stock_type in ["out_of_stock", "out"]:
                 query_set = ProductDetail.objects.filter(product__store=store, stock__lte=0).order_by('-id')
-
             else:
                 return Response({"detail": f"Invalid stock type value passed."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -240,13 +259,12 @@ class LowAndOutOfStockView(APIView, CustomPagination):
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Completed.
 class MerchantReturnsAndRejectView(APIView, CustomPagination):
     permission_classes = [IsAuthenticated, IsMerchant]
 
     def get(self, request):
         try:
-            # store = Store.objects.get(seller__user=request.user)
-
             # Filter all ReturnedProduct where this Merchant is the owner of the Store.
             query_set = ReturnedProduct.objects.filter(product__product_detail__product__store__seller__user=request.user,
                                                        status="approved").order_by("-id")
@@ -256,5 +274,21 @@ class MerchantReturnsAndRejectView(APIView, CustomPagination):
                                                                 context={"request": request}).data
             response = self.get_paginated_response(serialized_data).data
             return Response({"detail": response})
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MerchantTransactionView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated, IsMerchant]
+
+    def get(self, request):
+        try:
+            query = request.GET.get("query", None)  # filter by, product name, customer name ...
+            q_status = request.GET.get("status", None)  # filter by, successful cancel ...
+            print(query)
+            if query is not None:
+                # How would i get all Transactions related to this Current Logged in Merchant ?
+                transactions = Transaction.objects.filter()
+            return Response({"detail": f""})
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)

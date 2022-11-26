@@ -152,23 +152,13 @@ class ProductLowAndOutOffStockSerializer(serializers.ModelSerializer):
 
 
 class MerchantReturnedProductSerializer(serializers.ModelSerializer):
-    returned_by = serializers.SerializerMethodField()
-    attachment_images = serializers.SerializerMethodField()
-    return_date = serializers.SerializerMethodField()
-    product_name = serializers.SerializerMethodField()
+    returned_by = serializers.CharField(source="returned_by.first_name")    # Creating a custom field "Method 1"
+    attachment_images = serializers.SerializerMethodField()     # Creating a custom field "Method 2 (More Advanced)"
+    return_date = serializers.DateTimeField(source="created_on")
+    product_name = serializers.CharField(source="product.product_detail.product.name")
     product_image = serializers.SerializerMethodField()
-    updated_by = serializers.SerializerMethodField()
+    updated_by = serializers.CharField(source="updated_by.first_name")
     reason = ReturnReasonSerializer()
-
-    def get_return_date(self, obj):
-        if obj:
-            return obj.created_on
-        return None
-
-    def get_returned_by(self, obj):
-        if obj.returned_by:
-            return obj.returned_by.first_name
-        return None
 
     def get_attachment_images(self, obj):
         if ReturnProductImage.objects.filter(return_product=obj).exists():
@@ -178,21 +168,11 @@ class MerchantReturnedProductSerializer(serializers.ModelSerializer):
                 return ReturnProductImageSerializer(return_product_image, many=True, context={"request": request}).data
         return None
 
-    def get_product_name(self, obj):
-        if obj.product.product_detail.product.name:
-            return obj.product.product_detail.product.name
-        return None
-
     def get_product_image(self, obj):
         if obj.product.product_detail.product.image:
             request = self.context.get("request")
             return request.build_absolute_uri(obj.product.product_detail.product.image.get_image_url())
         return obj.product.product_detail.product.image.get_image_url()
-
-    def get_updated_by(self, obj):
-        if obj:
-            return obj.updated_by.first_name
-        return None
 
     class Meta:
         model = ReturnedProduct
