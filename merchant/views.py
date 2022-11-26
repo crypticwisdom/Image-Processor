@@ -123,14 +123,18 @@ class MerchantDashboardView(APIView):
 
 class ProductAPIView(APIView, CustomPagination):
 
-    def get(self, request):
+    def get(self, request, pk=None):
         try:
             seller = Seller.objects.get(user=request.user)
-            product_detail_query_set = ProductDetail.objects.filter(product__store__seller=seller).order_by('-id')
-            paginated_query_set = self.paginate_queryset(product_detail_query_set, request)
-            serialized = MerchantProductDetailsSerializer(paginated_query_set, many=True, context={"request": request}).data
-            serializer = self.get_paginated_response(serialized)
-            return Response({"detail": serializer.data})
+            if pk:
+                serializer = ProductSerializer(Product.objects.get(store__seller=seller, id=pk),
+                                               context={"request": request}).data
+            else:
+                product_detail_query_set = Product.objects.filter(store__seller=seller).order_by('-id')
+                paginated_query_set = self.paginate_queryset(product_detail_query_set, request)
+                serialized = ProductSerializer(paginated_query_set, many=True, context={"request": request}).data
+                serializer = self.get_paginated_response(serialized).data
+            return Response(serializer)
         except (Exception, ) as err:
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -139,11 +143,10 @@ class ProductAPIView(APIView, CustomPagination):
             if not Seller.objects.filter(user=request.user).exists():
                 return Response({"detail": "Only merchant account can add product"}, status=status.HTTP_400_BAD_REQUEST)
             seller = Seller.objects.get(user=request.user)
-
             success, detail, product = create_product(request, seller)
             if success is False:
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"detail": detail, "product": ProductSerializer(product).data})
+            return Response({"detail": detail, "product": ProductSerializer(product, context={"request": request}).data})
         except Exception as err:
             return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -152,7 +155,7 @@ class ProductAPIView(APIView, CustomPagination):
             store = Store.objects.get(seller__user=request.user)
             product = Product.objects.get(id=pk, store=store)
             query = update_product(request, product)
-            return Response({"detail": "Product updated successfully", "product": ProductSerializer(query).data})
+            return Response({"detail": "Product updated successfully", "product": ProductSerializer(query, context={"request": request}).data})
         except Exception as ess:
             return Response({"detail": "An error has occurred", "error": str(ess)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -292,3 +295,22 @@ class MerchantTransactionView(APIView, CustomPagination):
             return Response({"detail": f""})
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductImageView(APIView):
+
+    def post(self, request):
+        try:
+            image = request.data['image']
+            img = Image.objects.create(image=image)
+            return Response({"detail": "Image uploaded successfully", "image_id": img.id,
+                             "image_url": request.build_absolute_uri(img.image.url)})
+        except Exception as ex:
+            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        if not Image.objects.filter(id=pk).exists():
+            return Response({'detail': 'Image does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+
+        Image.objects.get(id=pk).delete()
+        return Response({'detail': 'Image deleted successfully'})

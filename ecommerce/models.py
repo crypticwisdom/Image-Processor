@@ -25,7 +25,7 @@ class Brand(models.Model):
 class ProductCategory(models.Model):
     name = models.CharField(max_length=100)
     parent = models.ForeignKey('self', blank=True, null=True, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='product-images', null=False)
+    image = models.ImageField(upload_to='category-images', null=False, blank=True)
     brands = models.ManyToManyField(Brand, related_name='brands', blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
@@ -72,7 +72,7 @@ class Product(models.Model):
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, null=True, blank=True)
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.TextField(blank=True, null=True)
-    status = models.CharField(choices=product_status_choices, max_length=10, default='inactive')
+    status = models.CharField(choices=product_status_choices, max_length=10, default='pending')
 
     # Recommended Product: should be updated to 'True' once the merchant makes' payment.
     is_featured = models.BooleanField(default=False)

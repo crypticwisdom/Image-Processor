@@ -9,8 +9,12 @@ urlpatterns = [
     path('dashboard/', views.MerchantDashboardView.as_view(), name="merchant-dashboard"),
     path('products/', views.ProductAPIView.as_view(), name="product"),
     path('stock-values/', views.LowAndOutOfStockView.as_view(), name="low-and-out-off-stock"),
+
     path('returns/', views.MerchantReturnsAndRejectView.as_view(), name="returns-and-reject"),
     path('transactions/', views.MerchantTransactionView.as_view(), name="merchant-transaction"),
+    path('products/<int:pk>/', views.ProductAPIView.as_view(), name="product"),
+
+    path('product/image/', views.ProductImageView.as_view(), name="product-image"),
 
     # Orders
     path('orders/', views.MerchantOrdersView.as_view(), name="merchant-orders"),

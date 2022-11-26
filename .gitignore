@@ -20,6 +20,7 @@ paymall.log
 # Project image and file folders
 brand-images/
 product-images/
+category-images/
 seller-files/
 seller-verification/
 store-logo/

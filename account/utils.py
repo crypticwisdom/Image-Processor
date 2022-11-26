@@ -10,6 +10,7 @@ from threading import Thread
 from ecommerce.shopper_email import shopper_signup_verification_email
 from ecommerce.utils import encrypt_text, decrypt_text
 from home.utils import log_request
+from module.apis import payment_for_wallet
 
 from module.payarena_service import PayArenaServices
 
@@ -170,8 +171,9 @@ def login_payarena_user(profile, email, password):
 
     # Encrypt token
     token = encrypt_text(user_token)
-    user_profile.pay_auth = token
-    user_profile.save()
+    if user_profile:
+        user_profile.pay_auth = token
+        user_profile.save()
 
     return user_profile
 
@@ -231,3 +233,17 @@ def create_user_wallet(profile, pin, otp):
             profile.save()
 
     return success, message
+
+
+def make_payment_for_wallet(profile, amount):
+    description = "TopUp wallet balance from PayArena Mall"
+    callback = ""
+    full_name = profile.get_full_name()
+    email = profile.email()
+
+    response = payment_for_wallet(
+        amount=amount, narration=description, callback_url=callback, name=full_name, email=email
+    )
+    return response
+
+
