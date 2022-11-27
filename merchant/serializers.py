@@ -6,7 +6,7 @@ from .models import Seller, SellerDetail, SellerFile
 from store.models import Store
 
 
-class SellerVerificationSerializer(serializers.ModelSerializer):
+class SellerDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = SellerDetail
         exclude = []
@@ -23,15 +23,15 @@ class SellerSerializer(serializers.ModelSerializer):
     last_name = serializers.StringRelatedField(source='user.last_name')
     email = serializers.EmailField(source='user.email')
     phone_number = serializers.IntegerField()
-    verification = serializers.SerializerMethodField()
+    detail = serializers.SerializerMethodField()
     file = serializers.SerializerMethodField()
     store = serializers.SerializerMethodField()
 
-    def get_verification(self, obj):
-        verified = None
+    def get_detail(self, obj):
+        data = None
         if SellerDetail.objects.filter(seller=obj):
-            verified = SellerVerificationSerializer(SellerDetail.objects.filter(seller=obj).last(), context=self.context).data
-        return verified
+            data = SellerDetailSerializer(SellerDetail.objects.filter(seller=obj).last(), context=self.context).data
+        return data
 
     def get_file(self, obj):
         file = None
@@ -44,7 +44,6 @@ class SellerSerializer(serializers.ModelSerializer):
             request = self.context.get("request")
             store = [{
                 "name": store.name,
-                "logo": request.build_absolute_uri(store.logo.url),
                 "description": store.name,
                 # "categories": store.categories,
                 "active": store.is_active

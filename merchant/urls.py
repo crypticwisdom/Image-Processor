@@ -15,6 +15,9 @@ urlpatterns = [
     # Orders
     path('orders/', views.MerchantOrdersView.as_view(), name="merchant-orders"),
 
+    # Transactions
+    path('transaction', views.MerchantTransactionAPIView.as_view(), name="transaction"),
+    path('transaction/<int:pk>/', views.MerchantTransactionAPIView.as_view(), name="transaction-detail"),
 
 ]
 

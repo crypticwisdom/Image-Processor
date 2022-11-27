@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from merchant.models import Seller
 from .models import Profile, Address
 from django.contrib.auth.models import User
 
@@ -27,6 +29,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     profile_picture = serializers.SerializerMethodField()
     addresses = serializers.SerializerMethodField()
     user = UserSerializer()
+    is_merchant = serializers.SerializerMethodField()
+
+    def get_is_merchant(self, obj):
+        if Seller.objects.filter(user=obj.user).exists():
+            return True
+        return False
 
     def get_profile_picture(self, obj):
         image = None
@@ -42,4 +50,4 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet']
+        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet', 'is_merchant']

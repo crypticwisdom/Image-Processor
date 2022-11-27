@@ -274,8 +274,9 @@ def create_seller(request, user, email, phone_number):
             return False, msg
 
         # Get bank name
-        profile = Profile.objects.get(user=user)
-        success, detail = get_all_banks(profile)
+        auth_user = Profile.objects.get(user=request.user)
+        success, detail = get_all_banks(auth_user)
+        detail = [{"Name": "Access Bank", "CBNCode": "044"}]
         bank_name = ""
         if success is True:
             result = [bank["Name"] for bank in detail if bank["CBNCode"] == bank_code]
@@ -297,33 +298,40 @@ def create_seller(request, user, email, phone_number):
         user.email = email
         user.save()
 
+        # Create Seller
         seller = Seller.objects.create(
             user=user, phone_number=phone_number, address=business_address,
             town=business_town, city=business_city, state=business_state,
             longitude=longitude, latitude=latitude
         )
+        # Create seller detail
+        seller_detail = SellerDetail.objects.create(
+            seller=seller,
+            market_size=market_size,
+            business_type=business_type,
+            number_of_outlets=number_of_outlets,
+            maximum_price_range=maximum_price_range,
+            business_address=business_address,
+            business_city=business_city,
+            business_state=business_state,
+            business_drop_off_address=business_drop_off_address
+        )
+
+        # Create Bank Seller Account
+        bank_account = BankAccount.objects.create(
+            seller=seller, bank_name=bank_name, account_name=bank_account_name,
+            account_number=bank_account_number
+        )
+
+        # Create Store for seller
+        store = Store.objects.create(
+            seller=seller, name=business_name.capitalize()
+        )
+
         if seller is None or not seller:
             return False, "Failed to create a Seller Instance"
 
         if business_type == "unregistered-individual-business":
-            # if seller is not None:
-            # Create a store instance
-
-            store = Store.objects.create(seller=seller, name=business_name.capitalize())
-            seller_detail = SellerDetail.objects.create(
-                seller=seller,
-                market_size=market_size,
-                business_type=business_type,
-                number_of_outlets=number_of_outlets,
-                maximum_price_range=maximum_price_range
-            )
-
-            bank_account = BankAccount.objects.create(
-                seller=seller, bank_name=bank_name, account_name=bank_account_name,
-                account_number=bank_account_number
-            )
-
-            # features = request.data.get("features", [])  # list of M2M id's # Copied from Ashavin
             if product_category:
                 store.categories.clear()
 
@@ -338,9 +346,6 @@ def create_seller(request, user, email, phone_number):
             company_type: str = request.data.get("company_type", None)
             cac_number = request.data.get("cac_number", None)
             company_tin_number = request.data.get("company_tin_number", None)
-            market_size = request.data.get("market_size", None)
-            number_of_outlets = request.data.get("number_of_outlets", None)
-            maximum_price_range = request.data.get("maximum_price_range", None)  # drop-down
 
             if not company_name:
                 return False, "Company name is required"
@@ -363,38 +368,20 @@ def create_seller(request, user, email, phone_number):
             if not maximum_price_range:
                 return False, "Maximum price range is required"
 
-            # Create a store instance
-
-            store = Store.objects.create(seller=seller, name=business_name.capitalize())
-
-            seller_detail = SellerDetail.objects.create(
-                seller=seller,
-                company_name=company_name.capitalize(),
-                company_type=company_type,
-                market_size=market_size,
-                business_type=business_type,
-                cac_number=cac_number,
-                company_tin_number=company_tin_number,
-                number_of_outlets=number_of_outlets,
-                maximum_price_range=maximum_price_range
-            )
-
-            bank_account = BankAccount.objects.create(
-                seller=seller, bank_name=bank_name, account_name=bank_account_name,
-                account_number=bank_account_number
-            )
+            # Update seller_detail
+            seller_detail.company_name = company_name.capitalize()
+            seller_detail.company_type = company_type
+            seller_detail.cac_number = cac_number
+            seller_detail.company_tin_number = company_tin_number
+            seller_detail.save()
 
             # send email notification
             return True, f"Created {business_name}"
         elif business_type == "limited-liability-company":
 
             company_name = request.data.get("company_name", None)
-            # company_type = request.data.get("company_type", None)
             cac_number = request.data.get("cac_number", None)
             company_tin_number = request.data.get("company_tin_number", None)
-            market_size = request.data.get("market_size", None)
-            number_of_outlets = request.data.get("number_of_outlets", None)
-            maximum_price_range = request.data.get("maximum_price_range", None)  # drop-down
             directors = request.data.get("directors", [])
 
             if not company_name:
@@ -422,8 +409,6 @@ def create_seller(request, user, email, phone_number):
             if not directors:
                 return False, "Please input your partner's name and number."
 
-            store = Store.objects.create(seller=seller, name=business_name.capitalize())
-
             # directors // expect a dictionary --> [
             #          ->                             {
             #                                               'name': 'Nwachukwu Wisdom',
@@ -431,17 +416,11 @@ def create_seller(request, user, email, phone_number):
             #                                           }
             #          ->                          ]
 
-            seller_detail = SellerDetail.objects.create(
-                seller=seller,
-                company_name=company_name,
-                company_type=company_type,
-                market_size=market_size,
-                business_type=business_type,
-                cac_number=cac_number,
-                company_tin_number=company_tin_number,
-                number_of_outlets=number_of_outlets,
-                maximum_price_range=maximum_price_range
-            )
+            # Update seller_detail
+            seller_detail.company_name = company_name
+            seller_detail.company_type = company_type
+            seller_detail.cac_number = cac_number
+            seller_detail.company_tin_number = company_tin_number
 
             for item in directors:
                 if item['name'] and item['phone_number'] and ['address']:
@@ -450,10 +429,6 @@ def create_seller(request, user, email, phone_number):
                     seller_detail.director = direct
             seller_detail.save()
 
-            bank_account = BankAccount.objects.create(
-                seller=seller, bank_name=bank_name, account_name=bank_account_name,
-                account_number=bank_account_number
-            )
             return True, f"Created {company_name}"
 
         else:
@@ -485,7 +460,7 @@ def create_seller(request, user, email, phone_number):
 
 
 def update_seller(request, seller_id):
-    store, seller, seller_detail, bank_account, = None, None, None, None
+    # store, seller, seller_detail, bank_account, = None, None, None, None
     seller = Seller.objects.get(id=seller_id)
     try:
         business_name: str = request.data.get("business_name")
@@ -502,6 +477,15 @@ def update_seller(request, seller_id):
         bank_code: str = request.data.get("bank_code")  # drop-down
         bank_account_name: str = request.data.get("bank_account_name")
         bank_account_name = bank_account_name.strip()
+
+        seller.address = business_address
+        seller.town = business_town
+        seller.city = business_city
+        seller.state = business_state
+        seller.longitude = longitude
+        seller.latitude = latitude
+        seller.save()
+
         # ---------------------------- Check Bank Details ----------------------------
         bank_name = ""
         if bank_account_name and bank_code:
@@ -512,8 +496,8 @@ def update_seller(request, seller_id):
                 return False, msg
 
             # Get bank name
-            profile = Profile.objects.get(user=seller.user)
-            success, detail = get_all_banks(profile)
+            auth_user = Profile.objects.get(user=request.user)
+            success, detail = get_all_banks(auth_user)
             if success is True:
                 result = [bank["Name"] for bank in detail if bank["CBNCode"] == bank_code]
                 bank_name = str(result[0])
@@ -530,85 +514,37 @@ def update_seller(request, seller_id):
                 return False, "Invalid account number format"
 
         # -------------------------------------------------------------------------------------
+        store = Store.objects.get(seller=seller)
 
-        if business_type == "unregistered-individual-business":
-            # if seller is not None:
-            # Get a store instance
+        seller_detail = SellerDetail.objects.get(seller=seller)
+        seller_detail.market_size = market_size
+        seller_detail.business_type = business_type
+        seller_detail.number_of_outlets = number_of_outlets
+        seller_detail.maximum_price_range = maximum_price_range
+        if business_name:
+            store.name = business_name.capitalize()
+            seller_detail.company_name = business_name.capitalize()
+        store.save()
+        seller_detail.save()
 
-            store = Store.objects.get(seller=seller, name=business_name.capitalize())
-            seller_detail = SellerDetail.objects.get(seller=seller)
-            seller_detail.market_size = market_size
-            seller_detail.business_type = business_type
-            seller_detail.number_of_outlets = number_of_outlets
-            seller_detail.maximum_price_range = maximum_price_range
-            seller_detail.save()
+        bank_account = BankAccount.objects.get(seller=seller)
+        bank_account.bank_name = bank_name
+        bank_account.account_name = bank_account_name
+        bank_account.account_number = bank_account_number
+        bank_account.save()
 
-            bank_account = BankAccount.objects.get(seller=seller)
-            bank_account.bank_name = bank_name
-            bank_account.account_name = bank_account_name
-            bank_account.account_number = bank_account_number
-            bank_account.save()
+        if product_category:
+            store.categories.clear()
 
-            # features = request.data.get("features", [])  # list of M2M id's # Copied from Ashavin
-            if product_category:
-                store.categories.clear()
-
-                for item in product_category:
-                    product_category = ProductCategory.objects.get(id=item)
-                    store.categories.add(product_category)
-
-            # send email notification
-            return True, f"Created {business_name}"
-        elif business_type == "registered-individual-business":
-            company_name: str = request.data.get("company_name")
-            company_type: str = request.data.get("company_type")
-            cac_number = request.data.get("cac_number")
-            company_tin_number = request.data.get("company_tin_number")
-            market_size = request.data.get("market_size")
-            number_of_outlets = request.data.get("number_of_outlets")
-            maximum_price_range = request.data.get("maximum_price_range")  # drop-down
-
-            # GET store instance
-
-            store = Store.objects.get(seller=seller, name=business_name.capitalize())
-
-            seller_detail = SellerDetail.objects.get(seller=seller)
-            seller_detail.company_name = company_name.capitalize()
-            seller_detail.company_type = company_type
-            seller_detail.market_size = market_size
-            seller_detail.business_type = business_type
-            seller_detail.cac_number = cac_number
-            seller_detail.company_tin_number = company_tin_number
-            seller_detail.number_of_outlets = number_of_outlets
-            seller_detail.maximum_price_range = maximum_price_range
-            seller_detail.save()
-
-            bank_account = BankAccount.objects.get(seller=seller)
-            bank_account.bank_name = bank_name
-            bank_account.account_name = bank_account_name
-            bank_account.account_number = bank_account_number
-            bank_account.save()
+            for item in product_category:
+                product_category = ProductCategory.objects.get(id=item)
+                store.categories.add(product_category)
 
             # send email notification
-            return True, f"Created {business_name}"
+            return True, f"Updated {store.name}"
         elif business_type == "limited-liability-company":
-
-            company_name = request.data.get("company_name")
-            # company_type = request.data.get("company_type", None)
-            cac_number = request.data.get("cac_number")
-            company_tin_number = request.data.get("company_tin_number")
-            market_size = request.data.get("market_size")
-            number_of_outlets = request.data.get("number_of_outlets")
-            maximum_price_range = request.data.get("maximum_price_range")  # drop-down
             directors = request.data.get("directors", [])
-
-
-            # if company_type not in ['sole-proprietorship', 'partnership']:
-            #     return "Company type is required", False
             company_type = "partnership"
-
-
-            store = Store.objects.get(seller=seller, name=business_name.capitalize())
 
             # directors // expect a dictionary --> [
             #          ->                             {
@@ -617,16 +553,7 @@ def update_seller(request, seller_id):
             #                                           }
             #          ->                          ]
 
-            seller_detail = SellerDetail.objects.get(seller=seller)
-            seller_detail.company_name = company_name
             seller_detail.company_type = company_type
-            seller_detail.market_size = market_size
-            seller_detail.business_type = business_type
-            seller_detail.cac_number = cac_number
-            seller_detail.company_tin_number = company_tin_number
-            seller_detail.number_of_outlets = number_of_outlets
-            seller_detail.maximum_price_range = maximum_price_range
-            seller_detail.save()
 
             for item in directors:
                 if item['name'] and item['phone_number'] and ['address']:
@@ -635,13 +562,7 @@ def update_seller(request, seller_id):
                     seller_detail.director = direct
             seller_detail.save()
 
-            bank_account = BankAccount.objects.get(seller=seller)
-            bank_account.bank_name = bank_name
-            bank_account.account_name = bank_account_name
-            bank_account.account_number = bank_account_number
-            bank_account.save()
-
-            return True, f"Created {company_name}"
+            return True, f"Created {store.name}"
 
         else:
             return False, "Invalid Business Type"
