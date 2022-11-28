@@ -125,28 +125,26 @@ class ShipperSerializer(serializers.ModelSerializer):
         exclude = ()
 
 
-class CartSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Cart
-        exclude = ()
-
-
 class CartProductSerializer(serializers.ModelSerializer):
-    cart = CartSerializer(many=False)
-    product_detail = ProductDetailSerializer(many=False)
+    product_name = serializers.CharField(source="product_detail.product.name")
+    description = serializers.CharField(source="product_detail.description")
+    image = serializers.CharField(source="product_detail.product.image")
 
     class Meta:
         model = CartProduct
-        fields = [
-            'cart',
-            'product_detail',
-            'price',
-            'quantity',
-            'discount',
-            'created_on',
-            'updated_on',
-        ]
+        fields = ['product_name', 'description', 'image', 'price', 'quantity', 'discount', 'created_on', 'updated_on']
 
 
+class CartSerializer(serializers.ModelSerializer):
+    cart_products = serializers.SerializerMethodField()
+
+    def get_cart_products(self, obj):
+        if CartProduct.objects.filter(cart=obj).exists():
+            return CartProductSerializer(CartProduct.objects.filter(cart=obj), many=True).data
+        return None
+
+    class Meta:
+        model = Cart
+        exclude = []
 
 

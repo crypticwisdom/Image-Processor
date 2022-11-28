@@ -6,6 +6,7 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Avg, Sum
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from account.models import Address
@@ -46,20 +47,46 @@ def check_cart(user=None, cart_id=None, cart_uid=None):
     return False, "Cart not found"
 
 
-def create_cart_product(product_id, cart):
-    try:
-        # Get product detail with the 'product_id'
-        if ProductDetail.objects.filter(product__id=product_id).exists():
-            product_detail = ProductDetail.objects.get(product__id=product_id)
+def create_or_update_cart_product(variant, cart):
 
-            # Create Cart Product
-            cart_product = CartProduct.objects.create(
-                cart=cart, product_detail=product_detail, price=product_detail.price,
-                discount=product_detail.discount, quantity=1)
-            return True, cart_product
-        return False, "Something went wrong while creating cart product"
-    except (Exception,) as err:
-        return False, f"{err}"
+    for variation_obj in variant:
+        variation_id = variation_obj.get('variant_id', '')
+        quantity = variation_obj.get('quantity', 1)
+
+        with transaction.atomic():
+            product_detail = get_object_or_404(ProductDetail.objects.select_for_update(), id=variation_id)
+
+    # try:
+        if product_detail.stock <= 0:
+            return False, f"Selected product: ({product_detail.product.name}) is out of stock"
+
+        if product_detail.stock < quantity:
+            return False, f"Selected product: ({product_detail.product.name}) is quantity"
+
+        if product_detail.product.status != "active":
+            return False, f"Selected product: ({product_detail.product.name}) is not available"
+
+        if product_detail.product.store.is_active is False:
+            return False, f"Selected product: ({product_detail.product.name}) is not available"
+
+        # Create Cart Product
+        cart.refresh_from_db()
+        cart_product, _ = CartProduct.objects.get_or_create(cart=cart, product_detail=product_detail)
+        cart_product.price = product_detail.price * quantity
+        cart_product.discount = product_detail.discount * quantity
+        cart_product.quantity = quantity
+        cart_product.save()
+
+        # Remove cart_product if quantity is 0
+        if cart_product.quantity < 1:
+            cart_product.delete()
+
+        # cart_product = CartProduct.objects.create(
+        #     cart=cart, product_detail=product_detail, price=product_detail.price,
+        #     discount=product_detail.discount, quantity=1)
+    return True, "Cart updated"
+    # except (Exception,) as err:
+    #     return False, f"{err}"
 
 
 def perform_operation(operation_param, product_detail, cart_product):
