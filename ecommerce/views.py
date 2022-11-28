@@ -204,7 +204,7 @@ class FilteredSearchView(generics.ListAPIView):
         query = Q(status='active', store__is_active=True)
 
         if search:
-            query &= Q(name=search)
+            query &= Q(name__icontains=search)
 
         if order_by:
             queryset = sorted_queryset(order_by, query)
