@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db.models import Sum, Avg
+
+from superadmin.exceptions import InvalidRequestException
 from .models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo, ProductType, \
     ProductWishlist, CartProduct, OrderProduct, Order, ReturnedProduct, ReturnProductImage, ReturnReason, Brand
 from rest_framework import serializers
@@ -193,7 +195,7 @@ class CartProductSerializer(serializers.ModelSerializer):
 
     def get_description(self, obj):
         if obj:
-            return obj.product_detail.description
+            return obj.product_detail.product.description
         return None
 
     def get_item_price(self, obj):
@@ -319,4 +321,41 @@ class ReturnedProductSerializer(serializers.ModelSerializer):
         model = ReturnedProduct
         fields = ['id', 'returned_by', 'return_images', 'product', 'reason', 'status', 'payment_status', 'comment',
                   'return_date', 'updated_by', 'updated_on']
+
+
+class ProductReviewSerializerOut(serializers.ModelSerializer):
+    reviewed_by = serializers.CharField(source="user.get_full_name")
+
+    class Meta:
+        model = ProductReview
+        exclude = ["user"]
+
+
+class ProductReviewSerializerIn(serializers.Serializer):
+    auth_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    product_id = serializers.IntegerField()
+    rating = serializers.IntegerField()
+    headline = serializers.CharField()
+    content = serializers.CharField()
+
+    def create(self, validated_data):
+        user = validated_data.get("auth_user")
+        product = validated_data.get("product_id")
+        headline = validated_data.get("headline")
+        rating = validated_data.get("rating")
+        content = validated_data.get("content")
+
+        # Check if user has previously purchase product
+        if not OrderProduct.objects.filter(order__customer__user=user, product_detail__product_id=product, status="delivered").exists():
+            raise InvalidRequestException({"detail": "You have no recent purchase for selected product"})
+
+        # create review
+        review, _ = ProductReview.objects.get_or_create(user=user, product_id=product)
+        review.headline = headline
+        review.rating = rating
+        review.review = content
+        review.save()
+
+        data = ProductReviewSerializerOut(review).data
+        return data
 

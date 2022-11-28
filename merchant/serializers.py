@@ -3,7 +3,7 @@ import json
 from rest_framework import serializers
 from ecommerce.models import ProductDetail, OrderProduct, Order, ReturnedProduct, ReturnProductImage
 from ecommerce.serializers import ReturnReasonSerializer, ReturnProductImageSerializer
-from .models import Seller, SellerDetail, SellerFile
+from .models import Seller, SellerDetail, SellerFile, MerchantBanner
 from store.models import Store
 
 
@@ -45,7 +45,7 @@ class SellerSerializer(serializers.ModelSerializer):
             request = self.context.get("request")
             store = [{
                 "name": store.name,
-                "description": store.name,
+                "description": store.description,
                 # "categories": store.categories,
                 "active": store.is_active
             } for store in Store.objects.filter(seller=obj)]
@@ -187,3 +187,56 @@ class MerchantReturnedProductSerializer(serializers.ModelSerializer):
         model = ReturnedProduct
         fields = ['id', 'returned_by', 'attachment_images', 'product_name', 'product_image', 'reason', 'status',
                   'payment_status', 'comment', 'return_date', 'updated_by', 'updated_on']
+
+
+class MerchantBannerSerializerOut(serializers.ModelSerializer):
+    class Meta:
+        model = MerchantBanner
+        exclude = []
+
+
+class MerchantBannerSerializerIn(serializers.Serializer):
+    auth_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    seller_id = serializers.IntegerField(required=False)
+    image = serializers.ImageField()
+    size = serializers.CharField()
+    is_active = serializers.BooleanField(required=False)
+
+    def create(self, validated_data):
+        user = validated_data.get("auth_user")
+        seller = validated_data.get("seller_id")
+        image = validated_data.get("image")
+        size = validated_data.get("size")
+        is_active = validated_data.get("is_active")
+
+        if user.is_staff and seller:
+            seller = Seller.objects.get(id=seller)
+            banner = MerchantBanner.objects.create(
+                seller=seller, banner_image=image, banner_size=size, is_active=is_active
+            )
+        else:
+            seller = Seller.objects.get(user=user)
+            banner = MerchantBanner.objects.create(seller=seller, banner_image=image, banner_size=size)
+
+        data = MerchantBannerSerializerOut(banner, context=self.context).data
+        return data
+
+    def update(self, instance, validated_data):
+        user = validated_data.get("auth_user")
+        size = validated_data.get("size")
+        image = validated_data.get("image")
+
+        if user.is_staff:
+            if validated_data.get("is_active"):
+                instance.is_active = validated_data.get("is_active")
+        if image:
+            instance.banner_image = image
+        if size:
+            instance.banner_size = size
+        instance.save()
+
+        data = MerchantBannerSerializerOut(instance, context=self.context).data
+        return data
+
+
+

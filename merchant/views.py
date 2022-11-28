@@ -1,19 +1,21 @@
 from django.db.models import Q, F
-from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from ecommerce.serializers import ProductSerializer, ReturnedProductSerializer
 from account.utils import validate_email
+from superadmin.exceptions import raise_serializer_error_msg
 from transaction.models import Transaction
 from transaction.serializers import TransactionSerializer
 from .serializers import SellerSerializer, MerchantProductDetailsSerializer, OrderSerializer, \
-    MerchantDashboardOrderProductSerializer, MerchantReturnedProductSerializer
+    MerchantDashboardOrderProductSerializer, MerchantReturnedProductSerializer, MerchantBannerSerializerOut, \
+    MerchantBannerSerializerIn
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, generics
 from home.pagination import CustomPagination
 from .utils import *
 from .permissions import IsMerchant
 from ecommerce.models import ProductDetail, Product, ProductCategory, OrderProduct, Order
-from rest_framework.generics import ListAPIView
 from django_filters import rest_framework as filters
 from .filters import MerchantOrderProductFilter
 
@@ -231,7 +233,7 @@ class MerchantDashboardView(APIView):
 
 
 # [Needs a DateRangeFilter functionality]
-class MerchantOrderProductsView(ListAPIView):
+class MerchantOrderProductsView(generics.ListAPIView):
     """
         filter_backends: used to specify Django Default FilterSet which creates a FilterSet based on 'filterset_fields'.
         filterset_class: Used to pass in your written customized FilterSet class, don't use 'filterset_fields' with it.
@@ -379,5 +381,41 @@ class MerchantTransactionAPIView(APIView, CustomPagination):
             serializer = self.get_paginated_response(data).data
 
         return Response(serializer)
+
+
+class MerchantBannerListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsMerchant)]
+    serializer_class = MerchantBannerSerializerOut
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return MerchantBanner.objects.all().order_by("-id")
+        seller = get_object_or_404(Seller, user=self.request.user)
+        return MerchantBanner.objects.filter(seller=seller).order_by("-id")
+
+    def create(self, request, *args, **kwargs):
+        serializer = MerchantBannerSerializerIn(data=request.data, context=self.get_serializer_context())
+        serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
+        serializer.save()
+        return Response({"detail": "Banner added successfully", "data": serializer})
+
+
+class MerchantBannerRetrieveUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsMerchant)]
+    serializer_class = MerchantBannerSerializerOut
+    lookup_field = "id"
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return get_object_or_404(MerchantBanner, id=self.kwargs.get("id"))
+        return MerchantBanner.objects.get(id=self.kwargs.get("id"), seller__user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        serializer = MerchantBannerSerializerIn(data=request.data, instance=self.kwargs.get("id"), context=self.get_serializer_context())
+        serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
+        serializer.save()
+        return Response({"detail": "Banner updated successfully", "data": serializer})
+
 
 

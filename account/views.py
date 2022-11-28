@@ -1,3 +1,4 @@
+import json
 import secrets
 import time
 
@@ -8,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from ecommerce.shopper_email import shopper_welcome_email, shopper_signup_verification_email
 from home.utils import log_request
+from transaction.models import Transaction
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password, make_password
@@ -363,8 +365,9 @@ class FundWalletAPIView(APIView):
 
     def post(self, request):
         amount = request.data.get("amount")
-        if not amount:
-            return Response({"detail": "Amount is required"}, status=status.HTTP_400_BAD_REQUEST)
+        pin = request.data.get("pin")
+        if not all([amount, pin]):
+            return Response({"detail": "Amount and PIN are required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             profile = Profile.objects.get(user=request.user)
             payment_link = make_payment_for_wallet(profile, amount)
@@ -376,3 +379,10 @@ class FundWalletAPIView(APIView):
                 {"detail": "Error occurred while generating payment link", "error": str(ex)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+
+
+
+
+

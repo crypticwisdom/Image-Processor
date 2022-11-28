@@ -128,7 +128,7 @@ class ShipperSerializer(serializers.ModelSerializer):
 
 class CartProductSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product_detail.product.name")
-    description = serializers.CharField(source="product_detail.description")
+    description = serializers.CharField(source="product_detail.product.description")
     image = serializers.SerializerMethodField()
 
     def get_image(self, obj):

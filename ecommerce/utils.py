@@ -2,6 +2,8 @@ import base64
 import datetime
 import decimal
 
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.db import transaction
@@ -14,6 +16,11 @@ from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_
 from module.shipping_service import ShippingService
 from transaction.models import Transaction
 from .models import Cart, Product, ProductDetail, CartProduct, ProductReview, Order, OrderProduct
+
+from django.conf import settings
+
+encryption_key = bytes(settings.PAYARENA_CYPHER_KEY, "utf-8")
+encryption_iv = bytes(settings.PAYARENA_IV, "utf-8")
 
 
 def sorted_queryset(order_by, query):
@@ -220,7 +227,7 @@ def get_shipping_rate(customer, address_id=None):
                     'weight': product.product_detail.weight,
                     'price': product.product_detail.price,
                     'product': product.product_detail.product,
-                    'detail': product.product_detail.description,
+                    'detail': product.product_detail.product.description,
                 }
             ],
         }
@@ -405,6 +412,29 @@ def decrypt_text(text: str):
     fernet = Fernet(key)
     decrypt = fernet.decrypt(text.encode())
     return decrypt.decode()
+
+# data = b"secret"
+# key = get_random_bytes(16)
+# cipher = AES.new(key, AES.MODE_CBC)
+# ct_bytes = cipher.encrypt(pad(data, AES.block_size))
+# iv = base64.b64encode(cipher.iv).decode('utf-8')
+# ct = b64encode(ct_bytes).decode('utf-8')
+# result = json.dumps({'iv':iv, 'ciphertext':ct})
+
+def encrypt_payarena_data(data):
+    cipher = AES.new(encryption_key, AES.MODE_CBC, iv=encryption_iv)
+    plain_text = bytes(data, "utf-8")
+    encrypted_text = cipher.encrypt(pad(plain_text, AES.block_size))
+    return encrypted_text
+
+
+def decrypt_payarena_data(data):
+    cipher = AES.new(encryption_key, AES.MODE_CBC, iv=encryption_iv)
+    plain_text = bytes.fromhex(data)
+    decrypted_text = unpad(cipher.decrypt(plain_text), AES.block_size)
+    # Convert to string
+    result = decrypted_text.decode("utf-8")
+    return result
 
 
 

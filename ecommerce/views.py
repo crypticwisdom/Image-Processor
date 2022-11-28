@@ -12,12 +12,14 @@ from django.utils import timezone
 from account.models import Profile, Address
 from account.utils import get_wallet_info
 from store.serializers import CartSerializer
+from superadmin.exceptions import raise_serializer_error_msg
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
-    CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer
+    CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer, \
+    ProductReviewSerializerOut, ProductReviewSerializerIn
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
-    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage
+    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview
 from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
 from .utils import check_cart, perform_operation, top_weekly_products, top_monthly_categories, \
@@ -496,3 +498,25 @@ class TrackOrderAPIView(APIView):
                 return Response({"detail": "Tracking ID not found for selected order"})
         except Exception as er:
             return Response({"detail": f"{er}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductReviewAPIView(APIView, CustomPagination):
+    permission_classes = []
+
+    def get(self, request):
+        product_id = self.request.GET.get("product_id")
+
+        reviews = self.paginate_queryset(ProductReview.objects.filter(product_id=product_id), request)
+        serializer = ProductReviewSerializerOut(reviews, many=True).data
+        data = self.get_paginated_response(serializer).data
+        return Response(data)
+
+    def post(self, request):
+        serializer = ProductReviewSerializerIn(data=request.data, context={"request": request})
+        serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
+        result = serializer.save()
+        return Response({"detail": "Review added successfully", "data": result})
+
+
+
+

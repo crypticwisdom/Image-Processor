@@ -179,7 +179,7 @@ class ShippingService:
             detail["OrderNo"] = order_number
             if str(order_product.company_id).isnumeric():
                 detail["CompanyId"] = int(order_product.company_id)
-            detail["Summary"] = order_product.product_detail.description
+            detail["Summary"] = order_product.product_detail.product.description
             detail["DeliveryRequestedTime"] = "06 AM to 09 PM"
             detail["PickupTime"] = str(pickup_time)
             detail["PickupDate"] = str(pickup_date).replace("-", "/")
@@ -224,7 +224,7 @@ class ShippingService:
                 shipment_item["Quantity"] = product.quantity
                 shipment_item["Color"] = product.product_detail.color
                 shipment_item["Size"] = product.product_detail.size
-                shipment_item["Description"] = product.product_detail.description
+                shipment_item["Description"] = product.product_detail.product.description
                 shipment_item["Distance"] = 5
                 shipment_item["WeightRange"] = 0
                 shipment_item["Weight"] = product.product_detail.weight

@@ -34,4 +34,7 @@ urlpatterns = [
     # Customer Dashboard
     path("dashboard/", views.CustomerDashboardView.as_view(), name="customer-dashboard"),
 
+    # Product Review
+    path("review/", views.ProductReviewAPIView.as_view(), name="review"),
+
 ]

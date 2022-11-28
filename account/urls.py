@@ -20,7 +20,7 @@ urlpatterns = [
 
     # Wallet
     path('wallet/', views.CreateCustomerWalletAPIView.as_view(), name='create-wallet'),
-    # path('fund-wallet/', views.FundWalletAPIView.as_view(), name='fund-wallet'),
+    path('fund-wallet/', views.FundWalletAPIView.as_view(), name='fund-wallet'),
 
 ]
 
