@@ -315,7 +315,7 @@ RETURNED_STATUS_CHOICES = (
 class ReturnedProduct(models.Model):
     returned_by = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
     product = models.ForeignKey(OrderProduct, on_delete=models.CASCADE, )
-    reason = models.ForeignKey(ReturnReason, on_delete=models.CASCADE, default='')
+    reason = models.ForeignKey(ReturnReason, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(max_length=50, choices=RETURNED_STATUS_CHOICES, default='pending', blank=True, null=True)
     payment_status = models.CharField(max_length=50, choices=RETURNED_STATUS_CHOICES, default='pending', blank=True,
                                       null=True)
@@ -338,13 +338,12 @@ class ReturnedProduct(models.Model):
 
 class ReturnProductImage(models.Model):
     return_product = models.ForeignKey(ReturnedProduct, on_delete=models.CASCADE)
-    image = models.FileField(upload_to="returns", null=True, blank=True)
+    image = models.ImageField(upload_to="returns", null=True, blank=True)
     is_primary = models.BooleanField(default=False)
 
     def __str__(self):
         # return f'{self.return_product} {self.image}'
         return f'{self.return_product}'
-#
 
 
 class OrderEntry(models.Model):

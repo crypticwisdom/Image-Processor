@@ -1,7 +1,8 @@
 import json
 
 from rest_framework import serializers
-from ecommerce.models import ProductDetail, OrderProduct, Order
+from ecommerce.models import ProductDetail, OrderProduct, Order, ReturnedProduct, ReturnProductImage
+from ecommerce.serializers import ReturnReasonSerializer, ReturnProductImageSerializer
 from .models import Seller, SellerDetail, SellerFile
 from store.models import Store
 
@@ -93,6 +94,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
     order_id = serializers.SerializerMethodField()
     customer_name = serializers.SerializerMethodField()
+    # category = serializers.CharField(source="product_detail__product__category__name")
     date = serializers.SerializerMethodField()
 
     def get_order_id(self, obj):
@@ -135,3 +137,53 @@ class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderProduct
         fields = ['order_id', 'customer_name', 'tracking_id', 'payment_method', 'date', 'status', 'total']
+
+
+class ProductLowAndOutOffStockSerializer(serializers.ModelSerializer):
+
+    product_name = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    def get_product_name(self, obj):
+        if obj:
+            return obj.product.name
+        return None
+
+    def get_image(self, obj):
+        if obj.product.image and self.context.get("request"):
+            request = self.context.get("request")
+            return request.build_absolute_uri(obj.product.image.image.url)
+        return obj.product.image.get_image_url()
+
+    class Meta:
+        model = ProductDetail
+        fields = ['id', 'product_name', 'image', 'stock', 'price', 'discount']
+
+
+class MerchantReturnedProductSerializer(serializers.ModelSerializer):
+    returned_by = serializers.CharField(source="returned_by.first_name")    # Creating a custom field "Method 1"
+    attachment_images = serializers.SerializerMethodField()     # Creating a custom field "Method 2 (More Advanced)"
+    return_date = serializers.DateTimeField(source="created_on")
+    product_name = serializers.CharField(source="product.product_detail.product.name")
+    product_image = serializers.SerializerMethodField()
+    updated_by = serializers.CharField(source="updated_by.first_name")
+    reason = ReturnReasonSerializer()
+
+    def get_attachment_images(self, obj):
+        if ReturnProductImage.objects.filter(return_product=obj).exists():
+            return_product_image = ReturnProductImage.objects.filter(return_product=obj)
+            request = self.context.get("request")
+            if request:
+                return ReturnProductImageSerializer(return_product_image, many=True, context={"request": request}).data
+        return None
+
+    def get_product_image(self, obj):
+        if obj.product.product_detail.product.image:
+            request = self.context.get("request")
+            return request.build_absolute_uri(obj.product.product_detail.product.image.get_image_url())
+        return obj.product.product_detail.product.image.get_image_url()
+
+    class Meta:
+        model = ReturnedProduct
+        fields = ['id', 'returned_by', 'attachment_images', 'product_name', 'product_image', 'reason', 'status',
+                  'payment_status', 'comment', 'return_date', 'updated_by', 'updated_on']

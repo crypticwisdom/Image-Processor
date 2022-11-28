@@ -21,6 +21,7 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -87,5 +88,3 @@ PAYMENT_GATEWAY_SECRET_KEY = env("PAYMENT_GATEWAY_SECRET_KEY")
 PAYMENT_CREDIT_WALLET_URL = env("PAYMENT_CREDIT_WALLET_URL")
 
 BANK_URL = env("BANK_URL")
-
-
