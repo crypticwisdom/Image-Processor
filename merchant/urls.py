@@ -17,7 +17,7 @@ urlpatterns = [
     path('product/image/', views.ProductImageView.as_view(), name="product-image"),
 
     # Orders
-    path('orders/', views.MerchantOrdersView.as_view(), name="merchant-orders"),
+    path('orders/', views.MerchantOrderProductsView.as_view(), name="merchant-orders"),
 
 
 ]

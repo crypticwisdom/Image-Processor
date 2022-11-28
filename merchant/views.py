@@ -110,17 +110,6 @@ class BecomeAMerchantView(APIView):
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MerchantDashboardView(APIView):
-    permission_classes = [IsAuthenticated, IsMerchant]
-
-    def get(self, request):
-        try:
-            store = Store.objects.get(seller__user=request.user)
-            return Response({"detail": get_dashboard_data(store, request)})
-        except (Exception, ) as err:
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
-
-
 class ProductAPIView(APIView, CustomPagination):
 
     def get(self, request, pk=None):
@@ -160,7 +149,7 @@ class ProductAPIView(APIView, CustomPagination):
             return Response({"detail": "An error has occurred", "error": str(ess)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Haven't written this "Ashavin said it should be handle by the Admin"
+# Haven't written this "Ashavin said it should be handled by the Admin"
 class MerchantAddBannerView(APIView):
     permission_classes = [IsAuthenticated, IsMerchant]
 
@@ -174,8 +163,20 @@ class MerchantAddBannerView(APIView):
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class MerchantDashboardView(APIView):
+    permission_classes = [IsAuthenticated, IsMerchant]
+
+    def get(self, request):
+        try:
+            store = Store.objects.get(seller__user=request.user)
+            return Response({"detail": get_dashboard_data(store, request)})
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# [filter is pending ...]
 # The date range filter is not working as expected.  filter by status and category id works.
-# class MerchantOrdersView(APIView, CustomPagination):
+# class MerchantOrderProductsView(APIView, CustomPagination):
 #     permission_classes = [IsAuthenticated, IsMerchant]
 #
 #     def get(self, request, name=None):
@@ -215,24 +216,39 @@ class MerchantAddBannerView(APIView):
 #             return Response({"detail": f"{err}d"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MerchantOrdersView(ListAPIView):
+# [Needs a DateRangeFilter functionality]
+class MerchantOrderProductsView(ListAPIView):
+    """
+        filter_backends: used to specify Django Default FilterSet which creates a FilterSet based on 'filterset_fields'.
+        filterset_class: Used to pass in your written customized FilterSet class, don't use 'filterset_fields' with it.
+        filterset_fields: Used to specify the field name to filter against in the Model.
+
+        Note: The DjangoFilterBackend is not neccessary in the 'filter_backends' if we already passed in our custom
+            FilterSet in filter_class.
+    """
     permission_classes = [IsAuthenticated, IsMerchant]
-    queryset = OrderProduct.objects.all().order_by("-id")
     pagination_class = CustomPagination
     serializer_class = MerchantDashboardOrderProductSerializer
-    filter_backends = (filters.DjangoFilterBackend, )
+    # filter_backends = [filters.DjangoFilterBackend]
     filterset_class = MerchantOrderProductFilter
-    # filterset_fields = {
-    #     'cancelled_on': ['cancelled_on__date']
-    # }
 
-    # def get_queryset(self):
-    #     # queryset = OrderProduct.objects.filter(product_detail__product__store__user=self.request.user).order_by("-id")
-    #     print('queryset')
-    #     return 'queryset'
+    def get_queryset(self):
+        query = Q(product_detail__product__store__seller__user=self.request.user)
+        queryset = OrderProduct.objects.filter(query).order_by('-id')
+
+        # start_date, end_date = self.request.GET.get('start_date', None), self.request.GET.get('end_date', None)
+        # if start_date is not None and end_date is not None:
+        #     query &= Q(shipped_on__date__gte=start_date, shipped_on__date__lte=end_date)
+        #     queryset = OrderProduct.objects.filter(query)
+        #     if queryset is None:
+        #         query &= Q(cancelled_on__date__gte=start_date, cancelled_on__date__lte=end_date)
+        #         queryset = OrderProduct.objects.filter(query)
+        #     print(queryset)
+
+        return queryset
 
 
-# Completed
+# Completed [Filter is pending ...]
 class LowAndOutOfStockView(APIView, CustomPagination):
     permission_classes = [IsAuthenticated, IsMerchant]
 

@@ -95,6 +95,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
     order_id = serializers.SerializerMethodField()
     customer_name = serializers.SerializerMethodField()
+    # category = serializers.CharField(source="product_detail__product__category__name")
     date = serializers.SerializerMethodField()
 
     def get_order_id(self, obj):
