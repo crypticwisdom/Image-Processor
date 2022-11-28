@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
+from ecommerce.models import Cart
 from merchant.models import Seller
+from store.serializers import CartSerializer
 from .models import Profile, Address
 from django.contrib.auth.models import User
 
@@ -30,6 +32,13 @@ class ProfileSerializer(serializers.ModelSerializer):
     addresses = serializers.SerializerMethodField()
     user = UserSerializer()
     is_merchant = serializers.SerializerMethodField()
+    cart = serializers.SerializerMethodField()
+
+    def get_cart(self, obj):
+        request = self.context.get("request")
+        if Cart.objects.filter(user=obj.user, status="open").exists():
+            return CartSerializer(Cart.objects.filter(user=obj.user, status="open").last(), context={"request": request}).data
+        return None
 
     def get_is_merchant(self, obj):
         if Seller.objects.filter(user=obj.user).exists():
@@ -50,4 +59,4 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet', 'is_merchant']
+        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet', 'is_merchant', 'cart']

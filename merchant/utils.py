@@ -64,6 +64,7 @@ def add_or_update_product_detail(variants, product):
             product_variation = None
             variation_id = variation.get('id', '')
             sku = variation.get('sku', '')
+            description = variation.get('description', '')
             size = variation.get('size', '')
             color = variation.get('color', '')
             discount = variation.get('discount', 0.0)
@@ -73,6 +74,7 @@ def add_or_update_product_detail(variants, product):
             if variation_id:
                 product_variation = ProductDetail.objects.get(pk=variation_id)
                 product_variation.sku = sku
+                product_variation.description = description
                 product_variation.size = size
                 product_variation.color = color
                 product_variation.discount = discount
@@ -81,7 +83,8 @@ def add_or_update_product_detail(variants, product):
                 product_variation.save()
             else:
                 product_variation = ProductDetail.objects.create(
-                    product=product, sku=sku, size=size, color=color, discount=discount, price=price, stock=stock
+                    product=product, sku=sku, size=size, color=color, discount=discount, price=price, stock=stock,
+                    description=description
                 )
 
             if product_variation.id not in variation_list:

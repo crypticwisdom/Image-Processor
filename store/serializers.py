@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from rest_framework import serializers
 
 from ecommerce.models import ProductImage, ProductReview, ProductWishlist, CartProduct, Brand, Product, \
@@ -128,7 +129,15 @@ class ShipperSerializer(serializers.ModelSerializer):
 class CartProductSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product_detail.product.name")
     description = serializers.CharField(source="product_detail.description")
-    image = serializers.CharField(source="product_detail.product.image")
+    image = serializers.SerializerMethodField()
+
+    def get_image(self, obj):
+        image = None
+        request = self.context.get("request")
+        if ProductImage.objects.filter(product_detail=obj.product_detail).exists():
+            prod_image = ProductImage.objects.filter(product_detail=obj.product_detail).first()
+            image = request.build_absolute_uri(prod_image.image.image.url)
+        return image
 
     class Meta:
         model = CartProduct
@@ -137,14 +146,23 @@ class CartProductSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     cart_products = serializers.SerializerMethodField()
+    total_items = serializers.SerializerMethodField()
+    amount_summary = serializers.SerializerMethodField()
+
+    def get_amount_summary(self, obj):
+        return CartProduct.objects.filter(cart=obj).aggregate(Sum("price"))["price__sum"] or 0
+
+    def get_total_items(self, obj):
+        return CartProduct.objects.filter(cart=obj).count() or 0
 
     def get_cart_products(self, obj):
+        request = self.context.get("request")
         if CartProduct.objects.filter(cart=obj).exists():
-            return CartProductSerializer(CartProduct.objects.filter(cart=obj), many=True).data
+            return CartProductSerializer(CartProduct.objects.filter(cart=obj),context={"request": request}, many=True).data
         return None
 
     class Meta:
         model = Cart
-        exclude = []
+        exclude = ["user"]
 
 

@@ -11,8 +11,8 @@ urlpatterns = [
     path("filtered-search/", views.FilteredSearchView.as_view(), name="product-filter"),
 
     # CART
-    path("cart-operation/", views.CartProductOperationsView.as_view(), name="add-to-cart"),
-    path("cart-product/<str:id>", views.CartProductView.as_view(), name="cart-products"),
+    path("cart/", views.CartProductOperationsView.as_view(), name="add-to-cart"),
+    path("cart/<str:id>/", views.CartProductOperationsView.as_view(), name="cart-products"),
 
 
     # Wishlist

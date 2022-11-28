@@ -56,7 +56,7 @@ def create_or_update_cart_product(variant, cart):
         with transaction.atomic():
             product_detail = get_object_or_404(ProductDetail.objects.select_for_update(), id=variation_id)
 
-    # try:
+        # try:
         if product_detail.stock <= 0:
             return False, f"Selected product: ({product_detail.product.name}) is out of stock"
 
@@ -70,6 +70,7 @@ def create_or_update_cart_product(variant, cart):
             return False, f"Selected product: ({product_detail.product.name}) is not available"
 
         # Create Cart Product
+        # print(cart)
         cart.refresh_from_db()
         cart_product, _ = CartProduct.objects.get_or_create(cart=cart, product_detail=product_detail)
         cart_product.price = product_detail.price * quantity
