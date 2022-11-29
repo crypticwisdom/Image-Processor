@@ -83,7 +83,9 @@ class LoginView(APIView):
 
         except Exception as err:
             log_request(err)
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                "detail": "Login error, please confirm email and password are correct", "error": str(err)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):
