@@ -26,60 +26,60 @@ class LoginView(APIView):
     permission_classes = []
 
     def post(self, request):
-        try:
-            email = request.data.get('email', None)
-            password, user = request.data.get('password', None), None
-            cart_uid = request.data.get("cart_uid", None)
+        # try:
+        email = request.data.get('email', None)
+        password, user = request.data.get('password', None), None
+        cart_uid = request.data.get("cart_uid", None)
 
-            if email is None:
-                return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if email is None:
+            return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if password is None:
-                return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if password is None:
+            return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if '@' in email:
-                check = validate_email(email)
+        if '@' in email:
+            check = validate_email(email)
 
-                if check is False:
-                    return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
+            if check is False:
+                return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if user is on UP USER ENGINE
-            if not User.objects.filter(email=email).exists():
-                profile = login_payarena_user(profile=None, email=email, password=password)
-                if profile is not None:
-                    user = profile.user
+        # Check if user is on UP USER ENGINE
+        if not User.objects.filter(email=email).exists():
+            profile = login_payarena_user(profile=None, email=email, password=password)
+            if profile is not None:
+                user = profile.user
 
-            user = User.objects.get(email=email)
-            log_request(f"user: {user}")
+        user = User.objects.get(email=email)
+        log_request(f"user: {user}")
 
-            # Check: if user is empty and password does not match.
-            if not user.check_password(password):
-                return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
+        # Check: if user is empty and password does not match.
+        if not user.check_password(password):
+            return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if user:
-                profile = Profile.objects.get(user=user)
-                if profile.verified is False:
-                    return Response({"detail": "User not verified, please request a verification link."},
-                                    status=status.HTTP_400_BAD_REQUEST)
+        if user:
+            profile = Profile.objects.get(user=user)
+            if profile.verified is False:
+                return Response({"detail": "User not verified, please request a verification link."},
+                                status=status.HTTP_400_BAD_REQUEST)
 
-                has_merged, message = merge_carts(cart_uid=cart_uid, user=user)
-                # Log 'message'
+            has_merged, message = merge_carts(cart_uid=cart_uid, user=user)
+            # Log 'message'
 
-                # Login to PayArena Auth Engine
-                Thread(target=login_payarena_user, args=[profile, email, password]).start()
-                time.sleep(2)
-                wallet_balance = get_wallet_info(profile)
+            # Login to PayArena Auth Engine
+            Thread(target=login_payarena_user, args=[profile, email, password]).start()
+            time.sleep(2)
+            wallet_balance = get_wallet_info(profile)
 
-                return Response({
-                    "detail": "Login successful",
-                    "token": f"{RefreshToken.for_user(user).access_token}",
-                    "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
-                    "wallet_information": wallet_balance
-                })
+            return Response({
+                "detail": "Login successful",
+                "token": f"{RefreshToken.for_user(user).access_token}",
+                "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
+                "wallet_information": wallet_balance
+            })
 
-        except Exception as err:
-            log_request(err)
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+        # except Exception as err:
+        #     log_request(err)
+        #     return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):
