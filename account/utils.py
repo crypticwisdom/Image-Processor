@@ -171,7 +171,9 @@ def login_payarena_user(profile, email, password):
                 user_profile.save()
 
         # Encrypt token
-        token = encrypt_text(user_token)
+        token = None
+        if user_token:
+            token = encrypt_text(user_token)
         if user_profile:
             user_profile.pay_auth = token
             user_profile.save()
