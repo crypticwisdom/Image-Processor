@@ -1,3 +1,5 @@
+from threading import Thread
+
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
@@ -11,6 +13,7 @@ from rest_framework.views import APIView
 from django.utils import timezone
 from account.models import Profile, Address
 from account.utils import get_wallet_info
+from merchant.merchant_email import merchant_order_placement_email
 from store.serializers import CartSerializer
 from superadmin.exceptions import raise_serializer_error_msg
 from .filters import ProductFilter
@@ -22,6 +25,8 @@ from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, 
     OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview
 from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
+
+from .shopper_email import shopper_order_placement_email
 from .utils import check_cart, perform_operation, top_weekly_products, top_monthly_categories, \
     validate_product_in_cart, get_shipping_rate, order_payment, add_order_product, perform_order_cancellation, \
     perform_order_pickup, perform_order_tracking, create_or_update_cart_product
@@ -351,9 +356,12 @@ class ProductCheckoutView(APIView):
             # Process refund to customer wallet
             return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Send order placement email to shopper
-        # Send order placement email to seller
-        # Send order placement email to admins
+        for order_product in order_products:
+            # Send order placement email to shopper
+            Thread(target=shopper_order_placement_email, args=[customer, order.id, order_product]).start()
+            # Send order placement email to seller
+            Thread(target=merchant_order_placement_email, args=[customer, order, order_product]).start()
+            # Send order placement email to admins
 
         return Response({"detail": "Order placed successfully"})
 

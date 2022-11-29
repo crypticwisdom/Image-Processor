@@ -39,6 +39,7 @@ class Seller(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     address = models.CharField(max_length=100, null=True, blank=True)
+    umap_uid = models.CharField(max_length=200, null=True, blank=True)
     town = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)

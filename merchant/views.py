@@ -1,3 +1,5 @@
+from threading import Thread
+
 from django.db.models import Q, F
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -6,6 +8,7 @@ from account.utils import validate_email
 from superadmin.exceptions import raise_serializer_error_msg
 from transaction.models import Transaction
 from transaction.serializers import TransactionSerializer
+from .merchant_email import merchant_account_creation_email
 from .serializers import SellerSerializer, MerchantProductDetailsSerializer, OrderSerializer, \
     MerchantDashboardOrderProductSerializer, MerchantReturnedProductSerializer, MerchantBannerSerializerOut, \
     MerchantBannerSerializerIn
@@ -67,10 +70,10 @@ class BecomeAMerchantView(APIView):
                     return Response({"detail": "You already have a merchant account"},
                                     status=status.HTTP_400_BAD_REQUEST)
 
-                success, msg = create_seller(request, user, email, phone_number)
+            success, msg = create_seller(request, user, email, phone_number)
 
-                if not success:
-                    return Response({"detail": f"{msg}"})
+            if not success:
+                return Response({"detail": f"{msg}"})
 
             # Create Merchant for Un-Authenticated User
             # if request.user.is_authenticated is False:
@@ -108,6 +111,8 @@ class BecomeAMerchantView(APIView):
             #     elif success is True:
             #         return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
 
+            # Send email to merchant
+            Thread(target=merchant_account_creation_email, args=[email]).start()
             return Response({"detail": f"{msg}."})
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)

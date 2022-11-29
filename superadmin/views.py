@@ -1,4 +1,5 @@
 import datetime
+from threading import Thread
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -17,6 +18,7 @@ from account.serializers import *
 from ecommerce.utils import top_monthly_categories
 from home.utils import get_previous_date, get_month_start_and_end_datetime, get_year_start_and_end_datetime, \
     get_week_start_and_end_datetime
+from merchant.merchant_email import merchant_account_approval_email, merchant_upload_guide_email
 from merchant.permissions import *
 from merchant.models import Seller
 from merchant.serializers import SellerSerializer
@@ -340,16 +342,22 @@ class UpdateMerchantStatusAPIView(APIView):
     def put(self, request):
         seller_id = request.data.get("seller_id")
         seller_status = request.data.get("status")
+        u_map_uid = request.data.get("umap_unique_id")
 
         try:
             seller = Seller.objects.get(id=seller_id)
+            if seller_status == "active" and not u_map_uid:
+                return Response({"detail": "Merchant's UMAP ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
             seller.status = seller_status
+            seller.umap_uid = u_map_uid
             seller.save()
 
             if seller_status == "active":
                 Store.objects.filter(seller=seller).update(is_active=True)
                 # Send Approval Email to seller
-                # CREATE MERCHANT ON UMAP
+                Thread(target=merchant_account_approval_email, args=[seller.user.email]).start()
+                Thread(target=merchant_upload_guide_email, args=[seller.user.email]).start()
             return Response({"detail": "Merchant status updated successfully"})
         except Exception as ex:
             return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
