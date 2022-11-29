@@ -769,7 +769,7 @@ def get_dashboard_data(store, request):
     data['total_product'] = ProductDetail.objects.filter(product__store=store).aggregate(Sum('stock'))['stock__sum']
     data['returned_product_count'] = ReturnedProduct.objects.filter(product__product_detail__product__store=store,
                                                                     status="approved").count()
-    # data['sales'] = get_sales_data(store)
+    data['sales'] = get_sales_data(store)
     data['low_in_stock'] = get_low_in_stock(store, request)
     data['out_of_stock'] = out_of_stock(store, request)
     data['best_sellers'] = get_best_sellers_data(store)

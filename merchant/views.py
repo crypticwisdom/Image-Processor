@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ErrorDetail, ValidationError
 from django.db.models import Q, F
 from rest_framework.permissions import IsAuthenticated
 from ecommerce.serializers import ProductSerializer, ReturnedProductSerializer
@@ -174,49 +175,7 @@ class MerchantDashboardView(APIView):
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# [filter is pending ...]
-# The date range filter is not working as expected.  filter by status and category id works.
-# class MerchantOrderProductsView(APIView, CustomPagination):
-#     permission_classes = [IsAuthenticated, IsMerchant]
-#
-#     def get(self, request, name=None):
-#         try:
-#
-#             filter_by_date_from, filter_by_date_to = request.GET.get("date_from", None), request.GET.get("date_to", None)
-#             filter_by_status = request.GET.get("status", None)
-#             category_id = request.GET.get("category_id", None)
-#
-#             # Get Store instance for this user.
-#             query = Q(product_detail__product__store__seller__user=request.user)
-#
-#             # if category_id is not None:
-#             #     query &= Q(product_detail__product__category=category_id)
-#
-#             # if filter_by_status:
-#             #     query &= Q(status=filter_by_status)
-#
-#             if filter_by_date_from is not None and filter_by_date_to is not None:
-#                 # Not really working as expected, will check later
-#                 query &= Q(delivered_on__range=[filter_by_date_from, filter_by_date_to])
-#                 query &= Q(shipped_on__range=[filter_by_date_from, filter_by_date_to])
-#                 query &= Q(returned_on__range=[filter_by_date_from, filter_by_date_to])
-#                 query &= Q(payment_on__range=[filter_by_date_from, filter_by_date_to])
-#                 query &= Q(refunded_on__range=[filter_by_date_from, filter_by_date_to])
-#                 query &= Q(packed_on__range=[filter_by_date_from, filter_by_date_to])
-#                 query &= Q(cancelled_on__range=[filter_by_date_from, filter_by_date_to])
-#                 query &= Q(created_on__range=[filter_by_date_from, filter_by_date_to])
-#
-#             orders = OrderProduct.objects.filter(query).order_by("-id")
-#             paginated_query_set = self.paginate_queryset(orders, request)
-#             serializer = MerchantDashboardOrderProductSerializer(instance=paginated_query_set, many=True).data
-#             paginated_serializer = self.get_paginated_response(serializer).data
-#
-#             return Response(paginated_serializer)
-#         except (Exception, ) as err:
-#             return Response({"detail": f"{err}d"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-# [Needs a DateRangeFilter functionality]
+# Completed.
 class MerchantOrderProductsView(ListAPIView):
     """
         filter_backends: used to specify Django Default FilterSet which creates a FilterSet based on 'filterset_fields'.
@@ -236,15 +195,34 @@ class MerchantOrderProductsView(ListAPIView):
         query = Q(product_detail__product__store__seller__user=self.request.user)
         queryset = OrderProduct.objects.filter(query).order_by('-id')
 
-        # start_date, end_date = self.request.GET.get('start_date', None), self.request.GET.get('end_date', None)
-        # if start_date is not None and end_date is not None:
-        #     query &= Q(shipped_on__date__gte=start_date, shipped_on__date__lte=end_date)
-        #     queryset = OrderProduct.objects.filter(query)
-        #     if queryset is None:
-        #         query &= Q(cancelled_on__date__gte=start_date, cancelled_on__date__lte=end_date)
-        #         queryset = OrderProduct.objects.filter(query)
-        #     print(queryset)
+        start_date = self.request.GET.get("start_date", None)
+        end_date = self.request.GET.get("end_date", None)
+        status_ = self.request.GET.get("status", None)
 
+        if (start_date is not None and end_date is None) or (end_date is not None and start_date is None):
+            # Check if both 'start' and 'end' are both given.
+            raise ValidationError({'detail': "Filter by Date Range requires both start_date and end_date."})
+
+        if start_date is not None and end_date is not None:
+            if status_ == "cancelled":
+
+                query &= Q(cancelled_on__date__range=[start_date, end_date])
+            elif status_ == "paid":
+                query &= Q(payment_on__date__range=[start_date, end_date])
+            elif status_ == "delivered":
+                query &= Q(delivered_on__date__range=[start_date, end_date])
+            elif status_ == "returned":
+                query &= Q(returned_on__date__range=[start_date, end_date])
+            elif status_ == "packed":
+                query &= Q(packed_on__date__range=[start_date, end_date])
+            elif status_ == "shipped":
+                query &= Q(shipped_on__date__range=[start_date, end_date])
+            elif status_ == "pending":  # What should be the pending status ...
+                query &= Q(returned_on__date__range=[start_date, end_date])
+            elif status_ == "refunded":
+                query &= Q(refunded_on__date__range=[start_date, end_date])
+
+        queryset = OrderProduct.objects.filter(query).order_by('-id')
         return queryset
 
 
