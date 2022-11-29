@@ -62,7 +62,7 @@ def call_name_enquiry(bank_code: str, account_number: str):
 
 
 def payment_for_wallet(**kwargs):
-    link = None
+    link = payment_id = None
     url = f"{payment_gw_url}/{payment_merchant_id}"
     header = dict()
     header["Accept"] = header["Content-Type"] = "application/json"
@@ -81,23 +81,10 @@ def payment_for_wallet(**kwargs):
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200 and str(response.text).isnumeric():
         link = f"{payment_gw_url}/{response.text}"
+        payment_id = str(response.text)
 
-    return link
+    return link, payment_id
 
 
-def credit_wallet(**kwargs):
-    url = str(credit_wallet_url)
-
-    data = dict()
-    data["account"] = kwargs.get("account")
-    data["reference"] = kwargs.get("ref_number")
-    data["amount"] = kwargs.get("amount")
-    data["description"] = kwargs.get("narration")
-    data["channel"] = 1
-
-    payload = json.dumps(data)
-    response = requests.request("POST", url, headers=None, data=payload).json()
-    log_request(f"url: {url}, header: , payload: {payload}, response: {response}")
-    return response
 
 

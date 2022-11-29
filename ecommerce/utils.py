@@ -413,13 +413,6 @@ def decrypt_text(text: str):
     decrypt = fernet.decrypt(text.encode())
     return decrypt.decode()
 
-# data = b"secret"
-# key = get_random_bytes(16)
-# cipher = AES.new(key, AES.MODE_CBC)
-# ct_bytes = cipher.encrypt(pad(data, AES.block_size))
-# iv = base64.b64encode(cipher.iv).decode('utf-8')
-# ct = b64encode(ct_bytes).decode('utf-8')
-# result = json.dumps({'iv':iv, 'ciphertext':ct})
 
 def encrypt_payarena_data(data):
     cipher = AES.new(encryption_key, AES.MODE_CBC, iv=encryption_iv)
