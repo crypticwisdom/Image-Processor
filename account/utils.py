@@ -170,13 +170,13 @@ def login_payarena_user(profile, email, password):
                 user_profile.phone_number = phone_no
                 user_profile.save()
 
-    # Encrypt token
-    token = encrypt_text(user_token)
-    if user_profile:
-        user_profile.pay_auth = token
-        user_profile.save()
+        # Encrypt token
+        token = encrypt_text(user_token)
+        if user_profile:
+            user_profile.pay_auth = token
+            user_profile.save()
 
-    return user_profile
+        return user_profile
 
 
 def change_payarena_user_password(profile, old_password, new_password):
