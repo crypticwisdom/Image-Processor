@@ -88,11 +88,7 @@ class PayArenaServices:
     def fund_wallet(cls, profile, amount, payment_info):
         header = cls.get_auth_header(profile)
         url = f"{base_url}/mobile/mall-credit-wallet"
-        payload = {
-            "Amount": amount,
-            "Fee": "100",
-            "PaymentInformation": payment_info
-        }
+        payload = json.dumps({"Amount": amount, "Fee": 100, "PaymentInformation": payment_info})
         print(url)
         print(header)
         print(payload)

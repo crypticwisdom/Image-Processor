@@ -41,7 +41,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         return None
 
     def get_is_merchant(self, obj):
-        if Seller.objects.filter(user=obj.user).exists():
+        if Seller.objects.filter(user=obj.user, status="active").exists():
             return True
         return False
 
