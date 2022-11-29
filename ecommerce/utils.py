@@ -282,6 +282,8 @@ def get_shipping_rate(customer, address_id=None):
 
 
 def order_payment(payment_method, order):
+    from account.utils import get_wallet_info
+
     # create Transaction
     # get order amount
     product_amount = CartProduct.objects.filter(cart__order=order).aggregate(Sum("price"))["price__sum"] or 0
@@ -289,10 +291,18 @@ def order_payment(payment_method, order):
         Sum("delivery_fee"))["delivery_fee__sum"] or 0
 
     amount = product_amount + delivery_amount
-    trans = Transaction.objects.create(order=order, payment_method=payment_method, amount=amount)
+    trans = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
 
-    # if payment_method == "wallet":
-    # do something
+    if payment_method == "wallet":
+        balance = 0
+        # Check wallet balance
+        wallet_info = get_wallet_info(order.customer)
+        if "wallet" in wallet_info:
+            bal = wallet_info["wallet"]["balance"]
+            balance = decimal.Decimal(bal)
+        if balance < amount:
+            return False, f"Wallet Balance {balance} cannot be less than order amount, please fund wallet"
+
     # if payment_method == "card"
 
     # Update transaction status

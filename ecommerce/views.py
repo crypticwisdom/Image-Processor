@@ -1,7 +1,7 @@
 from threading import Thread
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,6 +17,7 @@ from account.utils import get_wallet_info
 from merchant.merchant_email import merchant_order_placement_email
 from store.serializers import CartSerializer
 from superadmin.exceptions import raise_serializer_error_msg
+from transaction.models import Transaction
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
     CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer, \
@@ -299,7 +300,6 @@ class ProductCheckoutView(APIView):
     def post(self, request):
 
         payment_method = request.data.get("payment_method")
-        cart_id = request.data.get("cart_id")
         address_id = request.data.get("address_id")
         sender_town_id = request.data.get("sender_town_id")
         receiver_town_id = request.data.get("receiver_town_id")
@@ -319,55 +319,56 @@ class ProductCheckoutView(APIView):
             return Response({"detail": "Shipper information, address, sender town, and recipient town are required"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # try:
-        customer, created = Profile.objects.get_or_create(user=request.user)
-        address = Address.objects.get(customer=customer, id=address_id)
-        cart = Cart.objects.get(user=request.user, id=cart_id, status="open")
+        try:
+            customer, created = Profile.objects.get_or_create(user=request.user)
+            address = Address.objects.get(customer=customer, id=address_id)
+            cart = Cart.objects.get(user=request.user, status="open")
 
-        for product in shipping_information:
-            # Get Cart Products
-            cart_product = CartProduct.objects.get(id=product["cart_product_id"], cart=cart)
-            if str(product["company_id"]).isnumeric():
-                cart_product.company_id = product["company_id"]
-            cart_product.shipper_name = str(product["shipper"]).upper()
-            cart_product.delivery_fee = product["shipping_fee"]
-            cart_product.save()
+            for product in shipping_information:
+                # Get Cart Products
+                cart_product = CartProduct.objects.get(id=product["cart_product_id"], cart=cart)
 
-        validate = validate_product_in_cart(customer)
-        if validate:
-            return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
+                if str(product["company_id"]).isnumeric():
+                    cart_product.company_id = product["company_id"]
+                cart_product.shipper_name = str(product["shipper"]).upper()
+                cart_product.delivery_fee = product["shipping_fee"]
+                cart_product.save()
 
-        # Create Order
-        order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
+            validate = validate_product_in_cart(customer)
+            if validate:
+                return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
 
-        # PROCESS PAYMENT
-        success, detail = order_payment(payment_method, order)
-        if success is False:
-            return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+            # Create Order
+            order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
 
-        # update order
-        order_products = add_order_product(order)
-        # Update payment method
-        order_products.update(payment_method=payment_method)
-        # Call pickup order request
+            # PROCESS PAYMENT
+            success, detail = order_payment(payment_method, order)
+            if success is False:
+                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
 
-        success, response = perform_order_pickup(order_products, address, sender_town_id, receiver_town_id)
+            # update order
+            order_products = add_order_product(order)
+            # Update payment method
+            order_products.update(payment_method=payment_method)
+            # Call pickup order request
 
-        if success is False:
-            # Process refund to customer wallet
-            return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
+            success, response = perform_order_pickup(order_products, address, sender_town_id, receiver_town_id)
 
-        for order_product in order_products:
-            # Send order placement email to shopper
-            Thread(target=shopper_order_placement_email, args=[customer, order.id, order_product]).start()
-            # Send order placement email to seller
-            Thread(target=merchant_order_placement_email, args=[customer, order, order_product]).start()
-            # Send order placement email to admins
+            if success is False:
+                # Process refund to customer wallet
+                return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"detail": "Order placed successfully"})
+            for order_product in order_products:
+                # Send order placement email to shopper
+                Thread(target=shopper_order_placement_email, args=[customer, order.id, order_product]).start()
+                # Send order placement email to seller
+                Thread(target=merchant_order_placement_email, args=[customer, order, order_product]).start()
+                # Send order placement email to admins
 
-        # except Exception as ex:
-        #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Order placed successfully"})
+
+        except Exception as ex:
+            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OrderAPIView(APIView, CustomPagination):
@@ -479,6 +480,9 @@ class CustomerDashboardView(APIView):
             response['profile_detail'] = ProfileSerializer(profile, context={"request": request}).data
             response['recent_orders'] = OrderProductSerializer(recent_orders, many=True).data
             response['wallet_information'] = wallet_bal
+            response['total_amount_spent'] = Transaction.objects.filter(
+                order__customer__user=request.user, status="success"
+            ).aggregate(Sum("amount"))["amount__sum"] or 0
             # ----------------------
 
             # Recent Payment
