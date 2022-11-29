@@ -1,3 +1,4 @@
+import json
 import re
 
 from django.contrib.auth.hashers import make_password
@@ -251,15 +252,25 @@ def make_payment_for_wallet(profile, amount, pin):
 
 def fund_customer_wallet(request, reference):
     # Check payment status
-    response = PayArenaServices.get_payment_status(reference)
-    response = {"Order Id":"38104","Amount":"200.00","Description":"TopUp wallet balance from PayArena Mall^WEBID38104","Convenience Fee":"0.00","Currency":"566","Status":"Initiated","Card Holder":None,"PAN":None,"Scheme":None,"TranTime":"11/28/2022 7:24:40 PM","TranDateTime":"11/28/2022 7:24:40 PM","StatusDescription":"Initiated","CustomerName":"Sunday Olaofe","CustomerEmail":"slojararshavin@mailinato.com"}
-    if "Status" in response and response["Status"] == "":
-        ...
+    # response = PayArenaServices.get_payment_status(reference)
+    response = {"Order Id":"38104","Amount":"200.00","Description":"TopUp wallet balance from PayArena Mall^WEBID38104","Convenience Fee":"0.00","Currency":"566","Status":"Approved","Card Holder":None,"PAN":None,"Scheme":None,"TranTime":"11/28/2022 7:24:40 PM","TranDateTime":"11/28/2022 7:24:40 PM","StatusDescription":"Initiated","CustomerName":"Sunday Olaofe","CustomerEmail":"slojararshavin@mailinato.com"}
+    status = "pending"
+    amount = 0
+    if "Status" in response:
+        status = str(response["Status"]).lower()
+        amount = response["Amount"]
+    if status == "approved":
+        # Credit customer wallet
+        profile = Profile.objects.get(user=request.user)
+        # Decrypt wallet pin
+        decryted_pin = decrypt_text(profile.wallet_pin)
+        # Encrypt payment information
+        data = json.dumps({"Scheme": "wallet", "PIN": decryted_pin})
+        encrypted_payment_info = encrypt_payarena_data(data)
+        response = PayArenaServices.fund_wallet(profile, amount, encrypted_payment_info)
+        print(response)
+        exit()
 
-    profile = Profile.objects.get(user=request.user)
-
-    encrypted_payment_info = encrypt_payarena_data()
-    # response = PayArenaServices.fund_wallet(profile, amount, payment_info="")
     ...
 
 

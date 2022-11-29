@@ -418,7 +418,9 @@ def encrypt_payarena_data(data):
     cipher = AES.new(encryption_key, AES.MODE_CBC, iv=encryption_iv)
     plain_text = bytes(data, "utf-8")
     encrypted_text = cipher.encrypt(pad(plain_text, AES.block_size))
-    return encrypted_text
+    # Convert byte to hex
+    result = encrypted_text.hex()
+    return result
 
 
 def decrypt_payarena_data(data):
