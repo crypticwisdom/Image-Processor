@@ -56,25 +56,26 @@ class LoginView(APIView):
             if not user.check_password(password):
                 return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-            profile = Profile.objects.get(user=user)
-            if profile.verified is False:
-                return Response({"detail": "User not verified, please request a verification link."},
-                                status=status.HTTP_400_BAD_REQUEST)
+            if user:
+                profile = Profile.objects.get(user=user)
+                if profile.verified is False:
+                    return Response({"detail": "User not verified, please request a verification link."},
+                                    status=status.HTTP_400_BAD_REQUEST)
 
-            has_merged, message = merge_carts(cart_uid=cart_uid, user=user)
-            # Log 'message'
+                has_merged, message = merge_carts(cart_uid=cart_uid, user=user)
+                # Log 'message'
 
-            # Login to PayArena Auth Engine
-            Thread(target=login_payarena_user, args=[profile, email, password]).start()
-            time.sleep(2)
-            wallet_balance = get_wallet_info(profile)
+                # Login to PayArena Auth Engine
+                Thread(target=login_payarena_user, args=[profile, email, password]).start()
+                time.sleep(2)
+                wallet_balance = get_wallet_info(profile)
 
-            return Response({
-                "detail": "Login successful",
-                "token": f"{RefreshToken.for_user(user).access_token}",
-                "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
-                "wallet_information": wallet_balance
-            })
+                return Response({
+                    "detail": "Login successful",
+                    "token": f"{RefreshToken.for_user(user).access_token}",
+                    "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
+                    "wallet_information": wallet_balance
+                })
 
         except Exception as err:
             log_request(err)
