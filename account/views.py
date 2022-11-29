@@ -391,9 +391,13 @@ class FundWalletAPIView(APIView):
 
         if not reference:
             return Response({"detail": "reference is required"})
-        fund_customer_wallet(request, reference)
-        ...
-
+        success, result = fund_customer_wallet(request, reference)
+        if success is False:
+            return Response({"detail": result}, status=status.HTTP_400_BAD_REQUEST)
+        # GET WALLET BALANCE
+        profile = Profile.objects.get(user=request.user)
+        wallet = get_wallet_info(profile)
+        return Response({"detail": result, "wallet_information": wallet})
 
 
 

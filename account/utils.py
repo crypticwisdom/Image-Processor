@@ -255,7 +255,7 @@ def make_payment_for_wallet(profile, amount, pin):
 def fund_customer_wallet(request, reference):
     # Check payment status
     # response = PayArenaServices.get_payment_status(reference)
-    response = {"Order Id":"38104","Amount":"10000.00","Description":"TopUp wallet balance from PayArena Mall^WEBID38104","Convenience Fee":"0.00","Currency":"566","Status":"Approved","Card Holder":None,"PAN":None,"Scheme":None,"TranTime":"11/28/2022 7:24:40 PM","TranDateTime":"11/28/2022 7:24:40 PM","StatusDescription":"Initiated","CustomerName":"Sunday Olaofe","CustomerEmail":"slojararshavin@mailinato.com"}
+    response = {"Order Id":"38104","Amount":"4000.00","Description":"TopUp wallet balance from PayArena Mall^WEBID38104","Convenience Fee":"0.00","Currency":"566","Status":"Approved","Card Holder":None,"PAN":None,"Scheme":None,"TranTime":"11/28/2022 7:24:40 PM","TranDateTime":"11/28/2022 7:24:40 PM","StatusDescription":"Initiated","CustomerName":"Sunday Olaofe","CustomerEmail":"slojararshavin@mailinato.com"}
     status = "pending"
     amount = 0
     if "Status" in response:
@@ -270,16 +270,12 @@ def fund_customer_wallet(request, reference):
         data = json.dumps({"Scheme": "wallet", "PIN": decryted_pin})
         encrypted_payment_info = encrypt_payarena_data(data)
         response = PayArenaServices.fund_wallet(profile, amount, encrypted_payment_info)
-        response = {'Success': True, 'Message': 'Successful', 'Data': {'Status': 'Approved', 'Ref': None, 'BankCode': '800', 'AccountNumber': '2031399275', 'BeneficiaryName': 'Sunday Olaofe ', 'Scheme': None, 'Fee': 100.0, 'Amount': 500.0}}
+
         if "Success" in response:
             if response["Success"] is True and response["Data"]["Status"] == "Approved":
-                ...
-            ...
+                return True, "Wallet credited successfully"
+            else:
+                return False, "An error occurred while funding wallet, please try again later"
 
-
-        # print(response)
-        # exit()
-
-    ...
 
 
