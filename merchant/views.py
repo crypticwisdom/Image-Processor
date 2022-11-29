@@ -423,4 +423,24 @@ class MerchantBannerRetrieveUpdateAPIView(generics.RetrieveUpdateDestroyAPIView)
         return Response({"detail": "Banner updated successfully", "data": serializer})
 
 
+class ProductImageAPIView(APIView):
+
+    def post(self, request):
+        try:
+            image = request.data['image']
+            product_image = Image.objects.create(image=image)
+            return Response({"detail": "Image has been uploaded successfully", "image_id": product_image.id,
+                             "image_url": product_image.image.url})
+        except Exception as ex:
+            return Response(
+                {"detail": "An error occurred. Please try again", "error": str(ex)},
+                status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        if not Image.objects.filter(id=pk).exists():
+            return Response({'detail': 'Image does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+
+        Image.objects.get(id=pk).delete()
+        return Response({'detail': 'Image deleted successfully'})
+
 
