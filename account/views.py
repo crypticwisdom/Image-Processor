@@ -76,9 +76,8 @@ class LoginView(APIView):
                 "wallet_information": wallet_balance
             })
 
-        except (ValueError, Exception) as err:
-            print(err)
-            # Log error
+        except Exception as err:
+            log_request(err)
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
