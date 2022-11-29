@@ -12,6 +12,7 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from django.utils import timezone
 from account.models import Profile, Address
+from account.serializers import ProfileSerializer
 from account.utils import get_wallet_info
 from merchant.merchant_email import merchant_order_placement_email
 from store.serializers import CartSerializer
@@ -475,8 +476,8 @@ class CustomerDashboardView(APIView):
 
             # Recent Orders
             recent_orders = OrderProduct.objects.filter(order__customer=profile).order_by("-id")[:10]
-            serialized = OrderProductSerializer(recent_orders, many=True).data
-            response['recent_orders'] = serialized
+            response['profile_detail'] = ProfileSerializer(profile, context={"request": request}).data
+            response['recent_orders'] = OrderProductSerializer(recent_orders, many=True).data
             response['wallet_information'] = wallet_bal
             # ----------------------
 
