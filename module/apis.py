@@ -11,6 +11,9 @@ payment_merchant_id = settings.PAYMENT_GATEWAY_MERCHANT_ID
 payment_secret = settings.PAYMENT_GATEWAY_SECRET_KEY
 get_banks_url = settings.BANK_URL
 credit_wallet_url = settings.PAYMENT_CREDIT_WALLET_URL
+u_map_url = settings.U_MAP_BASE_URL
+u_map_user_id = settings.U_MAP_USER_ID
+u_map_password = settings.U_MAP_PASSWORD
 
 
 def get_bank_codes(token):
@@ -84,6 +87,19 @@ def payment_for_wallet(**kwargs):
         payment_id = str(response.text)
 
     return link, payment_id
+
+
+def u_map_registration(**kwargs):
+    url = f'{u_map_url}?BILLER_CODE={kwargs.get("biller_id")}&BILLER_DESCRIPTION={kwargs.get("description")}&' \
+          f'MERCHANT_ID={kwargs.get("merchant_id")}&BILLER_ACCOUNT={kwargs.get("account_no")}&' \
+          f'ACCOUNT_NAME={kwargs.get("account_name")}&BANK_CODE={kwargs.get("bank_code")}&' \
+          f'FEP_TYPE={kwargs.get("fep_type")}&FEEL1={kwargs.get("feel")}&USER_ID=USAPITEST&PASSWORD=vnp-1234'
+
+    response = requests.request("POST", url, headers={}).json()
+    log_request(f"Calling UMAP API ---->>> Response: {response}")
+    return response
+
+
 
 
 

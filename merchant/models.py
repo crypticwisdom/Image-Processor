@@ -34,12 +34,19 @@ BANNER_SIZE_CHOICES = (
     ('small', 'Small'), ('medium', 'Medium'), ('large', 'Large')
 )
 
+FEP_TYPE_CHOICES = (
+    ('flat', "Flat"), ('rate', 'Rate')
+)
+
 
 class Seller(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     address = models.CharField(max_length=100, null=True, blank=True)
-    umap_uid = models.CharField(max_length=200, null=True, blank=True)
+    merchant_id = models.CharField(max_length=100, null=True, blank=True)
+    biller_code = models.CharField(max_length=200, null=True, blank=True)
+    fep_type = models.CharField(max_length=50, choices=FEP_TYPE_CHOICES, default="flat")
+    feel = models.CharField(max_length=200, null=True, blank=True)
     town = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
@@ -114,6 +121,7 @@ class SellerFile(models.Model):
 
 class BankAccount(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
+    bank_code = models.CharField(max_length=100, null=True, blank=True)
     bank_name = models.CharField(max_length=100, null=True, blank=True)
     account_name = models.CharField(max_length=100, null=True, blank=True)
     account_number = models.CharField(max_length=100, null=True, blank=True)

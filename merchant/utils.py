@@ -325,7 +325,7 @@ def create_seller(request, user, email, phone_number):
         # Create Bank Seller Account
         bank_account = BankAccount.objects.create(
             seller=seller, bank_name=bank_name, account_name=bank_account_name,
-            account_number=bank_account_number
+            account_number=bank_account_number, bank_code=bank_code
         )
 
         # Create Store for seller
@@ -534,6 +534,7 @@ def update_seller(request, seller_id):
 
         bank_account = BankAccount.objects.get(seller=seller)
         bank_account.bank_name = bank_name
+        bank_account.bank_code = bank_code
         bank_account.account_name = bank_account_name
         bank_account.account_number = bank_account_number
         bank_account.save()

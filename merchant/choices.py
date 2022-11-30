@@ -1,5 +1,5 @@
 seller_status_choices = (
-    ('active', 'Active'), ('inactive', 'Inactive'), ('pending', 'Pending')
+    ('active', 'Active'), ('inactive', 'Inactive'), ('pending', 'Pending'), ('approve', 'Approve')
 )
 
 

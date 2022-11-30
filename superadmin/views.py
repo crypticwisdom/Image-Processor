@@ -21,9 +21,10 @@ from home.utils import get_previous_date, get_month_start_and_end_datetime, get_
     get_week_start_and_end_datetime
 from merchant.merchant_email import merchant_account_approval_email, merchant_upload_guide_email
 from merchant.permissions import *
-from merchant.models import Seller
+from merchant.models import Seller, BankAccount
 from merchant.serializers import SellerSerializer
 from merchant.utils import create_product, update_product, create_seller, update_seller
+from module.apis import u_map_registration
 from store.models import Store
 from store.serializers import ProductCategorySerializer
 from superadmin.exceptions import raise_serializer_error_msg
@@ -77,8 +78,10 @@ class DashboardAPIView(APIView):
 
         if date_from and date_to:
             latest_purchased_products = OrderProduct.objects.filter(packed_on__range=(start_date, end_date))[:5]
-            best_selling_products = Product.objects.filter(updated_on__range=(start_date, end_date)).order_by("-sale_count")[:10]
-            most_viewed_products = Product.objects.filter(updated_on__range=(start_date, end_date)).order_by("-view_count")[:10]
+            best_selling_products = Product.objects.filter(updated_on__range=(start_date, end_date)).order_by(
+                "-sale_count")[:10]
+            most_viewed_products = Product.objects.filter(updated_on__range=(start_date, end_date)).order_by(
+                "-view_count")[:10]
 
         last_purchased = list()
         for order_product in latest_purchased_products:
@@ -140,7 +143,8 @@ class ProductAPIView(APIView):
             success, detail, product = create_product(request, seller)
             if success is False:
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"detail": detail, "product": ProductSerializer(product, context={"request": request}).data})
+            return Response(
+                {"detail": detail, "product": ProductSerializer(product, context={"request": request}).data})
         except Exception as err:
             return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -148,7 +152,8 @@ class ProductAPIView(APIView):
         try:
             product = Product.objects.get(id=pk)
             query = update_product(request, product)
-            return Response({"detail": "Product updated successfully", "product": ProductSerializer(query, context={"request": request}).data})
+            return Response({"detail": "Product updated successfully",
+                             "product": ProductSerializer(query, context={"request": request}).data})
         except Exception as ess:
             return Response({"detail": "An error has occurred", "error": str(ess)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -167,6 +172,7 @@ class ProductListAPIView(generics.ListAPIView):
             queryset = Product.objects.filter(status=prod_status).order_by("-id")
         return queryset
 
+
 # Product End
 
 # Profile Start
@@ -182,6 +188,8 @@ class ProfileDetailRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
     lookup_field = "id"
+
+
 # Profile End
 
 
@@ -198,6 +206,7 @@ class BrandDetailRetrieveAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = BrandSerializer
     queryset = Brand.objects.all()
     lookup_field = "id"
+
 
 # Brand End
 
@@ -254,6 +263,8 @@ class ProductCategoryDetailRetrieveAPIView(generics.RetrieveUpdateAPIView):
 
         category = create_or_update_category(data=request.data, cat_id=cat_id)
         return Response(ProductCategorySerializer(category, context={"request": request}).data)
+
+
 # ProductCategory End
 
 
@@ -343,25 +354,54 @@ class UpdateMerchantStatusAPIView(APIView):
     def put(self, request):
         seller_id = request.data.get("seller_id")
         seller_status = request.data.get("status")
-        u_map_uid = request.data.get("umap_unique_id")
 
-        try:
-            seller = Seller.objects.get(id=seller_id)
-            if seller_status == "active" and not u_map_uid:
-                return Response({"detail": "Merchant's UMAP ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        biller_code = request.data.get("biller_code")
+        merchant_id = request.data.get("merchant_id")
+        feel = request.data.get("FEEL")
+        fep_type = request.data.get("FEP_TYPE")
 
-            seller.status = seller_status
-            seller.umap_uid = u_map_uid
-            seller.save()
+        # try:
+        seller = Seller.objects.get(id=seller_id)
+        seller.status = seller_status
 
-            if seller_status == "active":
-                Store.objects.filter(seller=seller).update(is_active=True)
-                # Send Approval Email to seller
-                Thread(target=merchant_account_approval_email, args=[seller.user.email]).start()
-                Thread(target=merchant_upload_guide_email, args=[seller.user.email]).start()
-            return Response({"detail": "Merchant status updated successfully"})
-        except Exception as ex:
-            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+        if seller_status == "approve":
+            if not all([biller_code, feel, fep_type, merchant_id]):
+                return Response({"detail": "Biller Code, MerchantID, FEEL1 and FEP_TYPE are required to onboard "
+                                           "merchant"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if not (fep_type == "flat" or fep_type == "rate"):
+                return Response({"detail": "FEP TYPE can either be 'rate' or 'flat'"}, status=status.HTTP_400_BAD_REQUEST)
+
+            seller.biller_code = biller_code
+            seller.feel = feel
+            seller.fep_type = fep_type
+            seller.merchant_id = merchant_id
+
+            store_name = Store.objects.filter(seller=seller).last().name
+            bank_account = BankAccount.objects.filter(seller=seller).last()
+
+            # Update seller on UMAP
+            response = u_map_registration(
+                biller_id=biller_code, description=str(store_name).upper(), merchant_id=merchant_id,
+                account_no=bank_account.account_number, account_name=bank_account.account_name,
+                bank_code=bank_account.bank_code, fep_type=str(fep_type).upper()[0], feel=feel
+            )
+            print(response)
+            if response["RESPONSE_CODE"] != "00":
+                reason = response["RESPONSE_DESCRIPTION"]
+                return Response({"detail": reason}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Send Approval Email to seller
+            Thread(target=merchant_account_approval_email, args=[seller.user.email]).start()
+            Thread(target=merchant_upload_guide_email, args=[seller.user.email]).start()
+
+        seller.save()
+
+        if seller_status == "active" or seller_status == "approve":
+            Store.objects.filter(seller=seller).update(is_active=True)
+        return Response({"detail": "Merchant status updated successfully"})
+        # except Exception as ex:
+        #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Admin User
@@ -554,10 +594,8 @@ class AdminSignInAPIView(APIView):
             return Response({"detail": "Invalid login details"}, status=status.HTTP_400_BAD_REQUEST)
 
         if not AdminUser.objects.filter(user=user).exists():
-            return Response({"detail": "You are not permitted to perform this action"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"detail": "You are not permitted to perform this action"},
+                            status=status.HTTP_401_UNAUTHORIZED)
 
         data = AdminUserSerializer(AdminUser.objects.get(user=user)).data
         return Response({"detail": "Login successful", "data": data})
-
-
-
