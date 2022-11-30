@@ -91,12 +91,15 @@ class MallLandPageView(APIView):
 class CategoriesView(APIView, CustomPagination):
     permission_classes = []
 
-    def get(self, request):
+    def get(self, request, pk):
         try:
-            query_set = ProductCategory.objects.filter(parent=None).order_by("-id")
-            paginate_queryset = self.paginate_queryset(query_set, request)
-            serialized_data = CategoriesSerializer(paginate_queryset, many=True, context={"request": request}).data
-            data = self.get_paginated_response(serialized_data).data
+            if pk:
+                data = CategoriesSerializer(ProductCategory.objects.get(id=pk), context={"request": request}).data
+            else:
+                query_set = ProductCategory.objects.filter(parent=None).order_by("-id")
+                paginate_queryset = self.paginate_queryset(query_set, request)
+                serialized_data = CategoriesSerializer(paginate_queryset, many=True, context={"request": request}).data
+                data = self.get_paginated_response(serialized_data).data
             return Response({"detail": data})
 
         except (Exception,) as err:
