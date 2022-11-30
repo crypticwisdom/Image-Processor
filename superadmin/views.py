@@ -1,6 +1,7 @@
 import datetime
 from threading import Thread
 
+from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -536,6 +537,27 @@ class AdminTransactionRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = TransactionSerializer
     queryset = Transaction.objects.all()
     lookup_field = "id"
+
+
+class AdminSignInAPIView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        if not all([email, password]):
+            return Response({"detail": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(username=email, password=password)
+        if not user:
+            return Response({"detail": "Invalid login details"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not AdminUser.objects.filter(user=user).exists():
+            return Response({"detail": "You are not permitted to perform this action"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        data = AdminUserSerializer(AdminUser.objects.get(user=user)).data
+        return Response({"detail": "Login successful", "data": data})
 
 
 

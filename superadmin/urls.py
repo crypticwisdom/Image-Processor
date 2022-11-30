@@ -25,6 +25,7 @@ urlpatterns = [
     path("merchant-status/", views.UpdateMerchantStatusAPIView.as_view(), name="merchant-status"),
 
     # Admin Users
+    path("login/", views.AdminSignInAPIView.as_view(), name="admin-login"),
     path("admins/", views.AdminUserListCreateAPIView.as_view(), name="admin-user"),
     path("admins/<int:id>/", views.AdminUserRetrieveUpdateAPIView.as_view(), name="admin-user-detail"),
 
