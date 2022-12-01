@@ -40,5 +40,10 @@ urlpatterns = [
     # Customers
     path("customer/", views.AdminTransactionListAPIView.as_view(), name="transactions"),
 
+    # Orders
+    path('orders/', views.OrdersView.as_view(), name="orders"),
+    path('orders/<str:param>/', views.OrdersView.as_view(), name="orders"),
+    path('order/<int:order_product_id>/', views.OrderDetailView.as_view(), name='order'),
+
 ]
 

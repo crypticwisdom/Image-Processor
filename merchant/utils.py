@@ -71,6 +71,11 @@ def add_or_update_product_detail(variants, product):
             discount = variation.get('discount', 0.0)
             price = variation.get('price', 0.0)
             stock = variation.get('stock', 0)
+            weight = variation.get('weight', 0)
+            length = variation.get('length', 0)
+            width = variation.get('width', 0)
+            height = variation.get('height', 0)
+            low_stock_threshold = variation.get('threshold')
             images = variation.get('images', [])
             if variation_id:
                 product_variation = ProductDetail.objects.get(pk=variation_id)
@@ -80,6 +85,11 @@ def add_or_update_product_detail(variants, product):
                 product_variation.discount = discount
                 product_variation.price = price
                 product_variation.stock = stock
+                product_variation.weight = weight
+                product_variation.length = length
+                product_variation.width = width
+                product_variation.height = height
+                product_variation.low_stock_threshold = low_stock_threshold
                 product_variation.save()
             else:
                 product_variation = ProductDetail.objects.create(

@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from ecommerce.shopper_email import shopper_welcome_email, shopper_signup_verification_email
 from home.utils import log_request
+from superadmin.models import AdminUser
 from transaction.models import Transaction
 from .models import *
 from django.contrib.auth.models import User
@@ -20,7 +21,7 @@ from threading import Thread
 from .serializers import ProfileSerializer, CustomerAddressSerializer
 from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email, register_payarena_user, \
     login_payarena_user, change_payarena_user_password, get_wallet_info, validate_phone_number_for_wallet_creation, \
-    create_user_wallet, make_payment_for_wallet, fund_customer_wallet
+    create_user_wallet, make_payment_for_wallet, fund_customer_wallet, confirm_or_create_billing_account
 
 
 class LoginView(APIView):
@@ -31,6 +32,9 @@ class LoginView(APIView):
             email = request.data.get('email', None)
             password, user = request.data.get('password', None), None
             cart_uid = request.data.get("cart_uid", None)
+
+            if AdminUser.objects.filter(user__email=email).exists():
+                return Response({"detail": "Invalid customer credential"}, status=status.HTTP_400_BAD_REQUEST)
 
             if email is None:
                 return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -74,6 +78,8 @@ class LoginView(APIView):
                 Thread(target=login_payarena_user, args=[profile, email, password]).start()
                 time.sleep(2)
                 wallet_balance = get_wallet_info(profile)
+
+                Thread(target=confirm_or_create_billing_account, args=[profile, email, password]).start()
 
                 return Response({
                     "detail": "Login successful",

@@ -14,6 +14,7 @@ from home.utils import log_request
 from module.apis import payment_for_wallet
 
 from module.payarena_service import PayArenaServices
+from module.billing_service import BillingService
 
 
 def send_shopper_verification_email(email, profile):
@@ -276,6 +277,31 @@ def fund_customer_wallet(request, reference):
                 return True, "Wallet credited successfully"
             else:
                 return False, "An error occurred while funding wallet, please try again later"
+
+
+def confirm_or_create_billing_account(profile, email, password):
+    if profile.billing_verified is False:
+        # Validate customer
+        response = BillingService.validate_customer(email)
+        if "error" in response:
+            # Register Customer on billing service
+            f_name = profile.user.first_name
+            l_name = profile.user.last_name
+            phone = profile.phone_number
+
+            result = BillingService.register_customer(first_name=f_name, last_name=l_name, email=email, phone_no=phone, password=password)
+            billing = result[0]
+            billing_id = billing["uuid"]
+            encrypted_billing_id = encrypt_text(billing_id)
+            # Save encrypted billing ID
+            profile.billing_verified = True
+            profile.billing_id = encrypted_billing_id
+            profile.save()
+
+            return True
+        return True
+
+
 
 
 
