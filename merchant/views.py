@@ -1,19 +1,24 @@
+from threading import Thread
 from rest_framework.exceptions import ErrorDetail, ValidationError
 from django.db.models import Q, F
-from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from ecommerce.serializers import ProductSerializer, ReturnedProductSerializer
 from account.utils import validate_email
+from superadmin.exceptions import raise_serializer_error_msg
 from transaction.models import Transaction
+from transaction.serializers import TransactionSerializer
+from .merchant_email import merchant_account_creation_email
 from .serializers import SellerSerializer, MerchantProductDetailsSerializer, OrderSerializer, \
-    MerchantDashboardOrderProductSerializer, MerchantReturnedProductSerializer
+    MerchantDashboardOrderProductSerializer, MerchantReturnedProductSerializer, MerchantBannerSerializerOut, \
+    MerchantBannerSerializerIn
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, generics
 from home.pagination import CustomPagination
 from .utils import *
 from .permissions import IsMerchant
 from ecommerce.models import ProductDetail, Product, ProductCategory, OrderProduct, Order
-from rest_framework.generics import ListAPIView
 from django_filters import rest_framework as filters
 from .filters import MerchantOrderProductFilter
 
@@ -65,10 +70,10 @@ class BecomeAMerchantView(APIView):
                     return Response({"detail": "You already have a merchant account"},
                                     status=status.HTTP_400_BAD_REQUEST)
 
-                success, msg = create_seller(request, user, email, phone_number)
+            success, msg = create_seller(request, user, email, phone_number)
 
-                if not success:
-                    return Response({"detail": f"{msg}"})
+            if not success:
+                return Response({"detail": f"{msg}"})
 
             # Create Merchant for Un-Authenticated User
             # if request.user.is_authenticated is False:
@@ -106,7 +111,20 @@ class BecomeAMerchantView(APIView):
             #     elif success is True:
             #         return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
 
+            # Send email to merchant
+            Thread(target=merchant_account_creation_email, args=[email]).start()
             return Response({"detail": f"{msg}."})
+        except (Exception,) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MerchantDashboardView(APIView):
+    permission_classes = [IsAuthenticated, IsMerchant]
+
+    def get(self, request):
+        try:
+            store = Store.objects.get(seller__user=request.user)
+            return Response({"detail": get_dashboard_data(store)})
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -126,7 +144,7 @@ class ProductAPIView(APIView, CustomPagination):
                 serialized = ProductSerializer(paginated_query_set, many=True, context={"request": request}).data
                 serializer = self.get_paginated_response(serialized).data
             return Response(serializer)
-        except (Exception, ) as err:
+        except (Exception,) as err:
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
@@ -137,7 +155,8 @@ class ProductAPIView(APIView, CustomPagination):
             success, detail, product = create_product(request, seller)
             if success is False:
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"detail": detail, "product": ProductSerializer(product, context={"request": request}).data})
+            return Response(
+                {"detail": detail, "product": ProductSerializer(product, context={"request": request}).data})
         except Exception as err:
             return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -146,7 +165,8 @@ class ProductAPIView(APIView, CustomPagination):
             store = Store.objects.get(seller__user=request.user)
             product = Product.objects.get(id=pk, store=store)
             query = update_product(request, product)
-            return Response({"detail": "Product updated successfully", "product": ProductSerializer(query, context={"request": request}).data})
+            return Response({"detail": "Product updated successfully",
+                             "product": ProductSerializer(query, context={"request": request}).data})
         except Exception as ess:
             return Response({"detail": "An error has occurred", "error": str(ess)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -161,7 +181,7 @@ class MerchantAddBannerView(APIView):
             # Process Image (Banner): Must be a certain size.
             #
             return Response({"detail": "..."})
-        except (Exception, ) as err:
+        except (Exception,) as err:
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -176,8 +196,7 @@ class MerchantDashboardView(APIView):
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Completed.
-class MerchantOrderProductsView(ListAPIView):
+class MerchantOrderProductsView(generics.ListAPIView):
     """
         filter_backends: used to specify Django Default FilterSet which creates a FilterSet based on 'filterset_fields'.
         filterset_class: Used to pass in your written customized FilterSet class, don't use 'filterset_fields' with it.
@@ -235,6 +254,10 @@ class LowAndOutOfStockView(APIView, CustomPagination):
         try:
             stock_type = request.data.get("stock_type", None)
 
+            filter_by_date_from, filter_by_date_to = request.GET.get("date_from", None), request.GET.get("date_to",
+                                                                                                         None)
+            filter_by_status = request.GET.get("status", None)
+            category_id = request.GET.get("category_id", None)
             if stock_type is None:
                 return Response({"detail": f"Stock Type is required."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -309,3 +332,92 @@ class ProductImageView(APIView):
 
         Image.objects.get(id=pk).delete()
         return Response({'detail': 'Image deleted successfully'})
+
+
+class MerchantTransactionAPIView(APIView, CustomPagination):
+    def get(self, request, pk=None):
+        merchant = Seller.objects.get(user=request.user)
+        store = Store.objects.get(seller=merchant)
+        date_from = request.GET.get("date_from")
+        date_to = request.GET.get("date_to")
+        search = request.GET.get("search")
+        status = request.GET.get("status")
+
+        if pk:
+            serializer = TransactionSerializer(
+                Transaction.objects.get(id=pk, order__orderproduct__product_detail__product__store=store
+                                        ), context={"merchant": merchant}).data
+        else:
+            query = Q(order__orderproduct__product_detail__product__store=store)
+            if search:
+                query &= Q(order__orderproduct__product_detail__product__name=search) | \
+                         Q(order__orderproduct__product_detail__product__category__name=search) | \
+                         Q(order__customer__user__first_name=search) | Q(order__customer__user__last_name=search)
+            if status:
+                query &= Q(status=status)
+            if date_from and date_to:
+                query &= Q(created_on__range=[date_from, date_to])
+
+            queryset = self.paginate_queryset(Transaction.objects.filter(query), request)
+            data = TransactionSerializer(queryset, many=True, context={"merchant": merchant}).data
+            serializer = self.get_paginated_response(data).data
+
+        return Response(serializer)
+
+
+class MerchantBannerListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsMerchant)]
+    serializer_class = MerchantBannerSerializerOut
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return MerchantBanner.objects.all().order_by("-id")
+        seller = get_object_or_404(Seller, user=self.request.user)
+        return MerchantBanner.objects.filter(seller=seller).order_by("-id")
+
+    def create(self, request, *args, **kwargs):
+        serializer = MerchantBannerSerializerIn(data=request.data, context=self.get_serializer_context())
+        serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
+        serializer.save()
+        return Response({"detail": "Banner added successfully", "data": serializer})
+
+
+class MerchantBannerRetrieveUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsMerchant)]
+    serializer_class = MerchantBannerSerializerOut
+    lookup_field = "id"
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return get_object_or_404(MerchantBanner, id=self.kwargs.get("id"))
+        return MerchantBanner.objects.get(id=self.kwargs.get("id"), seller__user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        serializer = MerchantBannerSerializerIn(data=request.data, instance=self.kwargs.get("id"), context=self.get_serializer_context())
+        serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
+        serializer.save()
+        return Response({"detail": "Banner updated successfully", "data": serializer})
+
+
+class ProductImageAPIView(APIView):
+
+    def post(self, request):
+        try:
+            image = request.data['image']
+            product_image = Image.objects.create(image=image)
+            return Response({"detail": "Image has been uploaded successfully", "image_id": product_image.id,
+                             "image_url": product_image.image.url})
+        except Exception as ex:
+            return Response(
+                {"detail": "An error occurred. Please try again", "error": str(ex)},
+                status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        if not Image.objects.filter(id=pk).exists():
+            return Response({'detail': 'Image does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+
+        Image.objects.get(id=pk).delete()
+        return Response({'detail': 'Image deleted successfully'})
+
+

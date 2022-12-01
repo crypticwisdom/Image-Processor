@@ -67,3 +67,55 @@ def shopper_order_status_email(order_product):
     send_email(contents, email, subject)
     return True
 
+
+def shopper_order_placement_email(customer, order_id, order_product):
+    data = dict()
+    shipping_fee = order_product.delivery_fee
+    sub_total = order_product.sub_total
+    total = shipping_fee + sub_total
+    email = customer.user.email
+    data["name"] = customer.user.first_name
+    data["order_id"] = order_id
+    data["product_name"] = order_product.product_detail.product.name
+    data["quantity"] = order_product.quantity
+    data["price"] = order_product.price
+    data["sub_total"] = sub_total
+    data["total"] = total
+    data["shipper"] = order_product.shipper_name
+    data["shipping_fee"] = shipping_fee
+    data["payment_method"] = order_product.payment_method
+    data["seller"] = order_product.product_detail.product.store.name
+
+    subject = "Order Placement on PayArena Mall"
+    contents = render(None, 'customer_order_placement.html', context=data).content.decode('utf-8')
+    send_email(contents, email, subject)
+    return True
+
+
+def shopper_order_delivered_email(customer, order_id, order_product):
+    data = dict()
+    shipping_fee = order_product.delivery_fee
+    sub_total = order_product.sub_total
+    total = shipping_fee + sub_total
+    email = customer.user.email
+
+    data["name"] = customer.user.first_name
+    data["order_id"] = order_id
+    data["product_name"] = order_product.product_detail.product.name
+    data["quantity"] = order_product.quantity
+    data["price"] = order_product.price
+    data["sub_total"] = sub_total
+    data["total"] = total
+    data["shipper"] = order_product.shipper_name
+    data["shipping_fee"] = shipping_fee
+    data["payment_method"] = order_product.payment_method
+    data["seller"] = order_product.product_detail.product.store.name
+
+    subject = "Order Placement on PayArena Mall"
+    contents = render(None, 'customer_order_placement.html', context=data).content.decode('utf-8')
+    send_email(contents, email, subject)
+    return True
+
+
+
+

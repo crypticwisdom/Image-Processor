@@ -1,4 +1,7 @@
-from django.db.models import Q
+from threading import Thread
+
+from django.db import transaction
+from django.db.models import Q, Sum
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -9,18 +12,27 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from django.utils import timezone
 from account.models import Profile, Address
+from account.serializers import ProfileSerializer
 from account.utils import get_wallet_info
+from merchant.merchant_email import merchant_order_placement_email
+from store.serializers import CartSerializer
+from superadmin.exceptions import raise_serializer_error_msg
+from transaction.models import Transaction
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
-    CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer
+    CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer, \
+    ProductReviewSerializerOut, ProductReviewSerializerIn
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
-    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage
+    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview
 from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
-from .utils import check_cart, create_cart_product, perform_operation, top_weekly_products, top_monthly_categories, \
+
+from .shopper_email import shopper_order_placement_email
+from .utils import check_cart, perform_operation, top_weekly_products, top_monthly_categories, \
     validate_product_in_cart, get_shipping_rate, order_payment, add_order_product, perform_order_cancellation, \
-    perform_order_pickup, perform_order_tracking
+    perform_order_pickup, perform_order_tracking, create_or_update_cart_product
+# from ecommerce.utils import add_minus_remove_product_check
 
 
 # Create your views here.
@@ -79,13 +91,17 @@ class MallLandPageView(APIView):
 class CategoriesView(APIView, CustomPagination):
     permission_classes = []
 
-    def get(self, request):
+    def get(self, request, pk=None):
         try:
-            query_set = ProductCategory.objects.filter(parent=None).order_by("-id")
-            paginate_queryset = self.paginate_queryset(query_set, request)
-            serialized_data = CategoriesSerializer(paginate_queryset, many=True, context={"request": request}).data
-            data = self.get_paginated_response(serialized_data).data
-            return Response({"detail": data})
+            if pk:
+                data = CategoriesSerializer(ProductCategory.objects.get(id=pk), context={"request": request}).data
+                return Response({"detail": data})
+            else:
+                query_set = ProductCategory.objects.filter(parent=None).order_by("-id")
+                paginate_queryset = self.paginate_queryset(query_set, request)
+                serialized_data = CategoriesSerializer(paginate_queryset, many=True, context={"request": request}).data
+                data = self.get_paginated_response(serialized_data).data
+                return Response(data)
 
         except (Exception,) as err:
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
@@ -129,203 +145,62 @@ class RecommendedProductView(APIView, CustomPagination):
 
 
 class CartProductOperationsView(APIView):
-    """
-        Used for creating cart and adding item, increasing, decreasing and removing cart-product to/from cart,
-        it receives a Cart-Product ID, for either of the cases.
-        A user should not be able to add more than the available stocks for the product.
-    """
     permission_classes = []
 
     def post(self, request):
         try:
-            """
-                1 known issue: If this endpoint has been called to create and add the first product, the second call of 
-                this endpoint without cart id or uid will also create another cart and cart-product.
-                So, frontend or anyone needs to call this endpoint with cart id or uid the second time.
-                
-                - 'operation_param' must be passed after cart has been created for the first time.
-                - Pass 'operation_param" = '+' if user wants to add the product more than once.
-            """
+            variant = request.data.get("variant", [])
+            cart_uid = request.data.get("cart_uid")
 
-            product_id = request.data.get("product_id", None)
-            cart_uid = request.data.get("cart_uid", None)
-            cart_id = request.data.get("cart_id", None)
-            operation_param = request.data.get("operation_param", None)
+            if not variant:
+                return Response(
+                    {"detail": "Product variant is required"}, status=status.HTTP_400_BAD_REQUEST
+                )
 
-            if product_id is None:
-                return Response({"detail": "Product's ID was not provided"}, status=status.HTTP_400_BAD_REQUEST)
-
-            if operation_param is None:
-                return Response({"detail": "Specify operation with one of these -, +, or remove"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            # ==================================== Good ==============================================
-
-            # user is not authenticated, cart_id or uid was not given then, create a new cart.
-            if not request.user.is_authenticated:
-                # request for cart id or uid since user is not authenticated.
-                # If 'cart_uid' or 'cart_id' is not given and 'operation_param' == '+'
-                if not (cart_uid or cart_id) and operation_param == "+":
-                    # Create cart
+            if request.user.is_authenticated:
+                cart, _ = Cart.objects.get_or_create(user=request.user, status="open")
+            else:
+                if cart_uid:
+                    cart = get_object_or_404(Cart, cart_uid=cart_uid)
+                else:
                     cart = Cart.objects.create(cart_uid=uuid.uuid4())
 
-                    success, response = create_cart_product(product_id=product_id, cart=cart)
-                    if success:
-                        return Response({"detail": "Successfully created a cart and product has been added",
-                                         "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
-                                        status=status.HTTP_201_CREATED)
-                    else:
-                        return Response({"detail": f"{response}"}, status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    # That means this user is not authenticated, but cart id / uid and a product_id is passed.
-                    success, msg = check_cart(cart_id=cart_id, cart_uid=cart_uid)
+            success, response = create_or_update_cart_product(variant, cart=cart)
+            if success is False:
+                return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
+            # Delete cart if no item is in it
+            if not CartProduct.objects.filter(cart=cart).exists():
+                cart.delete()
+                return Response({"detail": "Cart is empty"})
 
-                    if not success:
-                        # Create cart
-                        if not (cart_uid or cart_id) and operation_param == "+":
-                            # create a cart and return cart id and uid
-                            # Return 'cart_id' and 'uid' if 'cart_id' or 'cart_uid' is not given
-                            # Create CART
-
-                            if cart_id:
-                                cart = Cart.objects.get(id=cart_id, status='open')
-                            elif cart_uid:
-                                Cart.objects.get(cart_uid=cart_uid, status='open')
-
-                            success, response = create_cart_product(product_id=product_id, cart=cart)
-                            if success:
-                                return Response({"detail": "Successfully created a cart and product has been added",
-                                                 "data": {"cart_uid": cart.cart_uid, "cart_id": cart.id}},
-                                                status=status.HTTP_201_CREATED)
-                            else:
-                                return Response({"detail": f"{response}"}, status=status.HTTP_400_BAD_REQUEST)
-                    else:
-                        # get the product_detail
-                        # check the operation the user wants to perform
-                        product_detail = ProductDetail.objects.get(product__id=product_id)
-                        cart = None
-
-                        if cart_id:
-                            cart = Cart.objects.get(id=cart_id, status='open')
-                        elif cart_uid:
-                            cart = Cart.objects.get(cart_uid=cart_uid, status='open')
-
-                        # Get cart products that belongs to that cart.
-                        cart_products = CartProduct.objects.filter(cart=cart)
-                        # Loop through the cart-products to see if this product already exists.
-                        # If True then, Simply increase the item/product by 1.
-                        # Else, Add the item/product to Cart.
-
-                        check_response = list()
-                        for cart_product in cart_products:
-                            if cart_product.product_detail == product_detail:
-                                check_response.append(True)
-
-                                # what operation to perform ?
-                                operation_status, msg = perform_operation(operation_param, product_detail, cart_product)
-                                if operation_status is False:
-                                    return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
-                                else:
-                                    return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
-
-                            else:
-                                # update check response
-                                check_response.append(False)
-
-                        # Add product to cart if product is not found inside the cart.
-                        if operation_param == '+':
-                            cart_product = CartProduct.objects.create(
-                                cart=cart, product_detail=product_detail, price=product_detail.price,
-                                discount=product_detail.discount, quantity=1)
-                            return Response({"detail": "Product has been added to cart"},
-                                            status=status.HTTP_201_CREATED)
-            else:
-                # That means this user is authenticated, now a cart id / uid is not important.
-                # cart operation using the cart's id or uid
-                # - check if any cart exists with this user
-
-                user = request.user
-                success, response = check_cart(user)
-
-                if not success:
-                    # create cart
-                    if not (cart_uid or cart_id) and operation_param == "+":
-                        # create a cart and return  uid
-                        # if 'cart_id' or 'cart_uid' is not present it means to create a cart and return 'cart_id'
-
-                        # Create CART
-                        cart = Cart.objects.create(user=user)
-
-                        success, response = create_cart_product(product_id=product_id, cart=cart)
-                        if success:
-                            # cart id is returned since Cart's created by logged in user does not need a cart uid.
-                            return Response({"detail": "Successfully created a cart and product has been added",
-                                             "data": {"cart_id": cart.id}}, status=status.HTTP_201_CREATED)
-                        else:
-                            return Response({"detail": f"{response}"}, status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    # get the product_detail
-                    # check the operation the user wants to perform
-                    product_detail = ProductDetail.objects.get(product__id=product_id)
-                    cart = Cart.objects.get(user=user, status='open')
-
-                    # Get cart products that belongs to that cart.
-                    cart_products = CartProduct.objects.filter(cart=cart)
-
-                    # Loop through the cart-products to see if this product already exists.
-                    # If True then, Simply increase the item/product by 1.
-                    # Else, Add the item/product to Cart.
-
-                    check_response = list()
-                    for cart_product in cart_products:
-
-                        if cart_product.product_detail == product_detail:
-                            check_response.append(True)
-
-                            # what operation to perform ?
-                            operation_status, msg = perform_operation(operation_param, product_detail, cart_product)
-                            if operation_status is False:
-                                return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
-                            else:
-                                return Response({"detail": f"{msg}"})
-
-                        else:
-                            # update check response
-                            check_response.append(False)
-
-                    # Add product to cart if product is not found inside the cart.
-                    if operation_param == '+' and True not in check_response:
-                        success, response = create_cart_product(product_id=product_id, cart=cart)
-                        if success:
-                            return Response({"detail": "Product has been added to cart"},
-                                            status=status.HTTP_201_CREATED)
-                        else:
-                            return Response({"detail": f"{response}"}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"detail": "No Operation performed"}, status=status.HTTP_400_BAD_REQUEST)
-
-        except (Exception,) as err:
-            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class CartProductView(APIView):
-    permission_classes = []
+            serializer = CartSerializer(cart, context={"request": request}).data
+            return Response({"detail": "Cart updated", "data": serializer})
+        except Exception as err:
+            return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, id=None):
-        try:
-            cart = CartProduct.objects.filter(cart__cart_uid=id)
-            if not cart.exists():
-                cart = CartProduct.objects.filter(cart__id=id)
+        # try:
+        cart = None
+        if request.user.is_authenticated:
+            if Cart.objects.filter(status="open", user=request.user).exists():
+                cart = Cart.objects.filter(status="open", user=request.user).last()
+                remaining_open_carts = Cart.objects.filter(status="open", user=request.user).exclude(id=cart.id)
 
-            if not cart:
-                return Response({"detail": "Cart is empty"}, status=status.HTTP_200_OK)
+                # Close other open carts
+                if remaining_open_carts:
+                    remaining_open_carts.update(status="discard")
+        else:
+            if Cart.objects.filter(status="open", cart_uid=id).exists():
+                cart = Cart.objects.get(status="open", cart_uid=id)
 
-            serializer = CartProductSerializer(cart, many=True, context={"request": request}).data
+        if not cart:
+            return Response({"detail": "Cart empty"})
 
-            # Sum all price fields in the QuerySet
-            total_price = sum(cart.values_list('price', flat=True))
+        serializer = CartSerializer(cart, context={"request": request}).data
 
-            return Response({"detail": serializer, "order_summary": total_price}, status=status.HTTP_200_OK)
-        except (Exception,) as err:
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": serializer}, status=status.HTTP_200_OK)
+        # except (Exception,) as err:
+        #     return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FilteredSearchView(generics.ListAPIView):
@@ -342,7 +217,7 @@ class FilteredSearchView(generics.ListAPIView):
         query = Q(status='active', store__is_active=True)
 
         if search:
-            query &= Q(name=search)
+            query &= Q(name__icontains=search)
 
         if order_by:
             queryset = sorted_queryset(order_by, query)
@@ -429,7 +304,6 @@ class ProductCheckoutView(APIView):
     def post(self, request):
 
         payment_method = request.data.get("payment_method")
-        cart_id = request.data.get("cart_id")
         address_id = request.data.get("address_id")
         sender_town_id = request.data.get("sender_town_id")
         receiver_town_id = request.data.get("receiver_town_id")
@@ -449,52 +323,56 @@ class ProductCheckoutView(APIView):
             return Response({"detail": "Shipper information, address, sender town, and recipient town are required"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # try:
-        customer, created = Profile.objects.get_or_create(user=request.user)
-        address = Address.objects.get(customer=customer, id=address_id)
-        cart = Cart.objects.get(user=request.user, id=cart_id, status="open")
+        try:
+            customer, created = Profile.objects.get_or_create(user=request.user)
+            address = Address.objects.get(customer=customer, id=address_id)
+            cart = Cart.objects.get(user=request.user, status="open")
 
-        for product in shipping_information:
-            # Get Cart Products
-            cart_product = CartProduct.objects.get(id=product["cart_product_id"], cart=cart)
-            if str(product["company_id"]).isnumeric():
-                cart_product.company_id = product["company_id"]
-            cart_product.shipper_name = str(product["shipper"]).upper()
-            cart_product.delivery_fee = product["shipping_fee"]
-            cart_product.save()
+            for product in shipping_information:
+                # Get Cart Products
+                cart_product = CartProduct.objects.get(id=product["cart_product_id"], cart=cart)
 
-        validate = validate_product_in_cart(customer)
-        if validate:
-            return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
+                if str(product["company_id"]).isnumeric():
+                    cart_product.company_id = product["company_id"]
+                cart_product.shipper_name = str(product["shipper"]).upper()
+                cart_product.delivery_fee = product["shipping_fee"]
+                cart_product.save()
 
-        # Create Order
-        order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
+            validate = validate_product_in_cart(customer)
+            if validate:
+                return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
 
-        # PROCESS PAYMENT
-        success, detail = order_payment(payment_method, order)
-        if success is False:
-            return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+            # Create Order
+            order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
 
-        # update order
-        order_products = add_order_product(order)
-        # Update payment method
-        order_products.update(payment_method=payment_method)
-        # Call pickup order request
+            # PROCESS PAYMENT
+            success, detail = order_payment(payment_method, order)
+            if success is False:
+                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
 
-        success, response = perform_order_pickup(order_products, address, sender_town_id, receiver_town_id)
+            # update order
+            order_products = add_order_product(order)
+            # Update payment method
+            order_products.update(payment_method=payment_method)
+            # Call pickup order request
 
-        if success is False:
-            # Process refund to customer wallet
-            return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
+            success, response = perform_order_pickup(order_products, address, sender_town_id, receiver_town_id)
 
-        # Send order placement email to shopper
-        # Send order placement email to seller
-        # Send order placement email to admins
+            if success is False:
+                # Process refund to customer wallet
+                return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"detail": "Order placed successfully"})
+            for order_product in order_products:
+                # Send order placement email to shopper
+                Thread(target=shopper_order_placement_email, args=[customer, order.id, order_product]).start()
+                # Send order placement email to seller
+                Thread(target=merchant_order_placement_email, args=[customer, order, order_product]).start()
+                # Send order placement email to admins
 
-        # except Exception as ex:
-        #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Order placed successfully"})
+
+        except Exception as ex:
+            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OrderAPIView(APIView, CustomPagination):
@@ -603,9 +481,12 @@ class CustomerDashboardView(APIView):
 
             # Recent Orders
             recent_orders = OrderProduct.objects.filter(order__customer=profile).order_by("-id")[:10]
-            serialized = OrderProductSerializer(recent_orders, many=True).data
-            response['recent_orders'] = serialized
+            response['profile_detail'] = ProfileSerializer(profile, context={"request": request}).data
+            response['recent_orders'] = OrderProductSerializer(recent_orders, many=True).data
             response['wallet_information'] = wallet_bal
+            response['total_amount_spent'] = Transaction.objects.filter(
+                order__customer__user=request.user, status="success"
+            ).aggregate(Sum("amount"))["amount__sum"] or 0
             # ----------------------
 
             # Recent Payment
@@ -634,3 +515,25 @@ class TrackOrderAPIView(APIView):
                 return Response({"detail": "Tracking ID not found for selected order"})
         except Exception as er:
             return Response({"detail": f"{er}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductReviewAPIView(APIView, CustomPagination):
+    permission_classes = []
+
+    def get(self, request):
+        product_id = self.request.GET.get("product_id")
+
+        reviews = self.paginate_queryset(ProductReview.objects.filter(product_id=product_id), request)
+        serializer = ProductReviewSerializerOut(reviews, many=True).data
+        data = self.get_paginated_response(serializer).data
+        return Response(data)
+
+    def post(self, request):
+        serializer = ProductReviewSerializerIn(data=request.data, context={"request": request})
+        serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
+        result = serializer.save()
+        return Response({"detail": "Review added successfully", "data": result})
+
+
+
+

@@ -19,6 +19,17 @@ urlpatterns = [
     # Orders
     path('orders/', views.MerchantOrderProductsView.as_view(), name="merchant-orders"),
 
+    # Transactions
+    path('transaction', views.MerchantTransactionAPIView.as_view(), name="transaction"),
+    path('transaction/<int:pk>/', views.MerchantTransactionAPIView.as_view(), name="transaction-detail"),
+
+    # Merchant Banner
+    path('banner/', views.MerchantBannerListCreateAPIView.as_view(), name="banner"),
+    path('banner/<int:id>/', views.MerchantBannerRetrieveUpdateAPIView.as_view(), name="banner-detail"),
+
+    # image
+    path('product/image/', views.ProductImageView.as_view(), name="product-image"),
+    path('product/image/<int:pk>/', views.ProductImageView.as_view(), name="edit-delete-product-image"),
 
 ]
 

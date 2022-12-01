@@ -11,6 +11,9 @@ payment_merchant_id = settings.PAYMENT_GATEWAY_MERCHANT_ID
 payment_secret = settings.PAYMENT_GATEWAY_SECRET_KEY
 get_banks_url = settings.BANK_URL
 credit_wallet_url = settings.PAYMENT_CREDIT_WALLET_URL
+u_map_url = settings.U_MAP_BASE_URL
+u_map_user_id = settings.U_MAP_USER_ID
+u_map_password = settings.U_MAP_PASSWORD
 
 
 def get_bank_codes(token):
@@ -62,7 +65,7 @@ def call_name_enquiry(bank_code: str, account_number: str):
 
 
 def payment_for_wallet(**kwargs):
-    link = None
+    link = payment_id = None
     url = f"{payment_gw_url}/{payment_merchant_id}"
     header = dict()
     header["Accept"] = header["Content-Type"] = "application/json"
@@ -81,23 +84,23 @@ def payment_for_wallet(**kwargs):
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200 and str(response.text).isnumeric():
         link = f"{payment_gw_url}/{response.text}"
+        payment_id = str(response.text)
 
-    return link
+    return link, payment_id
 
 
-def credit_wallet(**kwargs):
-    url = str(credit_wallet_url)
+def u_map_registration(**kwargs):
+    url = f'{u_map_url}?BILLER_CODE={kwargs.get("biller_id")}&BILLER_DESCRIPTION={kwargs.get("description")}&' \
+          f'MERCHANT_ID={kwargs.get("merchant_id")}&BILLER_ACCOUNT={kwargs.get("account_no")}&' \
+          f'ACCOUNT_NAME={kwargs.get("account_name")}&BANK_CODE={kwargs.get("bank_code")}&' \
+          f'FEP_TYPE={kwargs.get("fep_type")}&FEEL1={kwargs.get("feel")}&USER_ID=USAPITEST&PASSWORD=vnp-1234'
 
-    data = dict()
-    data["account"] = kwargs.get("account")
-    data["reference"] = kwargs.get("ref_number")
-    data["amount"] = kwargs.get("amount")
-    data["description"] = kwargs.get("narration")
-    data["channel"] = 1
-
-    payload = json.dumps(data)
-    response = requests.request("POST", url, headers=None, data=payload).json()
-    log_request(f"url: {url}, header: , payload: {payload}, response: {response}")
+    response = requests.request("POST", url, headers={}).json()
+    log_request(f"Calling UMAP API ---->>> Response: {response}")
     return response
+
+
+
+
 
 

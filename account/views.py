@@ -1,6 +1,8 @@
+import json
 import secrets
 import time
 
+from django.shortcuts import get_object_or_404
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -8,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from ecommerce.shopper_email import shopper_welcome_email, shopper_signup_verification_email
 from home.utils import log_request
+from transaction.models import Transaction
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password, make_password
@@ -17,7 +20,7 @@ from threading import Thread
 from .serializers import ProfileSerializer, CustomerAddressSerializer
 from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email, register_payarena_user, \
     login_payarena_user, change_payarena_user_password, get_wallet_info, validate_phone_number_for_wallet_creation, \
-    create_user_wallet, make_payment_for_wallet
+    create_user_wallet, make_payment_for_wallet, fund_customer_wallet
 
 
 class LoginView(APIView):
@@ -42,10 +45,14 @@ class LoginView(APIView):
                     return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
             # Check if user is on UP USER ENGINE
-            # if not User.objects.filter(email=email).exists():
-                # profile = login_payarena_user(profile=None, email=email, password=password)
-                # if profile is not None:
-                #     user = profile.user
+            user = None
+            if not User.objects.filter(email=email).exists():
+                profile = login_payarena_user(profile=None, email=email, password=password)
+                if profile is not None:
+                    user = profile.user
+
+            if not User.objects.filter(email=email).exists():
+                return Response({"detail": "Customer with this credential not found"}, status=status.HTTP_400_BAD_REQUEST)
 
             user = User.objects.get(email=email)
             log_request(f"user: {user}")
@@ -54,30 +61,32 @@ class LoginView(APIView):
             if not user.check_password(password):
                 return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-            profile = Profile.objects.get(user=user)
-            if profile.verified is False:
-                return Response({"detail": "User not verified, please request a verification link."},
-                                status=status.HTTP_400_BAD_REQUEST)
+            if user:
+                profile = Profile.objects.get(user=user)
+                if profile.verified is False:
+                    return Response({"detail": "User not verified, please request a verification link."},
+                                    status=status.HTTP_400_BAD_REQUEST)
 
-            has_merged, message = merge_carts(cart_uid=cart_uid, user=user)
-            # Log 'message'
+                has_merged, message = merge_carts(cart_uid=cart_uid, user=user)
+                # Log 'message'
 
-            # Login to PayArena Auth Engine
-            # Thread(target=login_payarena_user, args=[profile, email, password]).start()
-            # time.sleep(2)
-            # wallet_balance = get_wallet_info(profile)
+                # Login to PayArena Auth Engine
+                Thread(target=login_payarena_user, args=[profile, email, password]).start()
+                time.sleep(2)
+                wallet_balance = get_wallet_info(profile)
 
+                return Response({
+                    "detail": "Login successful",
+                    "token": f"{RefreshToken.for_user(user).access_token}",
+                    "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
+                    "wallet_information": wallet_balance
+                })
+
+        except Exception as err:
+            log_request(err)
             return Response({
-                "detail": "Login successful",
-                "token": f"{RefreshToken.for_user(user).access_token}",
-                "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
-                # "wallet_information": wallet_balance
-            })
-
-        except (ValueError, Exception) as err:
-            print(err)
-            # Log error
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+                "detail": "Login error, please confirm email and password are correct", "error": str(err)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):
@@ -329,6 +338,16 @@ class CustomerAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CustomerAddressSerializer
     lookup_field = "id"
 
+    def update(self, request, *args, **kwargs):
+        primary_address = request.data.get("is_primary")
+        address_id = self.kwargs.get("id")
+
+        address = Address.objects.get(id=address_id, customer__user=request.user)
+        if primary_address is True:
+            # Get all customer address and set their primary to false
+            Address.objects.filter(customer__user=self.request.user).exclude(id=address.id).update(is_primary=False)
+        return Response(CustomerAddressSerializer(address).data)
+
     def get_queryset(self):
         return Address.objects.filter(customer__user=self.request.user)
 
@@ -363,16 +382,34 @@ class FundWalletAPIView(APIView):
 
     def post(self, request):
         amount = request.data.get("amount")
-        if not amount:
-            return Response({"detail": "Amount is required"}, status=status.HTTP_400_BAD_REQUEST)
+        pin = request.data.get("pin")
+        if not all([amount, pin]):
+            return Response({"detail": "Amount and PIN are required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             profile = Profile.objects.get(user=request.user)
-            payment_link = make_payment_for_wallet(profile, amount)
+            payment_link, payment_id = make_payment_for_wallet(profile, amount, pin)
             if payment_link is None:
                 return Response({"detail": "Error occurred while generating payment link"})
-            return Response({"detail": payment_link})
+            return Response({"detail": payment_link, "reference": payment_id})
         except Exception as ex:
             return Response(
                 {"detail": "Error occurred while generating payment link", "error": str(ex)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    def get(self, request):
+        reference = request.GET.get("reference")
+
+        if not reference:
+            return Response({"detail": "reference is required"})
+        success, result = fund_customer_wallet(request, reference)
+        if success is False:
+            return Response({"detail": result}, status=status.HTTP_400_BAD_REQUEST)
+        # GET WALLET BALANCE
+        profile = Profile.objects.get(user=request.user)
+        wallet = get_wallet_info(profile)
+        return Response({"detail": result, "wallet_information": wallet})
+
+
+
+

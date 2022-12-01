@@ -1,3 +1,4 @@
+import json
 import re
 
 from django.contrib.auth.hashers import make_password
@@ -8,7 +9,7 @@ import uuid
 from django.utils import timezone
 from threading import Thread
 from ecommerce.shopper_email import shopper_signup_verification_email
-from ecommerce.utils import encrypt_text, decrypt_text
+from ecommerce.utils import encrypt_text, decrypt_text, encrypt_payarena_data
 from home.utils import log_request
 from module.apis import payment_for_wallet
 
@@ -169,13 +170,15 @@ def login_payarena_user(profile, email, password):
                 user_profile.phone_number = phone_no
                 user_profile.save()
 
-    # Encrypt token
-    token = encrypt_text(user_token)
-    if user_profile:
-        user_profile.pay_auth = token
-        user_profile.save()
+        # Encrypt token
+        token = None
+        if user_token:
+            token = encrypt_text(user_token)
+        if user_profile:
+            user_profile.pay_auth = token
+            user_profile.save()
 
-    return user_profile
+        return user_profile
 
 
 def change_payarena_user_password(profile, old_password, new_password):
@@ -235,15 +238,44 @@ def create_user_wallet(profile, pin, otp):
     return success, message
 
 
-def make_payment_for_wallet(profile, amount):
+def make_payment_for_wallet(profile, amount, pin):
     description = "TopUp wallet balance from PayArena Mall"
     callback = ""
     full_name = profile.get_full_name()
     email = profile.email()
 
-    response = payment_for_wallet(
+    payment_link, payment_id = payment_for_wallet(
         amount=amount, narration=description, callback_url=callback, name=full_name, email=email
     )
-    return response
+    profile.wallet_pin = encrypt_text(pin)
+    profile.save()
+    return payment_link, payment_id
+
+
+def fund_customer_wallet(request, reference):
+    # Check payment status
+    # response = PayArenaServices.get_payment_status(reference)
+    response = {"Order Id":"38104","Amount":"4000.00","Description":"TopUp wallet balance from PayArena Mall^WEBID38104","Convenience Fee":"0.00","Currency":"566","Status":"Approved","Card Holder":None,"PAN":None,"Scheme":None,"TranTime":"11/28/2022 7:24:40 PM","TranDateTime":"11/28/2022 7:24:40 PM","StatusDescription":"Initiated","CustomerName":"Sunday Olaofe","CustomerEmail":"slojararshavin@mailinato.com"}
+    status = "pending"
+    amount = 0
+    if "Status" in response:
+        status = str(response["Status"]).lower()
+        amount = response["Amount"]
+    if status == "approved":
+        # Credit customer wallet
+        profile = Profile.objects.get(user=request.user)
+        # Decrypt wallet pin
+        decryted_pin = decrypt_text(profile.wallet_pin)
+        # Encrypt payment information
+        data = json.dumps({"Scheme": "wallet", "PIN": decryted_pin})
+        encrypted_payment_info = encrypt_payarena_data(data)
+        response = PayArenaServices.fund_wallet(profile, amount, encrypted_payment_info)
+
+        if "Success" in response:
+            if response["Success"] is True and response["Data"]["Status"] == "Approved":
+                return True, "Wallet credited successfully"
+            else:
+                return False, "An error occurred while funding wallet, please try again later"
+
 
 

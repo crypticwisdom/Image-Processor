@@ -21,7 +21,24 @@ urlpatterns = [
 
     # Merchant
     path("seller/", views.AdminSellerAPIView.as_view(), name="seller"),
-    path("seller/<int:pk>/", views.AdminSellerAPIView.as_view(), name="seller-detail"),
+    path("seller/<int:seller_id>/", views.AdminSellerAPIView.as_view(), name="seller-detail"),
+    path("merchant-status/", views.UpdateMerchantStatusAPIView.as_view(), name="merchant-status"),
+
+    # Admin Users
+    path("login/", views.AdminSignInAPIView.as_view(), name="admin-login"),
+    path("admins/", views.AdminUserListCreateAPIView.as_view(), name="admin-user"),
+    path("admins/<int:id>/", views.AdminUserRetrieveUpdateAPIView.as_view(), name="admin-user-detail"),
+
+    # Banner/Promo
+    path("banner-promo/", views.AdminBannerView.as_view(), name="banner"),
+    path("banner-promo/<int:id>/", views.BannerDetailView.as_view(), name="banner-detail"),
+
+    # Transaction
+    path("transaction/", views.AdminTransactionListAPIView.as_view(), name="transactions"),
+    path("transaction/<int:id>/", views.AdminTransactionRetrieveAPIView.as_view(), name="transaction-detail"),
+
+    # Customers
+    path("customer/", views.AdminTransactionListAPIView.as_view(), name="transactions"),
 
 ]
 

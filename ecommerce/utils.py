@@ -2,10 +2,13 @@ import base64
 import datetime
 import decimal
 
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Avg, Sum
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from account.models import Address
@@ -13,6 +16,11 @@ from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_
 from module.shipping_service import ShippingService
 from transaction.models import Transaction
 from .models import Cart, Product, ProductDetail, CartProduct, ProductReview, Order, OrderProduct
+
+from django.conf import settings
+
+encryption_key = bytes(settings.PAYARENA_CYPHER_KEY, "utf-8")
+encryption_iv = bytes(settings.PAYARENA_IV, "utf-8")
 
 
 def sorted_queryset(order_by, query):
@@ -46,20 +54,47 @@ def check_cart(user=None, cart_id=None, cart_uid=None):
     return False, "Cart not found"
 
 
-def create_cart_product(product_id, cart):
-    try:
-        # Get product detail with the 'product_id'
-        if ProductDetail.objects.filter(product__id=product_id).exists():
-            product_detail = ProductDetail.objects.get(product__id=product_id)
+def create_or_update_cart_product(variant, cart):
 
-            # Create Cart Product
-            cart_product = CartProduct.objects.create(
-                cart=cart, product_detail=product_detail, price=product_detail.price,
-                discount=product_detail.discount, quantity=1)
-            return True, cart_product
-        return False, "Something went wrong while creating cart product"
-    except (Exception,) as err:
-        return False, f"{err}"
+    for variation_obj in variant:
+        variation_id = variation_obj.get('variant_id', '')
+        quantity = variation_obj.get('quantity', 1)
+
+        with transaction.atomic():
+            product_detail = get_object_or_404(ProductDetail.objects.select_for_update(), id=variation_id)
+
+        # try:
+        if product_detail.stock <= 0:
+            return False, f"Selected product: ({product_detail.product.name}) is out of stock"
+
+        if product_detail.stock < quantity:
+            return False, f"Selected product: ({product_detail.product.name}) is quantity"
+
+        if product_detail.product.status != "active":
+            return False, f"Selected product: ({product_detail.product.name}) is not available"
+
+        if product_detail.product.store.is_active is False:
+            return False, f"Selected product: ({product_detail.product.name}) is not available"
+
+        # Create Cart Product
+        # print(cart)
+        cart.refresh_from_db()
+        cart_product, _ = CartProduct.objects.get_or_create(cart=cart, product_detail=product_detail)
+        cart_product.price = product_detail.price * quantity
+        cart_product.discount = product_detail.discount * quantity
+        cart_product.quantity = quantity
+        cart_product.save()
+
+        # Remove cart_product if quantity is 0
+        if cart_product.quantity < 1:
+            cart_product.delete()
+
+        # cart_product = CartProduct.objects.create(
+        #     cart=cart, product_detail=product_detail, price=product_detail.price,
+        #     discount=product_detail.discount, quantity=1)
+    return True, "Cart updated"
+    # except (Exception,) as err:
+    #     return False, f"{err}"
 
 
 def perform_operation(operation_param, product_detail, cart_product):
@@ -192,7 +227,7 @@ def get_shipping_rate(customer, address_id=None):
                     'weight': product.product_detail.weight,
                     'price': product.product_detail.price,
                     'product': product.product_detail.product,
-                    'detail': product.product_detail.description,
+                    'detail': product.product_detail.product.description,
                 }
             ],
         }
@@ -247,6 +282,8 @@ def get_shipping_rate(customer, address_id=None):
 
 
 def order_payment(payment_method, order):
+    from account.utils import get_wallet_info
+
     # create Transaction
     # get order amount
     product_amount = CartProduct.objects.filter(cart__order=order).aggregate(Sum("price"))["price__sum"] or 0
@@ -254,10 +291,18 @@ def order_payment(payment_method, order):
         Sum("delivery_fee"))["delivery_fee__sum"] or 0
 
     amount = product_amount + delivery_amount
-    trans = Transaction.objects.create(order=order, payment_method=payment_method, amount=amount)
+    trans = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
 
-    # if payment_method == "wallet":
-    # do something
+    if payment_method == "wallet":
+        balance = 0
+        # Check wallet balance
+        wallet_info = get_wallet_info(order.customer)
+        if "wallet" in wallet_info:
+            bal = wallet_info["wallet"]["balance"]
+            balance = decimal.Decimal(bal)
+        if balance < amount:
+            return False, f"Wallet Balance {balance} cannot be less than order amount, please fund wallet"
+
     # if payment_method == "card"
 
     # Update transaction status
@@ -377,6 +422,24 @@ def decrypt_text(text: str):
     fernet = Fernet(key)
     decrypt = fernet.decrypt(text.encode())
     return decrypt.decode()
+
+
+def encrypt_payarena_data(data):
+    cipher = AES.new(encryption_key, AES.MODE_CBC, iv=encryption_iv)
+    plain_text = bytes(data, "utf-8")
+    encrypted_text = cipher.encrypt(pad(plain_text, AES.block_size))
+    # Convert byte to hex
+    result = encrypted_text.hex()
+    return result
+
+
+def decrypt_payarena_data(data):
+    cipher = AES.new(encryption_key, AES.MODE_CBC, iv=encryption_iv)
+    plain_text = bytes.fromhex(data)
+    decrypted_text = unpad(cipher.decrypt(plain_text), AES.block_size)
+    # Convert to string
+    result = decrypted_text.decode("utf-8")
+    return result
 
 
 

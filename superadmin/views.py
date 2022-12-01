@@ -1,11 +1,15 @@
 import datetime
+from threading import Thread
 
+from django.contrib.auth import authenticate
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from account.utils import validate_email, register_payarena_user, create_account
 from ecommerce.pagination import CustomPagination
@@ -15,11 +19,21 @@ from account.serializers import *
 from ecommerce.utils import top_monthly_categories
 from home.utils import get_previous_date, get_month_start_and_end_datetime, get_year_start_and_end_datetime, \
     get_week_start_and_end_datetime
-from merchant.models import Seller
+from merchant.merchant_email import merchant_account_approval_email, merchant_upload_guide_email
+from merchant.permissions import *
+from merchant.models import Seller, BankAccount
 from merchant.serializers import SellerSerializer
 from merchant.utils import create_product, update_product, create_seller, update_seller
+from module.apis import u_map_registration
+from store.models import Store
 from store.serializers import ProductCategorySerializer
-from superadmin.utils import create_or_update_category
+from superadmin.exceptions import raise_serializer_error_msg
+from superadmin.models import AdminUser
+from superadmin.serializers import AdminUserSerializer, CreateAdminUserSerializerIn, BannerSerializer
+from superadmin.utils import create_or_update_category, check_permission, perform_banner_filter, \
+    create_or_edit_banner_obj
+from transaction.models import Transaction
+from transaction.serializers import TransactionSerializer
 
 
 class DashboardAPIView(APIView):
@@ -64,8 +78,10 @@ class DashboardAPIView(APIView):
 
         if date_from and date_to:
             latest_purchased_products = OrderProduct.objects.filter(packed_on__range=(start_date, end_date))[:5]
-            best_selling_products = Product.objects.filter(updated_on__range=(start_date, end_date)).order_by("-sale_count")[:10]
-            most_viewed_products = Product.objects.filter(updated_on__range=(start_date, end_date)).order_by("-view_count")[:10]
+            best_selling_products = Product.objects.filter(updated_on__range=(start_date, end_date)).order_by(
+                "-sale_count")[:10]
+            most_viewed_products = Product.objects.filter(updated_on__range=(start_date, end_date)).order_by(
+                "-view_count")[:10]
 
         last_purchased = list()
         for order_product in latest_purchased_products:
@@ -127,7 +143,8 @@ class ProductAPIView(APIView):
             success, detail, product = create_product(request, seller)
             if success is False:
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"detail": detail, "product": ProductSerializer(product, context={"request": request}).data})
+            return Response(
+                {"detail": detail, "product": ProductSerializer(product, context={"request": request}).data})
         except Exception as err:
             return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -135,7 +152,8 @@ class ProductAPIView(APIView):
         try:
             product = Product.objects.get(id=pk)
             query = update_product(request, product)
-            return Response({"detail": "Product updated successfully", "product": ProductSerializer(query, context={"request": request}).data})
+            return Response({"detail": "Product updated successfully",
+                             "product": ProductSerializer(query, context={"request": request}).data})
         except Exception as ess:
             return Response({"detail": "An error has occurred", "error": str(ess)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -154,6 +172,7 @@ class ProductListAPIView(generics.ListAPIView):
             queryset = Product.objects.filter(status=prod_status).order_by("-id")
         return queryset
 
+
 # Product End
 
 # Profile Start
@@ -169,6 +188,8 @@ class ProfileDetailRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
     lookup_field = "id"
+
+
 # Profile End
 
 
@@ -186,6 +207,7 @@ class BrandDetailRetrieveAPIView(generics.RetrieveUpdateAPIView):
     queryset = Brand.objects.all()
     lookup_field = "id"
 
+
 # Brand End
 
 
@@ -198,6 +220,12 @@ class ProductCategoryListAPIView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         data = dict()
+        permission = check_permission(request)
+        if permission is False:
+            return Response(
+                {"detail": "You do not have permission to perform this action."}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
         serializer = ProductCategorySerializer(data=request.data)
         if not serializer.is_valid():
             data['detail'] = 'Error in data sent'
@@ -217,6 +245,12 @@ class ProductCategoryDetailRetrieveAPIView(generics.RetrieveUpdateAPIView):
     lookup_field = "id"
 
     def update(self, request, *args, **kwargs):
+        permission = check_permission(request)
+        if permission is False:
+            return Response(
+                {"detail": "You do not have permission to perform this action."}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
         cat_id = self.kwargs.get("id")
         data = dict()
         serializer = ProductCategorySerializer(data=request.data)
@@ -230,17 +264,29 @@ class ProductCategoryDetailRetrieveAPIView(generics.RetrieveUpdateAPIView):
         category = create_or_update_category(data=request.data, cat_id=cat_id)
         return Response(ProductCategorySerializer(category, context={"request": request}).data)
 
+
 # ProductCategory End
+
 
 # Merchant
 class AdminSellerAPIView(APIView, CustomPagination):
     permission_classes = [IsAdminUser]
 
-    def get(self, request, pk=None):
-        if pk:
-            serializer = SellerSerializer(Seller.objects.get(id=pk), context={"request": request})
+    def get(self, request, seller_id=None):
+        if seller_id:
+            serializer = SellerSerializer(Seller.objects.get(id=seller_id), context={"request": request})
         else:
-            queryset = self.paginate_queryset(Seller.objects.all().order_by("-id"), request)
+            status = request.GET.get("status")
+            search = request.GET.get("search")
+            query = Q()
+            if status:
+                query &= Q(status=status)
+            if search:
+                query &= Q(sellerdetail__company_name__icontains=search) | Q(user__last_name__icontains=search) | \
+                         Q(user__first_name__icontains=search)
+
+            result = Seller.objects.filter(query).order_by("-id")
+            queryset = self.paginate_queryset(result, request)
             data = SellerSerializer(queryset, many=True, context={"request": request}).data
             serializer = self.get_paginated_response(data)
         return Response(serializer.data)
@@ -250,13 +296,12 @@ class AdminSellerAPIView(APIView, CustomPagination):
             success, response = update_seller(request, seller_id)
             if success is False:
                 return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"detail": "Merchant account updated"}, status=status.HTTP_400_BAD_REQUEST)
+            serializer = SellerSerializer(Seller.objects.get(id=seller_id), context={"request": request}).data
+            return Response({"detail": "Merchant account updated", "data": serializer})
 
         except Exception as ex:
             return Response({"detail": "An error occurred while creating merchant", "error": str(ex)},
                             status=status.HTTP_400_BAD_REQUEST)
-
-        ...
 
     def post(self, request):
         f_name = request.data.get("first_name")
@@ -265,7 +310,6 @@ class AdminSellerAPIView(APIView, CustomPagination):
         phone_number = request.data.get("phone_number")
 
         try:
-
             # create user and profile
             if not all([email, phone_number, f_name, l_name]):
                 return Response({
@@ -282,28 +326,276 @@ class AdminSellerAPIView(APIView, CustomPagination):
             phone_number = f"+234{phone_number[-10:]}"
 
             # Create account on payarena Auth Engine
-            success, detail = register_payarena_user(email, phone_number, f_name, l_name, password)
-            if success is False:
-                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
-
             password = User.objects.make_random_password()
+            """
+                User instance will be created on PayArena Auth Engine only when the account is approved 
+            """
+            # success, detail = register_payarena_user(email, phone_number, f_name, l_name, password)
+            # if success is False:
+            #     return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
 
             success, response = create_account(email, phone_number, password, f_name, l_name)
             if success is False:
-                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
             user = response.user
 
             success, msg = create_seller(request, user, email, phone_number)
             if success is False:
-                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"detail": "Merchant account created"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": msg}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Merchant account created"})
         except Exception as err:
             return Response({"detail": "An error occurred while creating merchant", "error": str(err)},
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+class UpdateMerchantStatusAPIView(APIView):
+    permission_classes = [IsAdminUser & (IsAuthorizer | IsAdmin | IsSuperAdmin)]
+
+    def put(self, request):
+        seller_id = request.data.get("seller_id")
+        seller_status = request.data.get("status")
+
+        biller_code = request.data.get("biller_code")
+        merchant_id = request.data.get("merchant_id")
+        feel = request.data.get("FEEL")
+        fep_type = request.data.get("FEP_TYPE")
+
+        # try:
+        seller = Seller.objects.get(id=seller_id)
+        seller.status = seller_status
+
+        if seller_status == "approve":
+            if not all([biller_code, feel, fep_type, merchant_id]):
+                return Response({"detail": "Biller Code, MerchantID, FEEL1 and FEP_TYPE are required to onboard "
+                                           "merchant"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if not (fep_type == "flat" or fep_type == "rate"):
+                return Response({"detail": "FEP TYPE can either be 'rate' or 'flat'"}, status=status.HTTP_400_BAD_REQUEST)
+
+            seller.biller_code = biller_code
+            seller.feel = feel
+            seller.fep_type = fep_type
+            seller.merchant_id = merchant_id
+
+            store_name = Store.objects.filter(seller=seller).last().name
+            bank_account = BankAccount.objects.filter(seller=seller).last()
+
+            # Update seller on UMAP
+            response = u_map_registration(
+                biller_id=biller_code, description=str(store_name).upper(), merchant_id=merchant_id,
+                account_no=bank_account.account_number, account_name=bank_account.account_name,
+                bank_code=bank_account.bank_code, fep_type=str(fep_type).upper()[0], feel=feel
+            )
+            print(response)
+            if response["RESPONSE_CODE"] != "00":
+                reason = response["RESPONSE_DESCRIPTION"]
+                return Response({"detail": reason}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Send Approval Email to seller
+            Thread(target=merchant_account_approval_email, args=[seller.user.email]).start()
+            Thread(target=merchant_upload_guide_email, args=[seller.user.email]).start()
+
+        seller.save()
+
+        if seller_status == "active" or seller_status == "approve":
+            Store.objects.filter(seller=seller).update(is_active=True)
+        return Response({"detail": "Merchant status updated successfully"})
+        # except Exception as ex:
+        #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Admin User
+class AdminUserListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsSuperAdmin]
+    serializer_class = AdminUserSerializer
+    pagination_class = CustomPagination
+    queryset = AdminUser.objects.all().order_by("-id")
+
+    def post(self, request, *args, **kwargs):
+        serializer = CreateAdminUserSerializerIn(data=request.data)
+        serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
+        data = serializer.save()
+        return Response(data)
 
 
+class AdminUserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsSuperAdmin]
+    queryset = AdminUser.objects.all()
+    serializer_class = AdminUserSerializer
+    lookup_field = "id"
 
+    def update(self, request, *args, **kwargs):
+        seller_id = self.kwargs.get("id")
+        admin_user = get_object_or_404(AdminUser, id=seller_id)
+        if not request.data:
+            return Response({"detail": "Nothing was updated"})
+
+        if request.data.get('first_name'):
+            admin_user.user.first_name = request.data.get('first_name')
+        if request.data.get('last_name'):
+            admin_user.user.last_name = request.data.get('last_name')
+        if request.data.get('password'):
+            admin_user.user.set_password(request.data.get('password'))
+        admin_user.user.save()
+
+        if request.data.get('role'):
+            admin_user.role_id = request.data.get('role')
+            admin_user.save()
+
+        data = dict()
+        data['detail'] = "Admin user updated successfully"
+        data['data'] = AdminUserSerializer(admin_user).data
+        return Response(data)
+
+
+class AdminBannerView(generics.ListCreateAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = BannerSerializer
+    pagination_class = CustomPagination
+    queryset = Promo.objects.all().order_by("-id")
+
+    def post(self, request, *args, **kwargs):
+        name = request.data.get('title')
+
+        if Promo.objects.filter(title=name).exists():
+            return Response({"detail": "Promo with this title already exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get("price_promo") == 'true':
+            if not request.data.get('min_price') or not request.data.get('max_price'):
+                return Response({'detail': 'min_price and max_price filter is required'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get("discount_promo") == 'true':
+            if not request.data.get('min_discount') or not request.data.get('max_discount'):
+                return Response({'detail': 'min_discount and max_discount filter is required'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        result = []
+        if not request.data.get("product"):
+            result = perform_banner_filter(request)
+            if not result:
+                return Response({'detail': 'No data found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        product_id = [product.id for product in result]
+
+        data = request.data
+
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"detail": "An error has occurred", "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        obj = serializer.save()
+        create_or_edit_banner_obj(data, obj, product_id)
+
+        data = {
+            'detail': "Banner created successfully"
+        }
+        return Response(data)
+
+
+class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = BannerSerializer
+    queryset = Promo.objects.all()
+    lookup_field = "id"
+
+    def put(self, request, *args, **kwargs):
+
+        pk = self.kwargs.get("id")
+        if not Promo.objects.filter(id=pk).exists():
+            return Response({'detail': "Invalid promo"}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = request.data
+        promo = Promo.objects.get(id=pk)
+
+        if Promo.objects.filter(title=data.get('title')).exclude(id=pk).exists():
+            data = {
+                'success': False,
+                "detail": "Promo with this title already exist"
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get("price_promo") == 'true':
+            if not request.data.get('min_price') or not request.data.get('max_price'):
+                return Response({'detail': 'min_price and max_price filter is required'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get("discount_promo") == 'true':
+            if not request.data.get('min_discount') or not request.data.get('max_discount'):
+                return Response({'detail': 'min_discount and max_discount filter is required'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        result = []
+        if not request.data.get("product"):
+            result = perform_banner_filter(request)
+            if not result:
+                return Response({'detail': 'No data found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        product_id = [product.id for product in result]
+
+        serializer = self.serializer_class(data=request.data, instance=promo)
+
+        if not serializer.is_valid():
+            return Response(
+                {'detail': 'There is an error in data sent', 'error': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        obj = serializer.save()
+
+        create_or_edit_banner_obj(data, obj, product_id)
+        return Response({'detail': "Banner updated successfully"})
+
+    def delete(self, request, *args, **kwargs):
+        pk = self.kwargs.get("id")
+
+        if not Promo.objects.filter(id=pk):
+            return Response({'detail': 'Banner does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        Promo.objects.filter(id=pk).delete()
+        return Response({'detail': 'Banner deleted successfully'}, status=status.HTTP_200_OK)
+
+
+class AdminTransactionListAPIView(generics.ListAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = TransactionSerializer
+    queryset = Transaction.objects.all().order_by("-id")
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = [
+        "order__orderproduct__product_detail__product__name",
+        "order__orderproduct__product_detail__product__category__name",
+        "order__orderproduct__product_detail__product__store__name", "order__orderproduct__waybill_no",
+        "order__customer__user__first_name", "order__customer__user__last_name"
+    ]
+
+
+class AdminTransactionRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = TransactionSerializer
+    queryset = Transaction.objects.all()
+    lookup_field = "id"
+
+
+class AdminSignInAPIView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        if not all([email, password]):
+            return Response({"detail": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(username=email, password=password)
+        if not user:
+            return Response({"detail": "Invalid login details"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not AdminUser.objects.filter(user=user).exists():
+            return Response({"detail": "You are not permitted to perform this action"},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        data = AdminUserSerializer(AdminUser.objects.get(user=user)).data
+        return Response({"detail": "Login successful", "data": data})

@@ -30,11 +30,23 @@ BUSINESS_TYPES = (
     ('limited-liability-company', 'Limited Liability'),
 )
 
+BANNER_SIZE_CHOICES = (
+    ('small', 'Small'), ('medium', 'Medium'), ('large', 'Large')
+)
+
+FEP_TYPE_CHOICES = (
+    ('flat', "Flat"), ('rate', 'Rate')
+)
+
 
 class Seller(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     address = models.CharField(max_length=100, null=True, blank=True)
+    merchant_id = models.CharField(max_length=100, null=True, blank=True)
+    biller_code = models.CharField(max_length=200, null=True, blank=True)
+    fep_type = models.CharField(max_length=50, choices=FEP_TYPE_CHOICES, default="flat")
+    feel = models.CharField(max_length=200, null=True, blank=True)
     town = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
@@ -109,11 +121,24 @@ class SellerFile(models.Model):
 
 class BankAccount(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
+    bank_code = models.CharField(max_length=100, null=True, blank=True)
     bank_name = models.CharField(max_length=100, null=True, blank=True)
     account_name = models.CharField(max_length=100, null=True, blank=True)
     account_number = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f"{self.seller.user.first_name} - {self.bank_name} - {self.account_name}"
+
+
+class MerchantBanner(models.Model):
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE)
+    banner_image = models.ImageField(upload_to='promo-banners')
+    banner_size = models.CharField(max_length=50, choices=BANNER_SIZE_CHOICES, default='small')
+    is_active = models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Merchant: {self.seller} - ID: {self.id}"
 
 

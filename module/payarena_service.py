@@ -6,6 +6,7 @@ from ecommerce.utils import decrypt_text
 from home.utils import log_request
 
 base_url = settings.PAYARENA_ACCOUNT_BASE_URL
+pgw_url = settings.PAYMENT_GATEWAY_URL
 
 
 class PayArenaServices:
@@ -81,4 +82,22 @@ class PayArenaServices:
         })
         response = requests.request("POST", url, headers=header, data=payload).json()
         log_request(f"url: {url}", f"headers: {header}", f"payload: {payload}", f"response: {response}")
+        return response
+
+    @classmethod
+    def fund_wallet(cls, profile, amount, payment_info):
+        header = cls.get_auth_header(profile)
+        url = f"{base_url}/mobile/mall-credit-wallet"
+        payload = json.dumps({"Amount": amount, "Fee": 100, "PaymentInformation": payment_info})
+        print(url)
+        print(header)
+        print(payload)
+        response = requests.request("POST", url, headers=header, data=payload).json()
+        log_request(f"url: {url}", f"headers: {header}", f"payload: {payload}", f"response: {response}")
+        return response
+
+    @classmethod
+    def get_payment_status(cls, reference):
+        url = f"{pgw_url}/status/{reference}"
+        response = requests.request("GET", url, headers={"Content-Type: application/json"}).json()
         return response

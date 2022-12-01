@@ -66,6 +66,7 @@ class Image(models.Model):
 class Product(models.Model):
     store = models.ForeignKey("store.Store", on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=200)
+    description = models.TextField(help_text='Describe the product', null=True)
     image = models.ForeignKey(Image, on_delete=models.SET_NULL, null=True, blank=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, blank=True, null=True, related_name='category')
     sub_category = models.ForeignKey(ProductCategory, blank=True, null=True, on_delete=models.CASCADE)
@@ -93,7 +94,7 @@ class Product(models.Model):
 
 class ProductDetail(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    description = models.TextField(help_text='Describe the product')
+    # description = models.TextField(help_text='Describe the product')
     sku = models.CharField(max_length=100, blank=True, null=True)
     size = models.CharField(max_length=100, blank=True, null=True)
     color = models.CharField(max_length=100, default='White')
