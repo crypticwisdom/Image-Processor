@@ -12,6 +12,8 @@ class Profile(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     verified = models.BooleanField(default=False)
+    billing_verified = models.BooleanField(default=False)
+    billing_id = models.TextField(blank=True, null=True)
     pay_auth = models.TextField(blank=True, null=True)
     pay_token = models.TextField(blank=True, null=True)
     wallet_pin = models.TextField(blank=True, null=True)

@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from account.models import Address
 from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime, get_next_date
+from module.billing_service import BillingService
 from module.shipping_service import ShippingService
 from transaction.models import Transaction
 from .models import Cart, Product, ProductDetail, CartProduct, ProductReview, Order, OrderProduct
@@ -281,7 +282,7 @@ def get_shipping_rate(customer, address_id=None):
     return shippers_list
 
 
-def order_payment(payment_method, order):
+def order_payment(payment_method, order, pin):
     from account.utils import get_wallet_info
 
     # create Transaction
@@ -292,16 +293,27 @@ def order_payment(payment_method, order):
 
     amount = product_amount + delivery_amount
     trans = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
+    customer = order.customer
 
     if payment_method == "wallet":
+        if not pin:
+            return False, "PIN is required"
         balance = 0
         # Check wallet balance
-        wallet_info = get_wallet_info(order.customer)
+        wallet_info = get_wallet_info(customer)
         if "wallet" in wallet_info:
             bal = wallet_info["wallet"]["balance"]
             balance = decimal.Decimal(bal)
         if balance < amount:
             return False, f"Wallet Balance {balance} cannot be less than order amount, please fund wallet"
+
+        # Charge wallet
+        response = BillingService.charge_customer(
+            payment_type="wallet", customer_id=customer.billing_id, narration=f"Payment for OrderID: {order.id}",
+            pin=pin
+        )
+        if "status" in response and response["status"] != "Successful":
+            return False, response["status"]
 
     # if payment_method == "card"
 

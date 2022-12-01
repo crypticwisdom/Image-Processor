@@ -304,6 +304,7 @@ class ProductCheckoutView(APIView):
     def post(self, request):
 
         payment_method = request.data.get("payment_method")
+        pin = request.data.get("pin")
         address_id = request.data.get("address_id")
         sender_town_id = request.data.get("sender_town_id")
         receiver_town_id = request.data.get("receiver_town_id")
@@ -346,7 +347,7 @@ class ProductCheckoutView(APIView):
             order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
 
             # PROCESS PAYMENT
-            success, detail = order_payment(payment_method, order)
+            success, detail = order_payment(payment_method, order, pin)
             if success is False:
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
 

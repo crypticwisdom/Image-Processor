@@ -8,6 +8,7 @@ from home.utils import log_request
 base_url = settings.BILLING_BASE_URL
 email = settings.BILLING_EMAIL
 password = settings.BILLING_PASSWORD
+uid = settings.BILLING_USER_ID
 
 
 class BillingService:
@@ -31,14 +32,52 @@ class BillingService:
     def validate_customer(cls, email):
         url = f"{base_url}/validate-customer"
         payload = json.dumps({
-            "companyId": settings.BILLING_USER_ID,
+            "companyId": uid,
             "customerEmail": email
         })
         header = {"Content-Type": "application/json"}
         response = requests.request("POST", url, headers=header, data=payload).json()
         return response
 
-    # @classmethod
-    # def register_client(cls):
-    #     header =
+    @classmethod
+    def register_customer(cls, **kwargs):
+        header = cls.get_header()
+        url = f"{base_url}/{uid}/register-customer"
+
+        data = list()
+        params = dict()
+        params["firstName"] = kwargs.get("first_name")
+        params["lastName"] = kwargs.get("last_name")
+        params["email"] = kwargs.get("email")
+        params["phone"] = kwargs.get("phone_no")
+        params["password"] = kwargs.get("password")
+
+        data.append(params)
+        payload = json.dumps(data)
+        response = requests.request("POST", url, headers=header, data=payload).json()
+        log_request(f"url: {url}, payload: {payload}, response: {response}")
+        return response
+
+    @classmethod
+    def charge_customer(cls, **kwargs):
+        url = f"{base_url}/operations/charge"
+        header = cls.get_header()
+
+        data = dict()
+        data["paymentProvider"] = "Unified Payment"
+        data["paymentType"] = kwargs.get("payment_type")
+        data["customerId"] = kwargs.get("customer_id")  # Customer Billing_ID
+        data["currency"] = 566
+        data["description"] = kwargs.get("narration")
+        data["url"] = kwargs.get("callback_url")
+        data["pin"] = kwargs.get("pin")
+        data["fee"] = 0
+
+        payload = json.dumps(data)
+
+        response = requests.request("POST", url, headers=header, data=payload).json()
+        log_request(f"url: {url}, payload: {payload}, response: {response}")
+        return response
+
+
 

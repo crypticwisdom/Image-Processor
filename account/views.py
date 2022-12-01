@@ -21,7 +21,7 @@ from threading import Thread
 from .serializers import ProfileSerializer, CustomerAddressSerializer
 from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email, register_payarena_user, \
     login_payarena_user, change_payarena_user_password, get_wallet_info, validate_phone_number_for_wallet_creation, \
-    create_user_wallet, make_payment_for_wallet, fund_customer_wallet
+    create_user_wallet, make_payment_for_wallet, fund_customer_wallet, confirm_or_create_billing_account
 
 
 class LoginView(APIView):
@@ -78,6 +78,8 @@ class LoginView(APIView):
                 Thread(target=login_payarena_user, args=[profile, email, password]).start()
                 time.sleep(2)
                 wallet_balance = get_wallet_info(profile)
+
+                Thread(target=confirm_or_create_billing_account, args=[profile, email, password]).start()
 
                 return Response({
                     "detail": "Login successful",
