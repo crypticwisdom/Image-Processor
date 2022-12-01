@@ -149,7 +149,6 @@ class MerchantDashboardOrderProductSerializer(serializers.ModelSerializer):
 
 
 class ProductLowAndOutOffStockSerializer(serializers.ModelSerializer):
-
     product_name = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
 

@@ -116,6 +116,7 @@ class ProductAPIView(APIView, CustomPagination):
     def get(self, request, pk=None):
         try:
             seller = Seller.objects.get(user=request.user)
+            print(seller, '-----------')
             if pk:
                 serializer = ProductSerializer(Product.objects.get(store__seller=seller, id=pk),
                                                context={"request": request}).data
