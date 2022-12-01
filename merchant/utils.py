@@ -673,13 +673,14 @@ def get_low_in_stock(store, request):
     # used the F() to compare 'low_stock_threshold' and 'stock' fields in ProductDetail, it returns a queryset of
     # ProductDetail instances that their 'low_stock_threshold' fields are greater than their 'stock' fields.
     low_in_stock = ProductDetail.objects.filter(product__store=store,
-                                                low_stock_threshold__gte=F('stock')).order_by('id')[:10]
+                                                low_stock_threshold__gt=F('stock'), stock__gte=1).order_by('id')[:10]
+
     serialized_data = ProductLowAndOutOffStockSerializer(low_in_stock, many=True, context={"request": request})
     return serialized_data.data
 
 
 def out_of_stock(store, request):
-    out_off_stock = ProductDetail.objects.filter(product__store=store, stock__lte=0).order_by('id')[:10]
+    out_off_stock = ProductDetail.objects.filter(product__store=store, stock=0).order_by('id')[:10]
     serialized_data = ProductLowAndOutOffStockSerializer(out_off_stock, many=True, context={"request": request})
     return serialized_data.data
 

@@ -1,6 +1,7 @@
 from threading import Thread
 from rest_framework.exceptions import ErrorDetail, ValidationError
 from django.db.models import Q, F
+from ecommerce.views import ProductReview
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from ecommerce.serializers import ProductSerializer, ReturnedProductSerializer
@@ -11,7 +12,7 @@ from transaction.serializers import TransactionSerializer
 from .merchant_email import merchant_account_creation_email
 from .serializers import SellerSerializer, MerchantProductDetailsSerializer, OrderSerializer, \
     MerchantDashboardOrderProductSerializer, MerchantReturnedProductSerializer, MerchantBannerSerializerOut, \
-    MerchantBannerSerializerIn
+    MerchantBannerSerializerIn, MerchantProductReviewSerialiazer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
@@ -124,22 +125,31 @@ class MerchantDashboardView(APIView):
     def get(self, request):
         try:
             store = Store.objects.get(seller__user=request.user)
-            return Response({"detail": get_dashboard_data(store)})
+            return Response({"detail": get_dashboard_data(store, request)})
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Added Search by product_name and category(filter).
 class ProductAPIView(APIView, CustomPagination):
 
     def get(self, request, pk=None):
         try:
+            product_name, category = request.GET.get("product_name", None), request.GET.get("category", None)
             seller = Seller.objects.get(user=request.user)
-            print(seller, '-----------')
+            query = Q(store__seller=seller)
+
             if pk:
                 serializer = ProductSerializer(Product.objects.get(store__seller=seller, id=pk),
                                                context={"request": request}).data
             else:
-                product_detail_query_set = Product.objects.filter(store__seller=seller).order_by('-id')
+                if product_name:
+                    query &= Q(name__icontains=product_name)
+
+                if category:
+                    query &= Q(category__name__icontains=category)
+
+                product_detail_query_set = Product.objects.filter(query).order_by('-id')
                 paginated_query_set = self.paginate_queryset(product_detail_query_set, request)
                 serialized = ProductSerializer(paginated_query_set, many=True, context={"request": request}).data
                 serializer = self.get_paginated_response(serialized).data
@@ -183,17 +193,6 @@ class MerchantAddBannerView(APIView):
             return Response({"detail": "..."})
         except (Exception,) as err:
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MerchantDashboardView(APIView):
-    permission_classes = [IsAuthenticated, IsMerchant]
-
-    def get(self, request):
-        try:
-            store = Store.objects.get(seller__user=request.user)
-            return Response({"detail": get_dashboard_data(store, request)})
-        except (Exception, ) as err:
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MerchantOrderProductsView(generics.ListAPIView):
@@ -247,24 +246,25 @@ class MerchantOrderProductsView(generics.ListAPIView):
 
 
 # Completed [Filter is pending ...]
-class LowAndOutOfStockView(APIView, CustomPagination):
+class MerchantLowAndOutOfStockView(APIView, CustomPagination):
     permission_classes = [IsAuthenticated, IsMerchant]
 
     def get(self, request):
         try:
-            stock_type = request.data.get("stock_type", None)
+            stock_type = request.GET.get("stock_type", None)
 
-            filter_by_date_from, filter_by_date_to = request.GET.get("date_from", None), request.GET.get("date_to",
-                                                                                                         None)
-            filter_by_status = request.GET.get("status", None)
-            category_id = request.GET.get("category_id", None)
+            # filter_by_date_from, filter_by_date_to = request.GET.get("date_from", None), request.GET.get("date_to", None)
+            # filter_by_status = request.GET.get("status", None)
+            # category_id = request.GET.get("category_id", None)
+
             if stock_type is None:
                 return Response({"detail": f"Stock Type is required."}, status=status.HTTP_400_BAD_REQUEST)
 
             store, query_set = Store.objects.get(seller__user=request.user), None
             if stock_type in ["low_in_stock", "low"]:
                 query_set = ProductDetail.objects.filter(product__store=store,
-                                                         low_stock_threshold__gte=F('stock')).order_by('-id')
+                                                         low_stock_threshold__gt=F('stock'), stock__gte=1).order_by(
+                    '-id')
             elif stock_type in ["out_of_stock", "out"]:
                 query_set = ProductDetail.objects.filter(product__store=store, stock__lte=0).order_by('-id')
             else:
@@ -287,15 +287,16 @@ class MerchantReturnsAndRejectView(APIView, CustomPagination):
     def get(self, request):
         try:
             # Filter all ReturnedProduct where this Merchant is the owner of the Store.
-            query_set = ReturnedProduct.objects.filter(product__product_detail__product__store__seller__user=request.user,
-                                                       status="approved").order_by("-id")
+            query_set = ReturnedProduct.objects.filter(
+                product__product_detail__product__store__seller__user=request.user,
+                status="approved").order_by("-id")
 
             paginated_query_set = self.paginate_queryset(query_set, request)
             serialized_data = MerchantReturnedProductSerializer(paginated_query_set, many=True,
                                                                 context={"request": request}).data
             response = self.get_paginated_response(serialized_data).data
             return Response({"detail": response})
-        except (Exception, ) as err:
+        except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -311,7 +312,7 @@ class MerchantTransactionView(APIView, CustomPagination):
                 # How would i get all Transactions related to this Current Logged in Merchant ?
                 transactions = Transaction.objects.filter()
             return Response({"detail": f""})
-        except (Exception, ) as err:
+        except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -394,14 +395,14 @@ class MerchantBannerRetrieveUpdateAPIView(generics.RetrieveUpdateDestroyAPIView)
         return MerchantBanner.objects.get(id=self.kwargs.get("id"), seller__user=self.request.user)
 
     def update(self, request, *args, **kwargs):
-        serializer = MerchantBannerSerializerIn(data=request.data, instance=self.kwargs.get("id"), context=self.get_serializer_context())
+        serializer = MerchantBannerSerializerIn(data=request.data, instance=self.kwargs.get("id"),
+                                                context=self.get_serializer_context())
         serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
         serializer.save()
         return Response({"detail": "Banner updated successfully", "data": serializer})
 
 
 class ProductImageAPIView(APIView):
-
     def post(self, request):
         try:
             image = request.data['image']
@@ -421,3 +422,23 @@ class ProductImageAPIView(APIView):
         return Response({'detail': 'Image deleted successfully'})
 
 
+class MerchantProductReviewsView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated, IsMerchant]
+
+    def get(self, request, pk=None):
+        try:
+            merchant_store = Store.objects.get(seller__user=request.user)
+            if pk:
+                reviews = ProductReview.objects.get(id=pk, product__store=merchant_store)
+                data = MerchantProductReviewSerialiazer(reviews, context={"request": request}).data
+                return Response({"detail": data})
+
+            if pk is None:
+                reviews = ProductReview.objects.filter(product__store=merchant_store).order_by("-id")
+                queryset = self.paginate_queryset(reviews, request)
+                data = MerchantProductReviewSerialiazer(queryset, context={"request": request}, many=True).data
+                serializer = self.get_paginated_response(data).data
+
+                return Response({"detail": serializer})
+        except (Exception,) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)

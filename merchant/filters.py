@@ -15,3 +15,10 @@ class MerchantOrderProductFilter(filters.FilterSet):
         fields = ['status', 'category_name', 'cancelled_on']
 
 
+class MerchantProductSearch(filters.FilterSet):
+    product_name = filters.CharFilter(field_name="product__name", lookup_expr="icontains")
+    category = filters.CharFilter(field_name="product__category", lookup_expr="icontains")
+
+    class Meta:
+        model = ProductDetail
+        fields = ['product_name', "category"]

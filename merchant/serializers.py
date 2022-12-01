@@ -168,8 +168,8 @@ class ProductLowAndOutOffStockSerializer(serializers.ModelSerializer):
 
 
 class MerchantReturnedProductSerializer(serializers.ModelSerializer):
-    returned_by = serializers.CharField(source="returned_by.first_name")    # Creating a custom field "Method 1"
-    attachment_images = serializers.SerializerMethodField()     # Creating a custom field "Method 2 (More Advanced)"
+    returned_by = serializers.CharField(source="returned_by.first_name")  # Creating a custom field "Method 1"
+    attachment_images = serializers.SerializerMethodField()  # Creating a custom field "Method 2 (More Advanced)"
     return_date = serializers.DateTimeField(source="created_on")
     product_name = serializers.CharField(source="product.product_detail.product.name")
     product_image = serializers.SerializerMethodField()
@@ -246,4 +246,24 @@ class MerchantBannerSerializerIn(serializers.Serializer):
         return data
 
 
+from ecommerce.views import ProductReview
 
+
+class MerchantProductReviewSerialiazer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
+
+    def get_product(self, obj):
+        container = {'product_id': obj.product.id, 'product_name': obj.product.name}
+        if self.context.get("request"):
+            request = self.context.get("request")
+            container['image_url'] = request.build_absolute_uri(obj.product.image.get_image_url())
+        return container
+
+    def get_user(self, obj):
+        container = {'user_id': obj.user.id, 'first_name': obj.user.first_name, 'username': obj.user.username}
+        return container
+
+    class Meta:
+        model = ProductReview
+        fields = ['id', 'user', 'product', 'headline', 'rating', 'review', 'created_on']
