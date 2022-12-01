@@ -601,3 +601,76 @@ class AdminSignInAPIView(APIView):
         data = AdminUserSerializer(AdminUser.objects.get(user=user)).data
         return Response({"detail": "Login successful",
                          "token": f"{RefreshToken.for_user(user).access_token}", "data": data})
+
+
+class OrdersView(generics.ListAPIView):
+    pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        param = self.kwargs.get('param', '')
+        request = self.request
+        if param == 'first-level' or 'filter':
+            if request.GET.get("order_id"):
+                return OrderProductSerializer
+            return OrderSerializer
+        else:
+            return OrderProductSerializer
+
+    def get_serializer_context(self):
+        data = {
+            'merchant_id': self.request.data.get('merchant_id'),
+            'request': self.request
+        }
+        return data
+
+    def get_queryset(self):
+        param = self.kwargs.get('param')
+        request = self.request
+
+        if param == 'all':
+            return Order.objects.filter(payment_status="success").order_by('-created_on').distinct()
+
+        elif param == 'first-level':
+            if request.GET.get("order_id"):
+                order_id = request.GET.get("order_id")
+                if not Order.objects.filter(id=order_id, payment_status="success").exists():
+                    return OrderProduct.objects.filter(payment_status="success").order_by('-created_on')
+                order = get_object_or_404(Order, id=order_id)
+                return OrderProduct.objects.filter(order=order, order__payment_status="success").order_by('-created_on').distinct()
+
+            return Order.objects.filter(payment_status="success").order_by('-created_on').distinct()
+
+        elif param == 'filter':
+            if not self.request.GET.get('date_from') or not self.request.GET.get('date_to'):
+                return Order.objects.filter(payment_status="success").order_by('-created_on').distinct()
+
+            date_from = self.request.GET.get('date_from', '')
+            date_to = self.request.GET.get('date_to', '')
+            return Order.objects.filter(created_on__range=[date_from, date_to], payment_status="success").order_by('-created_on').distinct()
+
+        else:
+            return Order.objects.filter(orderproduct__status=param).order_by('-created_on').distinct()
+
+
+class OrderDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAdminUser & (IsSuperAdmin | IsAdmin)]
+    serializer_class = OrderProductSerializer
+    queryset = OrderProduct.objects.all()
+
+    def get_object(self):
+        return OrderProduct.objects.get(pk=self.kwargs['order_product_id'])
+
+    def put(self, request, order_product_id):
+        order_product = get_object_or_404(OrderProduct, pk=order_product_id)
+
+        order_status = request.data.get('status')
+        order_product.status = order_status
+        order_product.save()
+
+        # Send email to shopper
+        # Send email to seller
+
+        return Response({"detail": "Order updated successfully"})
+
+
+

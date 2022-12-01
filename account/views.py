@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from ecommerce.shopper_email import shopper_welcome_email, shopper_signup_verification_email
 from home.utils import log_request
+from superadmin.models import AdminUser
 from transaction.models import Transaction
 from .models import *
 from django.contrib.auth.models import User
@@ -31,6 +32,9 @@ class LoginView(APIView):
             email = request.data.get('email', None)
             password, user = request.data.get('password', None), None
             cart_uid = request.data.get("cart_uid", None)
+
+            if AdminUser.objects.filter(user__email=email).exists():
+                return Response({"detail": "Invalid customer credential"}, status=status.HTTP_400_BAD_REQUEST)
 
             if email is None:
                 return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
