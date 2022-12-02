@@ -209,10 +209,9 @@ class ShippingService:
             detail["TotalWeight"] = order_product.product_detail.weight
             detail["PickupStationId"] = 4
             detail["DeliveryStationId"] = 4
-            detail["SenderTownId"] = kwargs.get("sender_town_id")
-            detail["ReceiverTownId"] = kwargs.get("receiver_town_id")
+            detail["SenderTownId"] = seller.town_id
+            detail["ReceiverTownId"] = address.town_id
             detail["PickupCity"] = seller.city
-            detail["DeliveryCity"] = address.city
             detail["DeliveryCity"] = address.city
 
             shipment = list()

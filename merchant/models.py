@@ -48,6 +48,7 @@ class Seller(models.Model):
     fep_type = models.CharField(max_length=50, choices=FEP_TYPE_CHOICES, default="flat")
     feel = models.CharField(max_length=200, null=True, blank=True)
     town = models.CharField(max_length=100, null=True, blank=True)
+    town_id = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)

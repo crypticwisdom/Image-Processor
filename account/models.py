@@ -76,6 +76,7 @@ class Address(models.Model):
     state = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
     town = models.CharField(max_length=100, blank=True, null=True)
+    town_id = models.CharField(max_length=100, blank=True, null=True)
     postal_code = models.CharField(default=0, blank=True, null=True, max_length=50)
     longitude = models.FloatField(null=True, blank=True)
     latitude = models.FloatField(null=True, blank=True)

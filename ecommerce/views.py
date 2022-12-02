@@ -306,8 +306,6 @@ class ProductCheckoutView(APIView):
         payment_method = request.data.get("payment_method")
         pin = request.data.get("pin")
         address_id = request.data.get("address_id")
-        sender_town_id = request.data.get("sender_town_id")
-        receiver_town_id = request.data.get("receiver_town_id")
         shipping_information = request.data.get("shipping_information")
 
         # Expected shipping_information payload
@@ -320,8 +318,8 @@ class ProductCheckoutView(APIView):
         #     }
         # ]
 
-        if not all([shipping_information, sender_town_id, receiver_town_id, address_id]):
-            return Response({"detail": "Shipper information, address, sender town, and recipient town are required"},
+        if not all([shipping_information, address_id]):
+            return Response({"detail": "Shipper information and address are required"},
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -350,27 +348,7 @@ class ProductCheckoutView(APIView):
             success, detail = order_payment(payment_method, order, pin)
             if success is False:
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
-
-            # update order
-            order_products = add_order_product(order)
-            # Update payment method
-            order_products.update(payment_method=payment_method)
-            # Call pickup order request
-
-            success, response = perform_order_pickup(order_products, address, sender_town_id, receiver_town_id)
-
-            if success is False:
-                # Process refund to customer wallet
-                return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
-
-            for order_product in order_products:
-                # Send order placement email to shopper
-                Thread(target=shopper_order_placement_email, args=[customer, order.id, order_product]).start()
-                # Send order placement email to seller
-                Thread(target=merchant_order_placement_email, args=[customer, order, order_product]).start()
-                # Send order placement email to admins
-
-            return Response({"detail": "Order placed successfully"})
+            return Response({"detail": detail})
 
         except Exception as ex:
             return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)

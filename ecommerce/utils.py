@@ -1,6 +1,7 @@
 import base64
 import datetime
 import decimal
+from threading import Thread
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -13,12 +14,15 @@ from django.utils import timezone
 
 from account.models import Address
 from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime, get_next_date
+from merchant.merchant_email import merchant_order_placement_email
 from module.billing_service import BillingService
 from module.shipping_service import ShippingService
 from transaction.models import Transaction
 from .models import Cart, Product, ProductDetail, CartProduct, ProductReview, Order, OrderProduct
 
 from django.conf import settings
+
+from .shopper_email import shopper_order_placement_email
 
 encryption_key = bytes(settings.PAYARENA_CYPHER_KEY, "utf-8")
 encryption_iv = bytes(settings.PAYARENA_IV, "utf-8")
@@ -292,8 +296,9 @@ def order_payment(payment_method, order, pin):
         Sum("delivery_fee"))["delivery_fee__sum"] or 0
 
     amount = product_amount + delivery_amount
-    trans = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
+    trans, created = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
     customer = order.customer
+    decrypted_billing_id = decrypt_text(customer.billing_id)
 
     if payment_method == "wallet":
         if not pin:
@@ -309,23 +314,46 @@ def order_payment(payment_method, order, pin):
 
         # Charge wallet
         response = BillingService.charge_customer(
-            payment_type="wallet", customer_id=customer.billing_id, narration=f"Payment for OrderID: {order.id}",
+            payment_type="wallet", customer_id=decrypted_billing_id, narration=f"Payment for OrderID: {order.id}",
             pin=pin
         )
         if "status" in response and response["status"] != "Successful":
             return False, response["status"]
+        # Update transaction status
+        trans.status = "success"
+        trans.transaction_detail = f"Payment for OrderID: {order.id}"
+        trans.save()
 
-    # if payment_method == "card"
+        # update order_payment
+        order.payment_status = "success"
+        order.save()
 
-    # Update transaction status
-    trans.status = "success"
-    trans.save()
+        update_purchase(order, payment_method)
 
-    # update order_payment
-    order.payment_status = "success"
-    order.save()
+    if payment_method == "card" or payment_method == "pay_attitude":
+        # call billing service to get payment link
+        response = BillingService.charge_customer(
+            payment_type=payment_method, customer_id=decrypted_billing_id, narration=f"Payment for OrderID: {order.id}",
+            pin=pin
+        )
+        if "status" in response:
 
-    return True, "Payment successful"
+            payment_link = response["paymentUrl"]
+            transaction_ref = response["reference"]
+            status = str(response["status"]).lower()
+
+            trans.status = status
+            trans.transaction_reference = transaction_ref
+            trans.transaction_detail = f"Payment for OrderID: {order.id}"
+            trans.save()
+
+            # This to be removed for after testing
+            Thread(target=update_purchase, args=[order, payment_method])
+
+            return True, payment_link
+
+        else:
+            return False, "An error has occurred, please try again later"
 
 
 def add_order_product(order):
@@ -381,12 +409,9 @@ def perform_order_cancellation(order, user):
     return True, "Order cancelled successfully"
 
 
-def perform_order_pickup(order_product, address, sender_town_id, receiver_town_id):
+def perform_order_pickup(order_product, address):
     summary = f"Shipment Request to {address.get_full_address()}"
-    response = ShippingService.pickup(
-        order_products=order_product, address=address, order_summary=summary, sender_town_id=sender_town_id,
-        receiver_town_id=receiver_town_id
-    )
+    response = ShippingService.pickup(order_products=order_product, address=address, order_summary=summary)
 
     if "error" in response:
         return False, "Order cannot be placed at the moment"
@@ -454,4 +479,24 @@ def decrypt_payarena_data(data):
     return result
 
 
+def update_purchase(order, payment_method):
+    # update order
+    order_products = add_order_product(order)
+    # Update payment method
+    order_products.update(payment_method=payment_method)
+    # Call pickup order request
 
+    success, response = perform_order_pickup(order_products, order.address)
+
+    if success is False:
+        # Process refund to customer wallet
+        pass
+
+    for order_product in order_products:
+        # Send order placement email to shopper
+        Thread(target=shopper_order_placement_email, args=[order.customer, order.id, order_product]).start()
+        # Send order placement email to seller
+        Thread(target=merchant_order_placement_email, args=[order.customer, order, order_product]).start()
+        # Send order placement email to admins
+
+    return "Order Updated"

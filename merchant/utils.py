@@ -243,6 +243,7 @@ def create_seller(request, user, email, phone_number):
             return False, "Business address is required"
 
         business_town: str = request.data.get("business_town", None)
+        town_id: str = request.data.get("town_id", None)
         if not business_town:
             return False, "Business town is required"
 
@@ -316,7 +317,7 @@ def create_seller(request, user, email, phone_number):
         # Create Seller
         seller = Seller.objects.create(
             user=user, phone_number=phone_number, address=business_address,
-            town=business_town, city=business_city, state=business_state,
+            town=business_town, city=business_city, state=business_state, town_id=town_id,
             longitude=longitude, latitude=latitude
         )
         # Create seller detail
@@ -482,6 +483,7 @@ def update_seller(request, seller_id):
         product_category: list = request.data.get("product_category", [])  # drop-down
         business_address: str = request.data.get("business_address")
         business_town: str = request.data.get("business_town")
+        town_id: str = request.data.get("town_id")
         business_state: str = request.data.get("business_state")  # drop-down
         business_city: str = request.data.get("business_city")  # drop-down
         latitude: float = request.data.get("latitude")  # drop-down
@@ -495,6 +497,7 @@ def update_seller(request, seller_id):
 
         seller.address = business_address
         seller.town = business_town
+        seller.town_id = town_id
         seller.city = business_city
         seller.state = business_state
         seller.longitude = longitude

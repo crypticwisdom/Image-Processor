@@ -63,9 +63,14 @@ class BillingService:
         url = f"{base_url}/operations/charge"
         header = cls.get_header()
 
+        payment_type = kwargs.get("payment_type")
+
+        if payment_type == "pay_attitude":
+            payment_type = "payattitude"
+
         data = dict()
         data["paymentProvider"] = "Unified Payment"
-        data["paymentType"] = kwargs.get("payment_type")
+        data["paymentType"] = payment_type
         data["customerId"] = kwargs.get("customer_id")  # Customer Billing_ID
         data["currency"] = 566
         data["description"] = kwargs.get("narration")
