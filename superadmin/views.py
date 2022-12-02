@@ -174,14 +174,32 @@ class ProductListAPIView(generics.ListAPIView):
         print(queryset)
         return queryset
 
+
 # Product End
 
 # Profile Start
 class ProfileListAPIView(generics.ListAPIView):
-    permission_classes = [IsAdminUser]
     serializer_class = ProfileSerializer
-    queryset = Profile.objects.all().order_by("-id")
+    permission_classes = [IsAdminUser]
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ["user__first_name", "user__last_name", "user__email", "phone_number"]
+
+    def get_queryset(self):
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
+        queryset = Profile.objects.all().order_by("-id")
+        if date_from and date_to:
+            queryset = Profile.objects.filter(created_on__range=[date_from, date_to]).order_by("-id")
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        response = super(ProfileListAPIView, self).list(request, args, kwargs)
+        response.data['total_customer'] = Profile.objects.all().count()
+        response.data['total_active_customer'] = Profile.objects.filter(user__is_active=True).count()
+        date = get_previous_date(date=datetime.datetime.now(), delta=7)
+        response.data['recent_customer'] = Profile.objects.filter(created_on__gte=date).count()
+        return response
 
 
 class ProfileDetailRetrieveAPIView(generics.RetrieveAPIView):
@@ -192,7 +210,6 @@ class ProfileDetailRetrieveAPIView(generics.RetrieveAPIView):
 
 
 # Profile End
-
 
 # Brand Start
 class BrandListAPIView(generics.ListCreateAPIView):
@@ -371,7 +388,8 @@ class UpdateMerchantStatusAPIView(APIView):
                                            "merchant"}, status=status.HTTP_400_BAD_REQUEST)
 
             if not (fep_type == "flat" or fep_type == "rate"):
-                return Response({"detail": "FEP TYPE can either be 'rate' or 'flat'"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": "FEP TYPE can either be 'rate' or 'flat'"},
+                                status=status.HTTP_400_BAD_REQUEST)
 
             seller.biller_code = biller_code
             seller.feel = feel
@@ -636,7 +654,8 @@ class OrdersView(generics.ListAPIView):
                 if not Order.objects.filter(id=order_id, payment_status="success").exists():
                     return OrderProduct.objects.filter(payment_status="success").order_by('-created_on')
                 order = get_object_or_404(Order, id=order_id)
-                return OrderProduct.objects.filter(order=order, order__payment_status="success").order_by('-created_on').distinct()
+                return OrderProduct.objects.filter(order=order, order__payment_status="success").order_by(
+                    '-created_on').distinct()
 
             return Order.objects.filter(payment_status="success").order_by('-created_on').distinct()
 
@@ -646,7 +665,8 @@ class OrdersView(generics.ListAPIView):
 
             date_from = self.request.GET.get('date_from', '')
             date_to = self.request.GET.get('date_to', '')
-            return Order.objects.filter(created_on__range=[date_from, date_to], payment_status="success").order_by('-created_on').distinct()
+            return Order.objects.filter(created_on__range=[date_from, date_to], payment_status="success").order_by(
+                '-created_on').distinct()
 
         else:
             return Order.objects.filter(orderproduct__status=param).order_by('-created_on').distinct()
@@ -671,6 +691,3 @@ class OrderDetailView(generics.RetrieveAPIView):
         # Send email to seller
 
         return Response({"detail": "Order updated successfully"})
-
-
-

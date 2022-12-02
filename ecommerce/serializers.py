@@ -69,6 +69,7 @@ class ProductSerializer(serializers.ModelSerializer):
     product_detail = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     similar = serializers.SerializerMethodField()
+    merchant_id = serializers.CharField(source="store.seller.merchant_id")
 
     def get_similar(self, obj):
         product = Product.objects.filter(

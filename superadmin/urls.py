@@ -38,7 +38,8 @@ urlpatterns = [
     path("transaction/<int:id>/", views.AdminTransactionRetrieveAPIView.as_view(), name="transaction-detail"),
 
     # Customers
-    path("customer/", views.AdminTransactionListAPIView.as_view(), name="transactions"),
+    path("customer/", views.ProfileListAPIView.as_view(), name="customer"),
+    path("customer/<int:id>/", views.ProfileDetailRetrieveAPIView.as_view(), name="customer-detail"),
 
     # Orders
     path('orders/', views.OrdersView.as_view(), name="orders"),

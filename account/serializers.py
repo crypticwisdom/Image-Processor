@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ecommerce.models import Cart
+from ecommerce.models import Cart, OrderProduct
 from merchant.models import Seller
 from store.serializers import CartSerializer
 from .models import Profile, Address
@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'phone_number']
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'date_joined']
 
 
 class CustomerAddressSerializer(serializers.ModelSerializer):
@@ -33,6 +33,10 @@ class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     is_merchant = serializers.SerializerMethodField()
     cart = serializers.SerializerMethodField()
+    total_purchase_count = serializers.SerializerMethodField()
+
+    def get_total_purchase_count(self, obj):
+        return OrderProduct.objects.filter(order__customer=obj, order__payment_status="success").count()
 
     def get_cart(self, obj):
         request = self.context.get("request")
@@ -59,4 +63,4 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet', 'is_merchant', 'cart']
+        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet', 'is_merchant', 'cart', 'total_purchase_count']
