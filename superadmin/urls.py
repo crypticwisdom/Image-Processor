@@ -28,6 +28,7 @@ urlpatterns = [
     path("login/", views.AdminSignInAPIView.as_view(), name="admin-login"),
     path("admins/", views.AdminUserListCreateAPIView.as_view(), name="admin-user"),
     path("admins/<int:id>/", views.AdminUserRetrieveUpdateAPIView.as_view(), name="admin-user-detail"),
+    path("roles/", views.AdminRoleListAPIView.as_view(), name="list-role"),
 
     # Banner/Promo
     path("banner-promo/", views.AdminBannerView.as_view(), name="banner"),

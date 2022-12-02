@@ -29,8 +29,8 @@ from module.apis import u_map_registration
 from store.models import Store
 from store.serializers import ProductCategorySerializer
 from superadmin.exceptions import raise_serializer_error_msg
-from superadmin.models import AdminUser
-from superadmin.serializers import AdminUserSerializer, CreateAdminUserSerializerIn, BannerSerializer
+from superadmin.models import AdminUser, Role
+from superadmin.serializers import AdminUserSerializer, CreateAdminUserSerializerIn, BannerSerializer, RoleSerializerOut
 from superadmin.utils import create_or_update_category, check_permission, perform_banner_filter, \
     create_or_edit_banner_obj
 from transaction.models import Transaction
@@ -691,3 +691,12 @@ class OrderDetailView(generics.RetrieveAPIView):
         # Send email to seller
 
         return Response({"detail": "Order updated successfully"})
+
+
+class AdminRoleListAPIView(generics.ListAPIView):
+    permission_classes = [IsSuperAdmin]
+    queryset = Role.objects.all().order_by("-created_on")
+    serializer_class = RoleSerializerOut
+
+
+

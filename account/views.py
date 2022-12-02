@@ -33,8 +33,8 @@ class LoginView(APIView):
             password, user = request.data.get('password', None), None
             cart_uid = request.data.get("cart_uid", None)
 
-            # if AdminUser.objects.filter(user__email=email).exists():
-            #     return Response({"detail": "Invalid customer credential"}, status=status.HTTP_400_BAD_REQUEST)
+            if AdminUser.objects.filter(user__email=email).exists():
+                return Response({"detail": "Invalid customer credential"}, status=status.HTTP_400_BAD_REQUEST)
 
             if email is None:
                 return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
