@@ -169,10 +169,10 @@ class ProductListAPIView(generics.ListAPIView):
     def get_queryset(self):
         prod_status = self.request.GET.get("status")
         queryset = Product.objects.all().order_by("-id")
-        if status:
+        if prod_status:
             queryset = Product.objects.filter(status=prod_status).order_by("-id")
+        print(queryset)
         return queryset
-
 
 # Product End
 
