@@ -38,4 +38,7 @@ urlpatterns = [
     # Product Review
     path("review/", views.ProductReviewAPIView.as_view(), name="review"),
 
+    # Name Enquiry
+    path("name-enquiry/", views.NameEnquiryAPIView.as_view(), name="name-enquiry"),
+
 ]

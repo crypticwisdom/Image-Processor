@@ -40,8 +40,8 @@ def get_bank_codes(token):
 
 def call_name_enquiry(bank_code: str, account_number: str):
     try:
-        response = requests.get(url=f'{settings.NAME_ENQUIRY}/214/1774691015')
-        # response = requests.get(url=f'{settings.NAME_ENQUIRY}/{bank_code}/{account_number}')
+        # response = requests.get(url=f'{settings.NAME_ENQUIRY}/214/1774691015')
+        response = requests.get(url=f'{settings.NAME_ENQUIRY}/{bank_code}/{account_number}')
         if response.status_code != 200:
             return False, "Error while requesting for name enquiry"
 

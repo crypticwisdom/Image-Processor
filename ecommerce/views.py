@@ -15,6 +15,7 @@ from account.models import Profile, Address
 from account.serializers import ProfileSerializer
 from account.utils import get_wallet_info
 from merchant.merchant_email import merchant_order_placement_email
+from module.apis import call_name_enquiry
 from store.serializers import CartSerializer
 from superadmin.exceptions import raise_serializer_error_msg
 from transaction.models import Transaction
@@ -514,5 +515,12 @@ class ProductReviewAPIView(APIView, CustomPagination):
         return Response({"detail": "Review added successfully", "data": result})
 
 
+class NameEnquiryAPIView(APIView):
+    permission_classes = []
 
+    def get(self, request):
+        bank_code = request.GET.get("bank_code")
+        account_no = request.GET.get("account_no")
+        success, response = call_name_enquiry(bank_code, account_no)
+        return Response({"success": success, "data": response})
 
