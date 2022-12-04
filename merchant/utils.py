@@ -123,8 +123,9 @@ def update_product(request, product):
     data = request.data
     if 'name' in data:
         product.name = data.get('name', '')
-    # if 'status' in data:
-    #     product.status = data.get('status', '')
+    if 'status' in data:
+        if request.user.is_staff:
+            product.status = data.get('status', '')
     if 'category_id' in data:
         category_id = data.get('category_id', '')
         category = ProductCategory.objects.get(pk=category_id)
