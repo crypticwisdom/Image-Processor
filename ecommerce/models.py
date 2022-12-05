@@ -74,6 +74,7 @@ class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.TextField(blank=True, null=True)
     status = models.CharField(choices=product_status_choices, max_length=10, default='pending')
+    decline_reason = models.CharField(max_length=200, blank=True, null=True)
 
     # Recommended Product: should be updated to 'True' once the merchant makes' payment.
     is_featured = models.BooleanField(default=False)

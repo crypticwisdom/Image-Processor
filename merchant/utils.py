@@ -126,6 +126,8 @@ def update_product(request, product):
     if 'status' in data:
         if request.user.is_staff:
             product.status = data.get('status', '')
+            if data.get('status', '') == "declined":
+                product.decline_reason = data.get('declined_reason', '')
     if 'category_id' in data:
         category_id = data.get('category_id', '')
         category = ProductCategory.objects.get(pk=category_id)
