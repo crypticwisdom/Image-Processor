@@ -69,17 +69,18 @@ def create_or_update_cart_product(variant, cart):
             product_detail = get_object_or_404(ProductDetail.objects.select_for_update(), id=variation_id)
 
         # try:
-        if product_detail.stock <= 0:
-            return False, f"Selected product: ({product_detail.product.name}) is out of stock"
+        if quantity > 0:
+            if product_detail.stock <= 0:
+                return False, f"Selected product: ({product_detail.product.name}) is out of stock"
 
-        if product_detail.stock < quantity:
-            return False, f"Selected product: ({product_detail.product.name}) is quantity"
+            if product_detail.stock < quantity:
+                return False, f"Selected product: ({product_detail.product.name}) is quantity"
 
-        if product_detail.product.status != "active":
-            return False, f"Selected product: ({product_detail.product.name}) is not available"
+            if product_detail.product.status != "active":
+                return False, f"Selected product: ({product_detail.product.name}) is not available"
 
-        if product_detail.product.store.is_active is False:
-            return False, f"Selected product: ({product_detail.product.name}) is not available"
+            if product_detail.product.store.is_active is False:
+                return False, f"Selected product: ({product_detail.product.name}) is not available"
 
         # Create Cart Product
         # print(cart)
