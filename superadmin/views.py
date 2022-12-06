@@ -580,7 +580,6 @@ class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
 class AdminTransactionListAPIView(generics.ListAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = TransactionSerializer
-    queryset = Transaction.objects.all().order_by("-id")
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     search_fields = [
@@ -589,6 +588,15 @@ class AdminTransactionListAPIView(generics.ListAPIView):
         "order__orderproduct__product_detail__product__store__name", "order__orderproduct__waybill_no",
         "order__customer__user__first_name", "order__customer__user__last_name"
     ]
+
+    def get_queryset(self):
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
+
+        queryset = Transaction.objects.all().order_by("-id")
+        if date_from and date_to:
+            queryset = Transaction.objects.filter(created_on__range=[date_from, date_to])
+        return queryset
 
 
 class AdminTransactionRetrieveAPIView(generics.RetrieveAPIView):
