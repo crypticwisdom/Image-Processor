@@ -163,13 +163,10 @@ def top_monthly_categories(request):
     top_categories = []
     today_date = timezone.now()
     month_start, month_end = get_month_start_and_end_datetime(today_date)
-    # queryset = Product.objects.filter(
-    #     created_on__gte=month_start, created_on__lte=month_end, status='active', store__is_active=True
-    # ).order_by("-sale_count").values("category__id", "category__name").annotate(Sum("sale_count")).order_by(
-    #     "-sale_count__sum")[:7]
-    queryset = Product.objects.filter(status="active").values("category__id", "category__name", "category__image").annotate(Sum("sale_count")).order_by(
+    queryset = Product.objects.filter(
+        created_on__gte=month_start, created_on__lte=month_end, status='active', store__is_active=True
+    ).order_by("-sale_count").values("category__id", "category__name", "category__image").annotate(Sum("sale_count")).order_by(
         "-sale_count__sum")[:7]
-    print(queryset)
     for product in queryset:
         category = dict()
         category['id'] = product['category__id']
