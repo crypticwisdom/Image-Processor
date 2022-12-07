@@ -119,7 +119,7 @@ class DashboardAPIView(APIView):
         data["last_purchases"] = last_purchased
         data["best_selling_products"] = best_selling
         data["most_viewed_products"] = most_viewed
-        data["top_categories_for_the_month"] = top_monthly_categories()
+        data["top_categories_for_the_month"] = top_monthly_categories(request)
         data["total_merchant"] = Seller.objects.all().count()
         data["total_customer"] = Profile.objects.all().count()
         data["total_product"] = Product.objects.all().count()

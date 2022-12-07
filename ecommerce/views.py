@@ -69,7 +69,7 @@ class MallLandPageView(APIView):
             response_container["top_selling"] = top_products
 
             # (4) Top categories of the month
-            top_monthly_cat = top_monthly_categories()
+            top_monthly_cat = top_monthly_categories(request)
             response_container["top_monthly_categories"] = top_monthly_cat
 
             # (5) Recommended Products
