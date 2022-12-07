@@ -126,8 +126,14 @@ def update_product(request, product):
     if 'status' in data:
         if request.user.is_staff:
             product.status = data.get('status', '')
-            if data.get('status', '') == "declined":
+            if data.get('status') == "declined":
                 product.decline_reason = data.get('declined_reason', '')
+            if data.get('status') == "approve":
+                product.approved_by = request.user
+                product.status = "active"
+                product.published_on = datetime.datetime.now()
+            if data.get('status') == "checked":
+                product.checked_by = request.user
     if 'category_id' in data:
         category_id = data.get('category_id', '')
         category = ProductCategory.objects.get(pk=category_id)
@@ -498,6 +504,12 @@ def update_seller(request, seller_id):
         bank_account_name: str = request.data.get("bank_account_name")
         bank_account_name = bank_account_name.strip()
 
+        status: str = request.data.get("status")
+
+        if status == "checked":
+            seller.status = status
+            seller.checked_by = request.user
+
         seller.address = business_address
         seller.town = business_town
         seller.town_id = town_id
@@ -584,7 +596,7 @@ def update_seller(request, seller_id):
                     seller_detail.director = direct
             seller_detail.save()
 
-            return True, f"Created {store.name}"
+            return True, f"Updated {store.name}"
 
         else:
             return False, "Invalid Business Type"

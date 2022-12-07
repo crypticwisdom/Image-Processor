@@ -86,6 +86,8 @@ class Product(models.Model):
     sale_count = models.IntegerField(default=0)
 
     published_on = models.DateTimeField(blank=True, null=True)
+    checked_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name="product_checked_by")
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name="product_approved_by")
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 

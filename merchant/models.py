@@ -55,6 +55,8 @@ class Seller(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     profile_picture = models.ImageField(null=True, blank=True, upload_to='seller-profile-picture')
     status = models.CharField(max_length=20, choices=seller_status_choices, default='pending', null=True, blank=True)
+    checked_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name="checked_by")
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name="approved_by")
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 

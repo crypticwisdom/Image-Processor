@@ -395,6 +395,7 @@ class UpdateMerchantStatusAPIView(APIView):
             seller.feel = feel
             seller.fep_type = fep_type
             seller.merchant_id = merchant_id
+            seller.approved_by = request.user
 
             store_name = Store.objects.filter(seller=seller).last().name
             bank_account = BankAccount.objects.filter(seller=seller).last()

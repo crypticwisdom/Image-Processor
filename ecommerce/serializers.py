@@ -70,6 +70,18 @@ class ProductSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
     similar = serializers.SerializerMethodField()
     merchant_id = serializers.CharField(source="store.seller.merchant_id")
+    checked_by = serializers.SerializerMethodField()
+    approved_by = serializers.SerializerMethodField()
+
+    def get_checked_by(self, obj):
+        if obj.checked_by:
+            return obj.checked_by.email
+        return None
+
+    def get_approved_by(self, obj):
+        if obj.approved_by:
+            return obj.approved_by.email
+        return None
 
     def get_similar(self, obj):
         product = Product.objects.filter(

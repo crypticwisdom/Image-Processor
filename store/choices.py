@@ -1,6 +1,6 @@
 product_status_choices = (
     ('active', 'Active'), ('inactive', 'Inactive'), ('pending', 'Pending'), ('declined', 'Declined'),
-    ('checked', 'Checked')
+    ('checked', 'Checked'), ('approve', 'Approve')
 )
 
 cart_status_choices = (

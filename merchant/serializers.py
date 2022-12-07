@@ -3,7 +3,7 @@ import json
 from rest_framework import serializers
 from ecommerce.models import ProductDetail, OrderProduct, Order, ReturnedProduct, ReturnProductImage
 from ecommerce.serializers import ReturnReasonSerializer, ReturnProductImageSerializer
-from .models import Seller, SellerDetail, SellerFile, MerchantBanner
+from .models import Seller, SellerDetail, SellerFile, MerchantBanner, BankAccount
 from store.models import Store
 
 
@@ -27,6 +27,30 @@ class SellerSerializer(serializers.ModelSerializer):
     detail = serializers.SerializerMethodField()
     file = serializers.SerializerMethodField()
     store = serializers.SerializerMethodField()
+    bank_details = serializers.SerializerMethodField()
+    checked_by = serializers.SerializerMethodField()
+    approved_by = serializers.SerializerMethodField()
+
+    def get_checked_by(self, obj):
+        if obj.checked_by:
+            return obj.checked_by.email
+        return None
+
+    def get_approved_by(self, obj):
+        if obj.approved_by:
+            return obj.approved_by.email
+        return None
+
+    def get_bank_details(self, obj):
+        bank_detail = None
+        if BankAccount.objects.filter(seller=obj).exists():
+            bank = BankAccount.objects.filter(seller=obj).last()
+            bank_detail = dict()
+            bank_detail["code"] = bank.bank_code
+            bank_detail["bank_name"] = bank.bank_name
+            bank_detail["account_name"] = bank.account_name
+            bank_detail["account_no"] = bank.account_number
+        return bank_detail
 
     def get_detail(self, obj):
         data = None
@@ -54,7 +78,7 @@ class SellerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Seller
-        exclude = []
+        exclude = ["user"]
 
 
 class MerchantProductDetailsSerializer(serializers.ModelSerializer):
