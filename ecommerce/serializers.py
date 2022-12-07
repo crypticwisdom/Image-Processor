@@ -372,3 +372,18 @@ class ProductReviewSerializerIn(serializers.Serializer):
         data = ProductReviewSerializerOut(review).data
         return data
 
+
+# Mobile APP
+class MobileCategorySerializer(serializers.ModelSerializer):
+    products = serializers.SerializerMethodField()
+
+    def get_products(self, obj):
+        request = self.context.get("request")
+        if Product.objects.filter(category=obj).exists():
+            return ProductSerializer(Product.objects.filter(category=obj, status="active"), many=True, context={"request": request}).data
+
+    class Meta:
+        model = ProductCategory
+        exclude = []
+
+

@@ -41,4 +41,10 @@ urlpatterns = [
     # Name Enquiry
     path("name-enquiry/", views.NameEnquiryAPIView.as_view(), name="name-enquiry"),
 
+    # Mobile APP
+    path("mobile/category/", views.MobileCategoryListAPIView.as_view(), name="mobile-category"),
+    path("mobile/category/<int:id>/", views.MobileCategoryDetailRetrieveAPIView.as_view(), name="mobile-category-detail"),
+    path("mobile/store", views.MobileStoreListAPIView.as_view(), name="mobile-store"),
+    path("mobile/store/<int:id>/", views.MobileStoreDetailRetrieveAPIView.as_view(), name="mobile-store-detail"),
+
 ]

@@ -1,3 +1,4 @@
+import datetime
 from threading import Thread
 
 from django.db import transaction
@@ -14,15 +15,17 @@ from django.utils import timezone
 from account.models import Profile, Address
 from account.serializers import ProfileSerializer
 from account.utils import get_wallet_info
+from home.utils import get_previous_date
 from merchant.merchant_email import merchant_order_placement_email
 from module.apis import call_name_enquiry
-from store.serializers import CartSerializer
+from store.models import Store
+from store.serializers import CartSerializer, StoreSerializer
 from superadmin.exceptions import raise_serializer_error_msg
 from transaction.models import Transaction
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
     CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer, \
-    ProductReviewSerializerOut, ProductReviewSerializerIn
+    ProductReviewSerializerOut, ProductReviewSerializerIn, MobileCategorySerializer
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
     OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview
@@ -523,4 +526,67 @@ class NameEnquiryAPIView(APIView):
         account_no = request.GET.get("account_no")
         success, response = call_name_enquiry(bank_code, account_no)
         return Response({"success": success, "data": response})
+
+
+# Mobile APP
+class MobileCategoryListAPIView(generics.ListAPIView):
+    permission_classes = []
+    pagination_class = CustomPagination
+    queryset = ProductCategory.objects.filter(parent__isnull=True).order_by("-id")
+    serializer_class = MobileCategorySerializer
+
+
+class MobileCategoryDetailRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = []
+    serializer_class = MobileCategorySerializer
+    queryset = ProductCategory.objects.filter(parent__isnull=True).order_by("-id")
+    lookup_field = "id"
+
+
+class MobileStoreListAPIView(generics.ListAPIView):
+    permission_classes = []
+    pagination_class = CustomPagination
+    serializer_class = StoreSerializer
+
+    def get_queryset(self):
+        query = self.request.GET.get("query")
+        queryset = Store.objects.filter(is_active=True, seller__status="active").order_by("-id")
+        if query == "on_sale":
+            queryset = Store.objects.filter(is_active=True, seller__status="active", on_sale=True)
+        if query == "latest":
+            today = datetime.datetime.now()
+            last_7_days = get_previous_date(date=datetime.datetime.now(), delta=7)
+            queryset = Store.objects.filter(is_active=True, seller__status="active", created_on__range=[last_7_days, today])
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        response = super(MobileStoreListAPIView, self).list(request, args, kwargs)
+        today = datetime.datetime.now()
+        last_7_days = get_previous_date(date=datetime.datetime.now(), delta=7)
+        on_sales = [{
+            "id": store.id,
+            "name": store.name,
+            "logo": request.build_absolute_uri(store.logo.url),
+            "description": store.description
+        } for store in Store.objects.filter(is_active=True, seller__status="active", on_sale=True)[:5]]
+
+        latest_store = [{
+            "id": store.id,
+            "name": store.name,
+            "logo": store.logo.url,
+            "description": store.description
+        } for store in Store.objects.filter(is_active=True, seller__status="active", created_on__range=[last_7_days, today])[:5]]
+        response.data["new_stores"] = latest_store
+        response.data["on_sales"] = on_sales
+        return response
+
+
+class MobileStoreDetailRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = []
+    serializer_class = StoreSerializer
+    queryset = Store.objects.filter(is_active=True, seller__status="active")
+    lookup_field = "id"
+
+
+
 
