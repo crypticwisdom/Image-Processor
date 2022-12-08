@@ -113,7 +113,10 @@ class DashboardAPIView(APIView):
             prod = dict()
             prod["product_id"] = product.id
             prod["product_name"] = product.name
-            prod["image"] = request.build_absolute_uri(product.image.image.url)
+            if product.image:
+                prod["image"] = request.build_absolute_uri(product.image.image.url)
+            else:
+                prod["image"] = None
             prod["store_name"] = product.store.name
             prod["category_name"] = product.category.name
             prod["view_count"] = product.view_count
