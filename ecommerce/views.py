@@ -292,18 +292,18 @@ class ProductCheckoutView(APIView):
 
     def get(self, request):
         address_id = request.GET.get("address_id")
-        # try:
-        # Get customer profile
-        customer, created = Profile.objects.get_or_create(user=request.user)
-        # Validate product in cart
-        validate = validate_product_in_cart(customer)
-        if validate:
-            return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
-        # Call shipping API to get rate
-        shipping_rate = get_shipping_rate(customer, address_id)
-        return Response(shipping_rate)
-        # except Exception as err:
-        #     return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            # Get customer profile
+            customer, created = Profile.objects.get_or_create(user=request.user)
+            # Validate product in cart
+            validate = validate_product_in_cart(customer)
+            if validate:
+                return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
+            # Call shipping API to get rate
+            shipping_rate = get_shipping_rate(customer, address_id)
+            return Response(shipping_rate)
+        except Exception as err:
+            return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
 

@@ -289,7 +289,7 @@ def get_shipping_rate(customer, address_id=None):
     return shippers_list
 
 
-def order_payment(payment_method, order, pin):
+def order_payment(payment_method, order, pin=None):
     from account.utils import get_wallet_info
 
     # create Transaction
@@ -318,7 +318,7 @@ def order_payment(payment_method, order, pin):
         # Charge wallet
         response = BillingService.charge_customer(
             payment_type="wallet", customer_id=decrypted_billing_id, narration=f"Payment for OrderID: {order.id}",
-            pin=pin
+            pin=pin, amount=amount
         )
         if "status" in response and response["status"] != "Successful":
             return False, response["status"]
@@ -337,7 +337,7 @@ def order_payment(payment_method, order, pin):
         # call billing service to get payment link
         response = BillingService.charge_customer(
             payment_type=payment_method, customer_id=decrypted_billing_id, narration=f"Payment for OrderID: {order.id}",
-            pin=pin
+            pin=pin, amount=amount
         )
         if "status" in response:
 
