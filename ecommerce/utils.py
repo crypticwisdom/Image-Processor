@@ -154,7 +154,7 @@ def top_weekly_products(request):
         product_detail = ProductDetail.objects.filter(product=product).last()
         top_products.append(
             {"id": product.id, "name": product.name, "image": request.build_absolute_uri(product.image.image.url),
-             "rating": review,
+             "rating": review, "product_detail_id": product_detail.id, "store_name": product.store.name,
              "price": product_detail.price, "discount": product_detail.discount, "featured": product.is_featured})
     return top_products
 
