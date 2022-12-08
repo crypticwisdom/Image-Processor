@@ -172,7 +172,8 @@ def top_monthly_categories(request):
         category['id'] = product['category__id']
         category['name'] = product['category__name']
         category['total_sold'] = product['sale_count__sum']
-        category['image'] = request.build_absolute_uri(product['category__image'])
+        category['image'] = f"{request.scheme}://{request.get_host()}/media/{product['category__image']}"
+        # category['image'] = request.build_absolute_uri(product['category__image'])
         top_categories.append(category)
     return top_categories
 
