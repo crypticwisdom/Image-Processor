@@ -302,6 +302,7 @@ def order_payment(payment_method, order, pin=None):
     trans, created = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
     customer = order.customer
     decrypted_billing_id = decrypt_text(customer.billing_id)
+    redirect_url = settings.FRONTEND_PAYMENT_REDIRECT_URL
 
     if payment_method == "wallet":
         if not pin:
@@ -318,7 +319,7 @@ def order_payment(payment_method, order, pin=None):
         # Charge wallet
         response = BillingService.charge_customer(
             payment_type="wallet", customer_id=decrypted_billing_id, narration=f"Payment for OrderID: {order.id}",
-            pin=pin, amount=amount
+            pin=pin, amount=str(amount)
         )
         if "status" in response and response["status"] != "Successful":
             return False, response["status"]
@@ -337,7 +338,7 @@ def order_payment(payment_method, order, pin=None):
         # call billing service to get payment link
         response = BillingService.charge_customer(
             payment_type=payment_method, customer_id=decrypted_billing_id, narration=f"Payment for OrderID: {order.id}",
-            pin=pin, amount=amount
+            pin=pin, amount=str(amount), callback_url=redirect_url
         )
         if "status" in response:
 
