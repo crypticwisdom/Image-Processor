@@ -655,7 +655,7 @@ def get_sales_data(store):
     return sales
 
 
-def get_best_sellers_data(store):
+def get_best_sellers_data(store, request):
     best_sellers = []
     query_set = OrderProduct.objects.filter(product_detail__product__store=store, order__payment_status="success"
                                             ).values('product_detail__id').annotate(Sum('quantity')).order_by(
@@ -666,7 +666,10 @@ def get_best_sellers_data(store):
         product['id'] = product_variant.product.id
         product['sku'] = product_variant.sku
         product['name'] = product_variant.product.name
-        product['image'] = product_variant.product.image.image.url
+        if product_variant.product.image:
+            product['image'] = request.build_absolute_uri(product_variant.product.image.image.url)
+        else:
+            product['image'] = None
         product['price'] = product_variant.price
         product['units'] = data['quantity__sum']
         best_sellers.append(product)
@@ -725,7 +728,7 @@ def get_dashboard_data(store, request):
     data['sales'] = get_sales_data(store)
     data['low_in_stock'] = get_low_in_stock(store, request)
     data['out_of_stock'] = out_of_stock(store, request)
-    data['best_sellers'] = get_best_sellers_data(store)
+    data['best_sellers'] = get_best_sellers_data(store, request)
     data['sales_analytics'] = ""
     data['transactions'] = "Still pending ... [Transaction has no relation to merchant.]"
     # data['top_categories'] = get_top_categories_data(store)
