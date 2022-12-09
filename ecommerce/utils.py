@@ -74,7 +74,7 @@ def create_or_update_cart_product(variant, cart):
                 return False, f"Selected product: ({product_detail.product.name}) is out of stock"
 
             if product_detail.stock < quantity:
-                return False, f"Selected product: ({product_detail.product.name}) is quantity"
+                return False, f"Selected product: ({product_detail.product.name}) quantity cannot be greater than available"
 
             if product_detail.product.status != "active":
                 return False, f"Selected product: ({product_detail.product.name}) is not available"
@@ -301,7 +301,7 @@ def order_payment(payment_method, order, pin=None):
     amount = product_amount + delivery_amount
     trans, created = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
     customer = order.customer
-    decrypted_billing_id = decrypt_text(customer.billing_id)
+    email = customer.user.email
     redirect_url = settings.FRONTEND_PAYMENT_REDIRECT_URL
 
     if payment_method == "wallet":
@@ -318,7 +318,7 @@ def order_payment(payment_method, order, pin=None):
 
         # Charge wallet
         response = BillingService.charge_customer(
-            payment_type="wallet", customer_id=decrypted_billing_id, narration=f"Payment for OrderID: {order.id}",
+            payment_type="wallet", customer_id=email, narration=f"Payment for OrderID: {order.id}",
             pin=pin, amount=str(amount)
         )
         if "status" in response and response["status"] != "Successful":
@@ -337,7 +337,7 @@ def order_payment(payment_method, order, pin=None):
     if payment_method == "card" or payment_method == "pay_attitude":
         # call billing service to get payment link
         response = BillingService.charge_customer(
-            payment_type=payment_method, customer_id=decrypted_billing_id, narration=f"Payment for OrderID: {order.id}",
+            payment_type=payment_method, customer_id=email, narration=f"Payment for OrderID: {order.id}",
             pin=pin, amount=str(amount), callback_url=redirect_url
         )
         if "status" in response:

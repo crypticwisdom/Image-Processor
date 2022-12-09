@@ -280,26 +280,21 @@ def fund_customer_wallet(request, reference):
 
 
 def confirm_or_create_billing_account(profile, email, password):
-    if profile.billing_verified is False:
-        # Validate customer
-        response = BillingService.validate_customer(email)
-        if "error" in response:
-            # Register Customer on billing service
-            f_name = profile.user.first_name
-            l_name = profile.user.last_name
-            phone = profile.phone_number
 
-            result = BillingService.register_customer(first_name=f_name, last_name=l_name, email=email, phone_no=phone, password=password)
-            billing = result[0]
-            billing_id = billing["uuid"]
-            encrypted_billing_id = encrypt_text(billing_id)
-            # Save encrypted billing ID
-            profile.billing_verified = True
-            profile.billing_id = encrypted_billing_id
-            profile.save()
+    # Validate customer
+    response = BillingService.validate_customer(email)
+    if "error" in response:
+        # Register Customer on billing service
+        f_name = profile.user.first_name
+        l_name = profile.user.last_name
+        phone = profile.phone_number
 
-            return True
+        result = BillingService.register_customer(
+            first_name=f_name, last_name=l_name, email=email, phone_no=phone, password=password
+        )
+        log_request(f"Billing account created for {f_name} {l_name}", f"response: {result}")
         return True
+    return True
 
 
 

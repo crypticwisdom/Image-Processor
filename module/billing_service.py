@@ -71,7 +71,7 @@ class BillingService:
         data = dict()
         data["paymentProvider"] = "Unified Payment"
         data["paymentType"] = payment_type
-        data["customerId"] = kwargs.get("customer_id")  # Customer Billing_ID
+        data["customerId"] = kwargs.get("customer_id")  # Customer email
         data["currency"] = 566
         data["description"] = kwargs.get("narration")
         data["amount"] = kwargs.get("amount")
