@@ -75,7 +75,7 @@ class BillingService:
         data["currency"] = 566
         data["description"] = kwargs.get("narration")
         data["amount"] = kwargs.get("amount")
-        data["url"] = kwargs.get("callback_url")
+        data["returnUrl"] = kwargs.get("callback_url")
         data["pin"] = kwargs.get("pin")
         data["fee"] = 0
 
