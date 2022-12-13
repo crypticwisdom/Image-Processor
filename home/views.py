@@ -1,3 +1,4 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -5,6 +6,9 @@ from rest_framework import status
 
 from account.models import Profile
 from merchant.utils import get_all_banks
+
+from django.conf import settings
+frontend_base_url = settings.FRONTEND_URL
 
 
 class HomeView(APIView):
@@ -22,4 +26,13 @@ class ListAllBanksAPIView(APIView):
         if success is False:
             return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
         return Response(detail)
+
+
+class PaymentVerifyAPIView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        status = ""
+        return HttpResponseRedirect(redirect_to=f"{frontend_base_url}/verify-checkout?status={status}")
+
 

@@ -202,8 +202,7 @@ def validate_product_in_cart(customer):
 
 
 def get_shipping_rate(customer, address_id=None):
-    # response = dict()
-    shippers_list = list()
+    response = list()
     sellers_products = list()
 
     if Address.objects.filter(id=address_id, customer=customer).exists():
@@ -219,74 +218,94 @@ def get_shipping_rate(customer, address_id=None):
     cart_products = CartProduct.objects.filter(cart=cart)
 
     # Get each seller in cart
-    # sellers_in_cart = list()
-    # for product in cart_products:
-    #     seller = product.product_detail.product.store.seller
-    #     sellers_in_cart.append(seller)
-
+    sellers_in_cart = list()
     for product in cart_products:
-        products_for_seller = {
-            'seller': product.product_detail.product.store.seller,
-            'seller_id': product.product_detail.product.store.seller_id,
-            'products': [
-                {
-                    'cart_product_id': product.id,
-                    'quantity': product.quantity,
-                    'weight': product.product_detail.weight,
-                    'price': product.product_detail.price,
-                    'product': product.product_detail.product,
-                    'detail': product.product_detail.product.description,
-                }
-            ],
-        }
-        if products_for_seller not in sellers_products:
-            sellers_products.append(products_for_seller)
+        seller = product.product_detail.product.store.seller
+        sellers_in_cart.append(seller)
 
-    # Get products belonging to each seller
-    # for seller in sellers_in_cart:
+    # for product in cart_products:
     #     products_for_seller = {
-    #         'seller': seller,
-    #         'seller_id': seller.id,
+    #         'seller': product.product_detail.product.store.seller,
+    #         'seller_id': product.product_detail.product.store.seller_id,
     #         'products': [
     #             {
-    #                 'cart_product_id': cart_product.id,
-    #                 'quantity': cart_product.quantity,
-    #                 'weight': cart_product.product_detail.weight,
-    #                 'price': cart_product.product_detail.price,
-    #                 'product': cart_product.product_detail.product,
-    #                 'detail': cart_product.product_detail.description,
+    #                 'cart_product_id': product.id,
+    #                 'quantity': product.quantity,
+    #                 'weight': product.product_detail.weight,
+    #                 'price': product.product_detail.price,
+    #                 'product': product.product_detail.product,
+    #                 'detail': product.product_detail.product.description,
     #             }
-    #             for cart_product in cart_products.distinct()
-    #             if cart_product.product_detail.product.store.seller == seller
     #         ],
     #     }
     #     if products_for_seller not in sellers_products:
     #         sellers_products.append(products_for_seller)
+    #
+    # Get products belonging to each seller
+    for seller in sellers_in_cart:
+        products_for_seller = {
+            'seller': seller,
+            'seller_id': seller.id,
+            'products': [
+                {
+                    'merchant_id': cart_product.product_detail.product.store.seller.id,
+                    'quantity': cart_product.quantity,
+                    'weight': cart_product.product_detail.weight,
+                    'price': cart_product.product_detail.price,
+                    'product': cart_product.product_detail.product,
+                    'detail': cart_product.product_detail.product.description,
+                }
+                for cart_product in cart_products.distinct()
+                if cart_product.product_detail.product.store.seller == seller
+            ],
+        }
+        if products_for_seller not in sellers_products:
+            sellers_products.append(products_for_seller)
 
     # Call shipping API
     rating = ShippingService.rating(
         sellers=sellers_products, customer=customer, customer_address=address
     )
 
-    for rate in rating:
-        shipper = dict()
-        shipper["name"] = rate["ShipperName"]
-        detail_list = list()
-        quote_list = rate["QuoteList"]
-        for item in quote_list:
-            detail = dict()
-            detail["cart_product_id"] = item["Id"]
-            detail["company_id"] = item["CompanyID"]
-            detail["shipping_fee"] = item["Total"]
-            detail_list.append(detail)
-        # shipper["shipping_fee"] = decimal.Decimal(rate["TotalPrice"])
-        shipper["shipping_information"] = detail_list
-        shippers_list.append(shipper)
+    print(rating)
 
-    # sub_total = cart_products.aggregate(Sum("price"))["price__sum"] or 0
-    # response["sub_total"] = sub_total
-    # response["shippers"] = shippers_list
-    return shippers_list
+    result = list()
+    # detail = dict()
+    # shipping_info = dict()
+    # shipping info will be in store_detail, store_detail will be in detail, and detail in result
+
+    for rate in rating:
+        if decimal.Decimal(rate["TotalPrice"]) > 0:
+            quote_list = rate["QuoteList"]
+            for item in quote_list:
+                if item["Id"] is not None:
+                    data = dict()
+                    from store.models import Store
+                    # store_name = Store.objects.get(seller_id=item["Id"]).name
+                    data["store_name"] = Store.objects.get(seller_id=item["Id"]).name
+                    data["shipper"] = rate["ShipperName"]
+                    data["company_id"] = item["CompanyID"]
+                    data["shipping_fee"] = item["Total"]
+                    result.append(data)
+
+    store_names = []
+    for store in result:
+        store_name = store.get('store_name')
+        if store_name not in store_names:
+            store_names.append(store_name)
+
+    # Compile results per store
+    for store in store_names:
+        shippers_list = []
+        for item in result:
+            store_name = item.get('store_name')
+            shipper = item.get('shipper')
+            shipping_fee = item.get('shipping_fee')
+            company_id = item.get('company_id')
+            if store_name == store:
+                shippers_list.append({"shipper": shipper, "shipping_fee": shipping_fee, "company_id": company_id})
+        response.append({store: shippers_list})
+    return response
 
 
 def order_payment(payment_method, order, pin=None):
@@ -302,7 +321,7 @@ def order_payment(payment_method, order, pin=None):
     trans, created = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
     customer = order.customer
     email = customer.user.email
-    redirect_url = settings.FRONTEND_PAYMENT_REDIRECT_URL
+    redirect_url = settings.FRONTEND_URL
 
     if payment_method == "wallet":
         if not pin:

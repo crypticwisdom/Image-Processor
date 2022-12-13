@@ -107,7 +107,7 @@ class ShippingService:
             for product in seller_products:
                 item = dict()
                 quantity = product.get('quantity')
-                uid = product.get('cart_product_id')
+                uid = product.get('merchant_id')
                 weight = product.get("weight")
                 price = product.get("price")
                 description = product.get("detail")
