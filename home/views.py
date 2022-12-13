@@ -31,8 +31,19 @@ class ListAllBanksAPIView(APIView):
 class PaymentVerifyAPIView(APIView):
     permission_classes = []
 
-    def get(self, request):
-        status = ""
+    def post(self, request):
+        expected_data = {
+            "amount": "20.00",
+            "description": "Funds for Dstv^WEBID38627",
+            "fee": "0.00",
+            "currency": "566",
+            "status": "DECLINED",
+            "scheme": "VISA",
+            "transactionDateTime": "12/13/2022 11:03:17 AM",
+            "statusDescription": "EXPIRED"
+        }
+        from home.utils import log_request
+        log_request(request.data)
         return HttpResponseRedirect(redirect_to=f"{frontend_base_url}/verify-checkout?status={status}")
 
 

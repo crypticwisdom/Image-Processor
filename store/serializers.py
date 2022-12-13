@@ -160,7 +160,7 @@ class CartSerializer(serializers.ModelSerializer):
     def get_cart_products(self, obj):
         request = self.context.get("request")
         if CartProduct.objects.filter(cart=obj).exists():
-            return CartProductSerializer(CartProduct.objects.filter(cart=obj),context={"request": request}, many=True).data
+            return CartProductSerializer(CartProduct.objects.filter(cart=obj), context={"request": request}, many=True).data
         return None
 
     class Meta:
