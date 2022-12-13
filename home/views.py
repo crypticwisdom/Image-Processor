@@ -39,29 +39,32 @@ class OrderPaymentVerifyAPIView(APIView):
     permission_classes = []
 
     def post(self, request):
+        log_request(request.data)
 
         trans_ref = request.data.get("transactionId")
         trans_status = request.data.get("status")
 
-        # Check if status is APPROVED, to update transaction, and order
-        trans = Transaction.objects.get(transaction_reference=trans_ref)
-        if trans_status == "APPROVED":
-            # Get transaction
-            trans.status = "success"
-            trans.order.payment_status = "success"
-            order = trans.order
-            payment_method = trans.payment_method
-            # Order Placement
-            Thread(target=update_purchase, args=[order, payment_method]).start()
+        try:
+            # Check if status is APPROVED, to update transaction, and order
+            trans = Transaction.objects.get(transaction_reference=trans_ref)
+            if trans_status == "APPROVED":
+                # Get transaction
+                trans.status = "success"
+                trans.order.payment_status = "success"
+                order = trans.order
+                payment_method = trans.payment_method
+                # Order Placement
+                Thread(target=update_purchase, args=[order, payment_method]).start()
 
-        if trans_status == "DECLINED":
-            trans.status = "failed"
-            trans.order.payment_status = "failed"
+            if trans_status == "DECLINED":
+                trans.status = "failed"
+                trans.order.payment_status = "failed"
 
-        trans.order.save()
-        trans.save()
+            trans.order.save()
+            trans.save()
+        except Exception as err:
+            log_request(f"Error occurred: {err}")
 
-        log_request(request.data)
         return HttpResponseRedirect(redirect_to=f"{frontend_base_url}/verify-checkout?status={trans_status}")
 
 
