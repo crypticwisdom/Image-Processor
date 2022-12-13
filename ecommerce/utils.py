@@ -308,7 +308,7 @@ def get_shipping_rate(customer, address_id=None):
     return response
 
 
-def order_payment(payment_method, order, pin=None):
+def order_payment(request, payment_method, order, pin=None):
     from account.utils import get_wallet_info
 
     # create Transaction
@@ -321,7 +321,7 @@ def order_payment(payment_method, order, pin=None):
     trans, created = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
     customer = order.customer
     email = customer.user.email
-    redirect_url = settings.FRONTEND_URL
+    redirect_url = f"{request.scheme}://{request.get_host()}/payment-verify"
 
     if payment_method == "wallet":
         if not pin:
@@ -352,6 +352,7 @@ def order_payment(payment_method, order, pin=None):
         order.save()
 
         update_purchase(order, payment_method)
+        return True, "Order created"
 
     if payment_method == "card" or payment_method == "pay_attitude":
         # call billing service to get payment link
@@ -362,16 +363,13 @@ def order_payment(payment_method, order, pin=None):
         if "status" in response:
 
             payment_link = response["paymentUrl"]
-            transaction_ref = response["reference"]
+            transaction_ref = response["transactionId"]
             status = str(response["status"]).lower()
 
             trans.status = status
             trans.transaction_reference = transaction_ref
             trans.transaction_detail = f"Payment for OrderID: {order.id}"
             trans.save()
-
-            # This to be removed for after testing
-            Thread(target=update_purchase, args=[order, payment_method])
 
             return True, payment_link
 

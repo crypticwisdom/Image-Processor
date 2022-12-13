@@ -348,7 +348,7 @@ class ProductCheckoutView(APIView):
             order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
 
             # PROCESS PAYMENT
-            success, detail = order_payment(payment_method, order, pin)
+            success, detail = order_payment(request, payment_method, order, pin)
             if success is False:
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
             return Response({"detail": detail})

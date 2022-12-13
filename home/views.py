@@ -1,3 +1,5 @@
+from threading import Thread
+
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, HttpResponse
 from rest_framework.views import APIView
@@ -5,9 +7,14 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from account.models import Profile
+from ecommerce.utils import update_purchase
+from home.utils import log_request
 from merchant.utils import get_all_banks
 
 from django.conf import settings
+
+from transaction.models import Transaction
+
 frontend_base_url = settings.FRONTEND_URL
 
 
@@ -28,22 +35,33 @@ class ListAllBanksAPIView(APIView):
         return Response(detail)
 
 
-class PaymentVerifyAPIView(APIView):
+class OrderPaymentVerifyAPIView(APIView):
     permission_classes = []
 
     def post(self, request):
-        expected_data = {
-            "amount": "20.00",
-            "description": "Funds for Dstv^WEBID38627",
-            "fee": "0.00",
-            "currency": "566",
-            "status": "DECLINED",
-            "scheme": "VISA",
-            "transactionDateTime": "12/13/2022 11:03:17 AM",
-            "statusDescription": "EXPIRED"
-        }
-        from home.utils import log_request
+
+        trans_ref = request.data.get("transactionId")
+        trans_status = request.data.get("status")
+
+        # Check if status is APPROVED, to update transaction, and order
+        trans = Transaction.objects.get(transaction_reference=trans_ref)
+        if trans_status == "APPROVED":
+            # Get transaction
+            trans.status = "success"
+            trans.order.payment_status = "success"
+            order = trans.order
+            payment_method = trans.payment_method
+            # Order Placement
+            Thread(target=update_purchase, args=[order, payment_method]).start()
+
+        if trans_status == "DECLINED":
+            trans.status = "failed"
+            trans.order.payment_status = "failed"
+
+        trans.order.save()
+        trans.save()
+
         log_request(request.data)
-        return HttpResponseRedirect(redirect_to=f"{frontend_base_url}/verify-checkout?status={status}")
+        return HttpResponseRedirect(redirect_to=f"{frontend_base_url}/verify-checkout?status={trans_status}")
 
 

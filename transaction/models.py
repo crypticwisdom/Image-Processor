@@ -6,7 +6,7 @@ payment_status_choices = (
     ("pending", "Pending"), ("failed", "Failed"), ("success", "Success")
 )
 payment_method_choices = (
-    ("-", "-------"), ("card", "Card"), ("wallet", "Wallet"), ("transfer", "Transfer")
+    ("-", "-------"), ("card", "Card"), ("wallet", "Wallet"), ("transfer", "Transfer"), ("pay_attitude", "Pay Attitude")
 )
 
 
