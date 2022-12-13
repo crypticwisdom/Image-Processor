@@ -136,9 +136,8 @@ class CartProductSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         image = None
         request = self.context.get("request")
-        if Product.objects.filter(productdetail=obj).exists():
-            prod = Product.objects.filter(productdetail=obj).last()
-            image = request.build_absolute_uri(prod.image.image.url)
+        if obj.product_detail.product.image:
+            image = request.build_absolute_uri(obj.product_detail.product.image.image.url)
         # if ProductImage.objects.filter(product_detail=obj.product_detail).exists():
         #     prod_image = ProductImage.objects.filter(product_detail=obj.product_detail).first()
         #     image = request.build_absolute_uri(prod_image.image.image.url)
