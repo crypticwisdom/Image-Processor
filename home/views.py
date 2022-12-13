@@ -38,11 +38,11 @@ class ListAllBanksAPIView(APIView):
 class OrderPaymentVerifyAPIView(APIView):
     permission_classes = []
 
-    def post(self, request):
+    def get(self, request):
         log_request(request.data)
 
-        trans_ref = request.data.get("transactionId")
-        trans_status = request.data.get("status")
+        trans_ref = request.GET.get("transactionId")
+        trans_status = request.GET.get("status")
 
         try:
             # Check if status is APPROVED, to update transaction, and order
