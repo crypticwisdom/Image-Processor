@@ -7,7 +7,7 @@ urlpatterns = [
     path('banks/', views.ListAllBanksAPIView.as_view(), name='banks'),
 
     # webhooks
-    path('payment-verify/', views.PaymentVerifyAPIView.as_view(), name='verify-payment'),
+    path('payment-verify', views.PaymentVerifyAPIView.as_view(), name='verify-payment'),
 
 ]
 
