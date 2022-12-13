@@ -267,8 +267,6 @@ def get_shipping_rate(customer, address_id=None):
         sellers=sellers_products, customer=customer, customer_address=address
     )
 
-    print(rating)
-
     result = list()
     # detail = dict()
     # shipping_info = dict()
@@ -304,7 +302,7 @@ def get_shipping_rate(customer, address_id=None):
             company_id = item.get('company_id')
             if store_name == store:
                 shippers_list.append({"shipper": shipper, "shipping_fee": shipping_fee, "company_id": company_id})
-        response.append({store: shippers_list})
+        response.append({"store_name": store, "shipping_information": shippers_list})
     return response
 
 
