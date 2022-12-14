@@ -338,7 +338,7 @@ class ProductCheckoutView(APIView):
                     if str(product["company_id"]).isnumeric():
                         cart_product.company_id = product["company_id"]
                     cart_product.shipper_name = str(product["shipper"]).upper()
-                    # cart_product.delivery_fee = product["shipping_fee"]
+                    cart_product.delivery_fee = product["shipping_fee"]
                     cart_product.save()
 
             validate = validate_product_in_cart(customer)
