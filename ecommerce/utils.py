@@ -211,6 +211,7 @@ def get_shipping_rate(customer, address_id=None):
         address = Address.objects.get(customer=customer, is_primary=True)
     else:
         address = Address.objects.filter(customer=customer).first()
+    print(address)
 
     cart = Cart.objects.get(user=customer.user, status="open")
 
