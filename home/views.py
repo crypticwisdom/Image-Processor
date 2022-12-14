@@ -38,9 +38,8 @@ class ListAllBanksAPIView(APIView):
 class OrderPaymentVerifyAPIView(APIView):
     permission_classes = []
 
-    def get(self, request):
+    def post(self, request):
         log_request(request.data)
-
         trans_ref = request.GET.get("transactionId")
         trans_status = request.GET.get("status")
 

@@ -315,7 +315,7 @@ class ProductCheckoutView(APIView):
         # Expected shipping_information payload
         # shipping_information = [
         #     {
-        #         "cart_product_id": 2,
+        #         "cart_product_id": [2, 23],
         #         "company_id": "234",
         #         "shipper": "GIGLOGISTICS",
         #     }
@@ -332,13 +332,14 @@ class ProductCheckoutView(APIView):
 
             for product in shipping_information:
                 # Get Cart Products
-                cart_product = CartProduct.objects.get(id=product["cart_product_id"], cart=cart)
+                cart_products = CartProduct.objects.filter(id__in=product["cart_product_id"], cart=cart)
 
-                if str(product["company_id"]).isnumeric():
-                    cart_product.company_id = product["company_id"]
-                cart_product.shipper_name = str(product["shipper"]).upper()
-                # cart_product.delivery_fee = product["shipping_fee"]
-                cart_product.save()
+                for cart_product in cart_products:
+                    if str(product["company_id"]).isnumeric():
+                        cart_product.company_id = product["company_id"]
+                    cart_product.shipper_name = str(product["shipper"]).upper()
+                    # cart_product.delivery_fee = product["shipping_fee"]
+                    cart_product.save()
 
             validate = validate_product_in_cart(customer)
             if validate:
