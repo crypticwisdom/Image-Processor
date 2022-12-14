@@ -329,7 +329,8 @@ def order_payment(request, payment_method, order, pin=None):
     trans, created = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
     customer = order.customer
     email = customer.user.email
-    redirect_url = f"{request.scheme}://{request.get_host()}/payment-verify"
+    # redirect_url = f"{request.scheme}://{request.get_host()}/payment-verify"
+    redirect_url = f"https://{request.get_host()}/payment-verify"
 
     if payment_method == "wallet":
         if not pin:
