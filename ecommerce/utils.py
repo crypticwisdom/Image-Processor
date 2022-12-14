@@ -299,7 +299,6 @@ def get_shipping_rate(customer, address_id=None):
         carted_prod = cart_products.filter(product_detail__product__store__name=store)
         for item in carted_prod:
             cart_prod.append(item.id)
-        shippers_list.append({"cart_product_id": cart_prod})
 
         for item in result:
             store_name = item.get('store_name')
@@ -307,7 +306,7 @@ def get_shipping_rate(customer, address_id=None):
             shipping_fee = item.get('shipping_fee')
             company_id = item.get('company_id')
             if store_name == store:
-                shippers_list.append({"shipper": shipper, "shipping_fee": shipping_fee, "company_id": company_id})
+                shippers_list.append({"shipper": shipper, "shipping_fee": shipping_fee, "company_id": company_id, "cart_product_id": cart_prod})
         response.append({"store_name": store, "shipping_information": shippers_list})
     return response
 
