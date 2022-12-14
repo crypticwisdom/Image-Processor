@@ -296,6 +296,7 @@ def get_shipping_rate(customer, address_id=None):
             store_names.append(store_name)
 
     # Compile results per store
+    count = 0
     for store in store_names:
         shippers_list = []
         cart_prod = []
@@ -304,12 +305,13 @@ def get_shipping_rate(customer, address_id=None):
             cart_prod.append(item.id)
 
         for item in result:
+            count += 1
             store_name = item.get('store_name')
             shipper = item.get('shipper')
             shipping_fee = item.get('shipping_fee')
             company_id = item.get('company_id')
             if store_name == store:
-                shippers_list.append({"shipper": shipper, "shipping_fee": shipping_fee, "company_id": company_id, "cart_product_id": cart_prod})
+                shippers_list.append({"shipper": shipper, "shipping_fee": shipping_fee, "company_id": company_id, "cart_product_id": cart_prod, "uid": count})
         response.append({"store_name": store, "shipping_information": shippers_list})
     return response
 
