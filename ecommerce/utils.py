@@ -212,9 +212,6 @@ def get_shipping_rate(customer, address_id=None):
     else:
         address = Address.objects.filter(customer=customer).first()
 
-    from home.utils import log_request
-    log_request("Address:", address)
-
     cart = Cart.objects.get(user=customer.user, status="open")
 
     # Get products in cart
@@ -311,7 +308,10 @@ def get_shipping_rate(customer, address_id=None):
             shipping_fee = item.get('shipping_fee')
             company_id = item.get('company_id')
             if store_name == store:
-                shippers_list.append({"shipper": shipper, "shipping_fee": shipping_fee, "company_id": company_id, "cart_product_id": cart_prod, "uid": count})
+                shippers_list.append({
+                    "shipper": shipper, "shipping_fee": shipping_fee, "company_id": company_id,
+                    "cart_product_id": cart_prod, "uid": str(count)
+                })
         response.append({"store_name": store, "shipping_information": shippers_list})
     return response
 
