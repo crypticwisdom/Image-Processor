@@ -133,7 +133,6 @@ class ShippingService:
 
         payload["TotalWeight"] = sum(overall_weight)
         payload = json.dumps(payload)
-        log_request("payload", payload)
 
         url = f"{base_url}/operations/quote"
 
