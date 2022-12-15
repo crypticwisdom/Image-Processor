@@ -82,6 +82,7 @@ def payment_for_wallet(**kwargs):
     payload = json.dumps(data)
 
     response = requests.request("POST", url, headers=header, data=payload)
+    log_request(f"url: {url}, payload: {payload}, response: {response}")
     if response.status_code == 200 and str(response.text).isnumeric():
         link = f"{payment_gw_url}/{response.text}"
         payment_id = str(response.text)

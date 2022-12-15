@@ -72,9 +72,9 @@ class FundWalletVerifyAPIView(APIView):
     permission_classes = []
 
     def post(self, request):
-        reference = request.GET.get("trxId")
+        reference = request.data.get("trxId")
         trans_status = fund_customer_wallet(reference)
         # Redirect to frontend endpoint
-        return HttpResponseRedirect(redirect_to=f"{frontend_base_url}/verify-status?status={str(trans_status)}")
+        return HttpResponseRedirect(redirect_to=f"{frontend_base_url}/verify-wallet?status={str(trans_status)}")
 
 
