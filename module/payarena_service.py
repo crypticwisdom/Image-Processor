@@ -96,6 +96,6 @@ class PayArenaServices:
     @classmethod
     def get_payment_status(cls, reference):
         url = f"{pgw_url}/status/{reference}"
-        response = requests.request("GET", url, headers={"Content-Type: application/json"}).json()
+        response = requests.request("GET", url).json()
         log_request(f"url: {url}", f"response: {response}")
         return response
