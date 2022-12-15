@@ -89,9 +89,6 @@ class PayArenaServices:
         header = cls.get_auth_header(profile)
         url = f"{base_url}/mobile/mall-credit-wallet"
         payload = json.dumps({"Amount": amount, "Fee": 100, "PaymentInformation": payment_info})
-        print(url)
-        print(header)
-        print(payload)
         response = requests.request("POST", url, headers=header, data=payload).json()
         log_request(f"url: {url}", f"headers: {header}", f"payload: {payload}", f"response: {response}")
         return response
@@ -100,4 +97,5 @@ class PayArenaServices:
     def get_payment_status(cls, reference):
         url = f"{pgw_url}/status/{reference}"
         response = requests.request("GET", url, headers={"Content-Type: application/json"}).json()
+        log_request(f"url: {url}", f"response: {response}")
         return response
