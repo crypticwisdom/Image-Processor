@@ -1,17 +1,14 @@
-import json
 import secrets
 import time
 
-from django.shortcuts import get_object_or_404
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from ecommerce.shopper_email import shopper_welcome_email, shopper_signup_verification_email
+from ecommerce.shopper_email import shopper_welcome_email
 from home.utils import log_request
 from superadmin.models import AdminUser
-from transaction.models import Transaction
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password, make_password
@@ -19,9 +16,10 @@ from django.utils import timezone
 from .email import forgot_password_mail
 from threading import Thread
 from .serializers import ProfileSerializer, CustomerAddressSerializer
-from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email, register_payarena_user, \
-    login_payarena_user, change_payarena_user_password, get_wallet_info, validate_phone_number_for_wallet_creation, \
-    create_user_wallet, make_payment_for_wallet, fund_customer_wallet, confirm_or_create_billing_account
+from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email, \
+    register_payarena_user, login_payarena_user, change_payarena_user_password, get_wallet_info, \
+    validate_phone_number_for_wallet_creation, create_user_wallet, make_payment_for_wallet, \
+    confirm_or_create_billing_account
 
 
 class LoginView(APIView):
@@ -392,29 +390,15 @@ class FundWalletAPIView(APIView):
         if not all([amount, pin]):
             return Response({"detail": "Amount and PIN are required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            profile = Profile.objects.get(user=request.user)
-            payment_link, payment_id = make_payment_for_wallet(profile, amount, pin)
+            payment_link, payment_id = make_payment_for_wallet(request, amount, pin)
             if payment_link is None:
                 return Response({"detail": "Error occurred while generating payment link"})
-            return Response({"detail": payment_link, "reference": payment_id})
+            return Response({"detail": payment_link})
         except Exception as ex:
             return Response(
                 {"detail": "Error occurred while generating payment link", "error": str(ex)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-    def get(self, request):
-        reference = request.GET.get("reference")
-
-        if not reference:
-            return Response({"detail": "reference is required"})
-        success, result = fund_customer_wallet(request, reference)
-        if success is False:
-            return Response({"detail": result}, status=status.HTTP_400_BAD_REQUEST)
-        # GET WALLET BALANCE
-        profile = Profile.objects.get(user=request.user)
-        wallet = get_wallet_info(profile)
-        return Response({"detail": result, "wallet_information": wallet})
 
 
 

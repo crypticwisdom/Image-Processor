@@ -239,9 +239,10 @@ def create_user_wallet(profile, pin, otp):
     return success, message
 
 
-def make_payment_for_wallet(profile, amount, pin):
+def make_payment_for_wallet(request, amount, pin):
+    profile = Profile.objects.get(user=request.user)
     description = "TopUp wallet balance from PayArena Mall"
-    callback = ""
+    callback = f"https://{request.get_host()}/fund-wallet"
     full_name = profile.get_full_name()
     email = profile.email()
 
@@ -253,18 +254,19 @@ def make_payment_for_wallet(profile, amount, pin):
     return payment_link, payment_id
 
 
-def fund_customer_wallet(request, reference):
+def fund_customer_wallet(reference):
     # Check payment status
-    # response = PayArenaServices.get_payment_status(reference)
-    response = {"Order Id":"38104","Amount":"4000.00","Description":"TopUp wallet balance from PayArena Mall^WEBID38104","Convenience Fee":"0.00","Currency":"566","Status":"Approved","Card Holder":None,"PAN":None,"Scheme":None,"TranTime":"11/28/2022 7:24:40 PM","TranDateTime":"11/28/2022 7:24:40 PM","StatusDescription":"Initiated","CustomerName":"Sunday Olaofe","CustomerEmail":"slojararshavin@mailinato.com"}
+    email = ""
+    response = PayArenaServices.get_payment_status(reference)
     status = "pending"
     amount = 0
     if "Status" in response:
         status = str(response["Status"]).lower()
         amount = response["Amount"]
+        email = response["CustomerEmail"]
     if status == "approved":
         # Credit customer wallet
-        profile = Profile.objects.get(user=request.user)
+        profile = Profile.objects.get(user__email=email)
         # Decrypt wallet pin
         decryted_pin = decrypt_text(profile.wallet_pin)
         # Encrypt payment information
@@ -273,10 +275,10 @@ def fund_customer_wallet(request, reference):
         response = PayArenaServices.fund_wallet(profile, amount, encrypted_payment_info)
 
         if "Success" in response:
-            if response["Success"] is True and response["Data"]["Status"] == "Approved":
-                return True, "Wallet credited successfully"
-            else:
-                return False, "An error occurred while funding wallet, please try again later"
+            if response["Success"] is True and response["Data"]["Status"]:
+                return response["Data"]["Status"]
+
+    return status
 
 
 def confirm_or_create_billing_account(profile, email, password):

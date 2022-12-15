@@ -8,6 +8,7 @@ urlpatterns = [
 
     # webhooks
     path('payment-verify', views.OrderPaymentVerifyAPIView.as_view(), name='order-verify-payment'),
+    path('fund-wallet', views.FundWalletVerifyAPIView.as_view(), name='fund-wallet'),
 
 ]
 

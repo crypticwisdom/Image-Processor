@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from account.models import Profile
+from account.utils import fund_customer_wallet
 from ecommerce.utils import update_purchase
 from home.utils import log_request
 from merchant.utils import get_all_banks
@@ -65,5 +66,14 @@ class OrderPaymentVerifyAPIView(APIView):
             log_request(f"Error occurred: {err}")
 
         return HttpResponseRedirect(redirect_to=f"{frontend_base_url}/verify-checkout?status={trans_status}")
+
+
+class FundWalletVerifyAPIView(APIView):
+
+    def post(self, request):
+        reference = request.GET.get("trxId")
+        trans_status = fund_customer_wallet(reference)
+        # Redirect to frontend endpoint
+        return HttpResponseRedirect(redirect_to=f"{frontend_base_url}/verify-status?status={str(trans_status)}")
 
 
