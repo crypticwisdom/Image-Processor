@@ -67,7 +67,7 @@ class Address(models.Model):
     type = models.CharField(max_length=10, choices=address_type_choices, default='home')
     name = models.CharField(max_length=500)
     mobile_number = models.CharField(max_length=17)
-    num = models.CharField(max_length=500)
+    # num = models.CharField(max_length=500)
     locality = models.CharField(max_length=500, blank=True, null=True)
     landmark = models.CharField(max_length=500, blank=True, null=True)
     country = models.CharField(max_length=100)
@@ -83,8 +83,8 @@ class Address(models.Model):
 
     def get_full_address(self):
         addr = ""
-        if self.num:
-            addr += f"{self.num}, "
+        # if self.num:
+        #     addr += f"{self.num}, "
         if self.locality:
             addr += f"{self.locality}, "
         if self.town:
