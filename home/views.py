@@ -69,6 +69,7 @@ class OrderPaymentVerifyAPIView(APIView):
 
 
 class FundWalletVerifyAPIView(APIView):
+    permission_classes = []
 
     def post(self, request):
         reference = request.GET.get("trxId")
