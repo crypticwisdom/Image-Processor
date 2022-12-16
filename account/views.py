@@ -342,16 +342,6 @@ class CustomerAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CustomerAddressSerializer
     lookup_field = "id"
 
-    def update(self, request, *args, **kwargs):
-        primary_address = request.data.get("is_primary")
-        address_id = self.kwargs.get("id")
-
-        address = Address.objects.get(id=address_id, customer__user=request.user)
-        if primary_address is True:
-            # Get all customer address and set their primary to false
-            Address.objects.filter(customer__user=self.request.user).exclude(id=address.id).update(is_primary=False)
-        return Response(CustomerAddressSerializer(address).data)
-
     def get_queryset(self):
         return Address.objects.filter(customer__user=self.request.user)
 
