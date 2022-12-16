@@ -22,9 +22,26 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CustomerAddressSerializer(serializers.ModelSerializer):
+    auth_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    is_primary = serializers.BooleanField()
+
     class Meta:
         model = Address
         exclude = []
+
+    def update(self, instance, validated_data):
+        is_primary = validated_data.get("is_primary")
+        auth_user = validated_data.get("auth_user")
+
+        address = super(CustomerAddressSerializer, self).update(instance, validated_data)
+        if is_primary:
+            address.is_primary = is_primary
+
+        if is_primary is True:
+            # Get all customer address and set their primary to false
+            Address.objects.filter(customer__user=auth_user).exclude(id=instance.id).update(is_primary=False)
+        address.save()
+        return CustomerAddressSerializer(address, context=self.context).data
 
 
 class ProfileSerializer(serializers.ModelSerializer):

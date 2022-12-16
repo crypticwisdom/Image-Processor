@@ -1,6 +1,7 @@
 import secrets
 import time
 
+from django.shortcuts import get_object_or_404
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -341,6 +342,17 @@ class CustomerAddressView(generics.ListCreateAPIView):
 class CustomerAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CustomerAddressSerializer
     lookup_field = "id"
+
+    def update(self, request, *args, **kwargs):
+        address_id = self.kwargs.get("id")
+        address = get_object_or_404(Address, customer__user=request.user, id=address_id)
+        serializer = CustomerAddressSerializer(instance=address, data=request.data, context=self.get_serializer_context())
+        if serializer.is_valid():
+            serializer.save()
+            data = CustomerAddressSerializer(address).data
+            return Response(data)
+        else:
+            return Response({"detail": "An error has occurred", "error": str(serializer.errors)})
 
     def get_queryset(self):
         return Address.objects.filter(customer__user=self.request.user)
