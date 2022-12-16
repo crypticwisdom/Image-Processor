@@ -130,6 +130,7 @@ class CartProductSerializer(serializers.ModelSerializer):
     variant_id = serializers.IntegerField(source="product_detail.id")
     store_name = serializers.CharField(source="product_detail.product.store.name")
     product_name = serializers.CharField(source="product_detail.product.name")
+    product_id = serializers.IntegerField(source="product_detail.product.id")
     description = serializers.CharField(source="product_detail.product.description")
     image = serializers.SerializerMethodField()
 
@@ -145,7 +146,10 @@ class CartProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartProduct
-        fields = ['id', 'variant_id', 'store_name', 'product_name', 'description', 'image', 'price', 'quantity', 'discount', 'created_on', 'updated_on']
+        fields = [
+            'id', 'variant_id', 'store_name', 'product_id', 'product_name', 'description', 'image', 'price', 'quantity',
+            'discount', 'created_on', 'updated_on'
+        ]
 
 
 class CartSerializer(serializers.ModelSerializer):
