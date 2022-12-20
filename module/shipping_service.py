@@ -135,6 +135,8 @@ class ShippingService:
         payload = json.dumps(payload)
         log_request(f"payload: {payload}")
 
+        exit()
+
         url = f"{base_url}/operations/quote"
 
         response = requests.request("POST", url, data=payload, headers=header).json()
