@@ -97,7 +97,7 @@ def u_map_registration(**kwargs):
           f'FEP_TYPE={kwargs.get("fep_type")}&FEEL1={kwargs.get("feel")}&USER_ID=USAPITEST&PASSWORD=vnp-1234'
 
     response = requests.request("POST", url, headers={}).json()
-    log_request(f"Calling UMAP API ---->>> Response: {response}")
+    log_request(f"Calling UMAP API ---->>> url: {url}, Response: {response}")
     return response
 
 
