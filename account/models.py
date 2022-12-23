@@ -76,8 +76,8 @@ class Address(models.Model):
     town = models.CharField(max_length=100, blank=True, null=True)
     town_id = models.CharField(max_length=100, blank=True, null=True)
     postal_code = models.CharField(default=0, blank=True, null=True, max_length=50)
-    longitude = models.FloatField(null=True, blank=True)
-    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True, default=0.0)
+    latitude = models.FloatField(null=True, blank=True, default=0.0)
     is_primary = models.BooleanField(default=False)
     updated_on = models.DateTimeField(auto_now=True)
 

@@ -264,13 +264,13 @@ def create_seller(request, user, email, phone_number):
         if not business_city:
             return False, "Business City is required"
 
-        latitude: float = request.data.get("latitude", None)  # drop-down
-        if not latitude:
-            return False, "Latitude is required"
+        latitude: float = request.data.get("latitude", 0.0)  # drop-down
+        # if not latitude:
+        #     return False, "Latitude is required"
 
-        longitude: float = request.data.get("longitude", None)  # drop-down
-        if not longitude:
-            return False, "Longitude is required"
+        longitude: float = request.data.get("longitude", 0.0)  # drop-down
+        # if not longitude:
+        #     return False, "Longitude is required"
 
         business_drop_off_address: str = request.data.get("business_drop_off_address", None)
         if not business_drop_off_address:
@@ -515,8 +515,10 @@ def update_seller(request, seller_id):
         seller.town_id = town_id
         seller.city = business_city
         seller.state = business_state
-        seller.longitude = longitude
-        seller.latitude = latitude
+        if longitude:
+            seller.longitude = longitude
+        if latitude:
+            seller.latitude = latitude
         seller.save()
 
         # ---------------------------- Check Bank Details ----------------------------
