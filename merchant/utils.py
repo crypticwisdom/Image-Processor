@@ -202,20 +202,9 @@ def validate_bank_details(account_number: str, account_name: str, bank_code: str
     # Call bank enquiry
     # '/bank code/acct_number'
 
-    # success, response = apis.call_name_enquiry(bank_code=bank_code, account_number=account_number)
-    # if not success:
-    #     return False, response
-
-    # BELOW SHOULD BE USED BEFORE GOING LIVE
-    response = {
-            'NameEnquiryResponse': {
-                'ResponseCode': '200',
-                'AccountNumber': '2114616054',
-                'AccountName': 'Nwachukwu Wisdom',
-                'PhoneNumber': '08057784796',
-                'ErrorMessage': 'error'
-            }
-        }
+    success, response = apis.call_name_enquiry(bank_code=bank_code, account_number=account_number)
+    if not success:
+        return False, response
 
     account_name = account_name.lower().split(" ")
     response_name = str(response["NameEnquiryResponse"]["AccountName"]).lower().strip()
@@ -223,7 +212,7 @@ def validate_bank_details(account_number: str, account_name: str, bank_code: str
     # Check if first or last name in 'response_name'
 
     if not(account_name[0] in response_name or account_name[1] in response_name):
-        return False, "Bank account validation failed"
+        return False, "First name or last name does not correspond with bank account name"
 
     return True, "Successfully validated bank details"
 
@@ -301,7 +290,7 @@ def create_seller(request, user, email, phone_number):
         # Get bank name
         auth_user = Profile.objects.get(user=request.user)
         success, detail = get_all_banks(auth_user)
-        detail = [{"Name": "Access Bank", "CBNCode": "044"}]
+        # detail = [{"Name": "Access Bank", "CBNCode": "044"}]
         bank_name = ""
         if success is True:
             result = [bank["Name"] for bank in detail if bank["CBNCode"] == bank_code]
