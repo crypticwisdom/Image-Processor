@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CustomerAddressSerializer(serializers.ModelSerializer):
-    auth_user = serializers.HiddenField(default=serializers.CurrentUserDefault(), read_only=True)
+    auth_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     is_primary = serializers.BooleanField()
 
     class Meta:
