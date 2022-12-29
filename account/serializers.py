@@ -44,6 +44,12 @@ class CustomerAddressSerializer(serializers.ModelSerializer):
         return CustomerAddressSerializer(address, context=self.context).data
 
 
+class CreateCustomerAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        exclude = []
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     profile_picture = serializers.SerializerMethodField()
     addresses = serializers.SerializerMethodField()

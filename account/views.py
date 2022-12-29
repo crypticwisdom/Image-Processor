@@ -16,7 +16,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
 from .email import forgot_password_mail
 from threading import Thread
-from .serializers import ProfileSerializer, CustomerAddressSerializer
+from .serializers import ProfileSerializer, CustomerAddressSerializer, CreateCustomerAddressSerializer
 from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email, \
     register_payarena_user, login_payarena_user, change_payarena_user_password, get_wallet_info, \
     validate_phone_number_for_wallet_creation, create_user_wallet, make_payment_for_wallet, \
@@ -333,7 +333,8 @@ class EmailVerificationLinkView(APIView):
 
 
 class CustomerAddressView(generics.ListCreateAPIView):
-    serializer_class = CustomerAddressSerializer
+    # serializer_class = CustomerAddressSerializer
+    serializer_class = CreateCustomerAddressSerializer
 
     def get_queryset(self):
         return Address.objects.filter(customer__user=self.request.user)
