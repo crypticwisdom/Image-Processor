@@ -273,8 +273,8 @@ def create_seller(request, user, email, phone_number):
         #     return False, "Longitude is required"
 
         business_drop_off_address: str = request.data.get("business_drop_off_address", None)
-        if not business_drop_off_address:
-            return False, "Business drop off address is required"
+        # if not business_drop_off_address:
+        #     return False, "Business drop off address is required"
 
         business_type: str = request.data.get("business_type", None)
         if not business_type:
