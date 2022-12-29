@@ -23,7 +23,7 @@ class SellerSerializer(serializers.ModelSerializer):
     first_name = serializers.StringRelatedField(source='user.first_name')
     last_name = serializers.StringRelatedField(source='user.last_name')
     email = serializers.EmailField(source='user.email')
-    phone_number = serializers.IntegerField()
+    phone_number = serializers.CharField()
     detail = serializers.SerializerMethodField()
     file = serializers.SerializerMethodField()
     store = serializers.SerializerMethodField()

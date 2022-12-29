@@ -61,7 +61,7 @@ class BecomeAMerchantView(APIView):
 
             phone_number = request.data.get('phone_number', None)
             if phone_number is not None and str(phone_number[-10:]).isnumeric():
-                phone_number = f"{+234} {phone_number[-10:]}"
+                phone_number = f"{234}{phone_number[-10:]}"
             else:
                 return Response({"detail": "Phone Number is required"}, status=status.HTTP_400_BAD_REQUEST)
 
