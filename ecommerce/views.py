@@ -57,10 +57,11 @@ class MallLandPageView(APIView):
                                                    promo_type="deal").order_by("-id")[:5]
             response_container["deals_of_the_day"] = MallDealSerializer(deals_query_set, many=True).data
 
-            # (2) Hot New Arrivals in last 3 days
-            end_date1 = timezone.timedelta(days=3)
-            hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1,
-                                                      status="active")  # 3 days ago
+            # (2) Hot New Arrivals in last 3 days ( now changed to most recent 15 products)
+            # end_date1 = timezone.timedelta(days=3)
+            # hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1,
+            #                                           status="active")  # 3 days ago
+            hot_new_arrivals = Product.objects.filter(status="active")[:15]
             arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
             response_container["hot_new_arrivals"] = arrival_serializer
 
