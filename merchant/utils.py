@@ -346,6 +346,7 @@ def create_seller(request, user, email, phone_number):
             return False, "Failed to create a Seller Instance"
 
         if business_type == "unregistered-individual-business":
+            seller_detail.company_name = store.name
             if product_category:
                 store.categories.clear()
 
