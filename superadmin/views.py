@@ -407,6 +407,9 @@ class UpdateMerchantStatusAPIView(APIView):
             store_name = Store.objects.filter(seller=seller).last().name
             bank_account = BankAccount.objects.filter(seller=seller).last()
 
+            if not bank_account:
+                return Response({"detail": "Merchant has no bank account"}, status=status.HTTP_400_BAD_REQUEST)
+
             # Update seller on UMAP
             response = u_map_registration(
                 biller_id=biller_code, description=str(store_name).upper(), merchant_id=merchant_id,
