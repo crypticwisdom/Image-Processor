@@ -380,7 +380,7 @@ class UpdateMerchantStatusAPIView(APIView):
         seller_status = request.data.get("status")
 
         biller_code = request.data.get("biller_code")
-        merchant_id = request.data.get("merchant_id")
+        merchant_id = settings.PAYARENA_MERCHANT_ID
         feel = request.data.get("FEEL")
         fep_type = request.data.get("FEP_TYPE")
 
@@ -389,8 +389,8 @@ class UpdateMerchantStatusAPIView(APIView):
         seller.status = seller_status
 
         if seller_status == "approve":
-            if not all([biller_code, feel, fep_type, merchant_id]):
-                return Response({"detail": "Biller Code, MerchantID, FEEL1 and FEP_TYPE are required to onboard "
+            if not all([biller_code, feel, fep_type]):
+                return Response({"detail": "Biller Code, FEEL1 and FEP_TYPE are required to onboard "
                                            "merchant"}, status=status.HTTP_400_BAD_REQUEST)
 
             if not (fep_type == "flat" or fep_type == "rate"):
@@ -416,7 +416,14 @@ class UpdateMerchantStatusAPIView(APIView):
             print(response)
             if response["RESPONSE_CODE"] != "00":
                 reason = response["RESPONSE_DESCRIPTION"]
-                return Response({"detail": reason}, status=status.HTTP_400_BAD_REQUEST)
+                seller.status = "inactive"
+                seller.save()
+                return Response(
+                    {
+                        "detail": f"An error has occurred while registering merchant on UMAP. {reason}"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             # Send Approval Email to seller
             Thread(target=merchant_account_approval_email, args=[seller.user.email]).start()
