@@ -150,10 +150,13 @@ def top_weekly_products(request):
         "-sale_count"
     )[:20]
     for product in query_set:
+        image = None
+        if product.image:
+            image = request.build_absolute_uri(product.image.image.url),
         review = ProductReview.objects.filter(product=product).aggregate(Avg('rating'))['rating__avg'] or 0
         product_detail = ProductDetail.objects.filter(product=product).last()
         top_products.append(
-            {"id": product.id, "name": product.name, "image": request.build_absolute_uri(product.image.image.url),
+            {"id": product.id, "name": product.name, "image": image,
              "rating": review, "product_detail_id": product_detail.id, "store_name": product.store.name,
              "price": product_detail.price, "discount": product_detail.discount, "featured": product.is_featured})
     return top_products
