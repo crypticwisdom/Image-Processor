@@ -181,10 +181,11 @@ class ProductLowAndOutOffStockSerializer(serializers.ModelSerializer):
         return None
 
     def get_image(self, obj):
-        if obj.product.image and self.context.get("request"):
+        image = None
+        if obj.product.image:
             request = self.context.get("request")
-            return request.build_absolute_uri(obj.product.image.image.url)
-        return obj.product.image.get_image_url()
+            image = request.build_absolute_uri(obj.product.image.image.url)
+        return image
 
     class Meta:
         model = ProductDetail
