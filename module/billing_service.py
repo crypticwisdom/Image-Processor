@@ -37,6 +37,7 @@ class BillingService:
         })
         header = {"Content-Type": "application/json"}
         response = requests.request("POST", url, headers=header, data=payload).json()
+        log_request(f"url: {url}, payload: {payload}, response: {response}")
         return response
 
     @classmethod

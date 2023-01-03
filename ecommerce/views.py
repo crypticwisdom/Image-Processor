@@ -324,37 +324,37 @@ class ProductCheckoutView(APIView):
             return Response({"detail": "Shipper information and address are required"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # try:
-        customer, created = Profile.objects.get_or_create(user=request.user)
-        address = Address.objects.get(customer=customer, id=address_id)
-        cart = Cart.objects.get(user=request.user, status="open")
+        try:
+            customer, created = Profile.objects.get_or_create(user=request.user)
+            address = Address.objects.get(customer=customer, id=address_id)
+            cart = Cart.objects.get(user=request.user, status="open")
 
-        for product in shipping_information:
-            # Get Cart Products
-            cart_products = CartProduct.objects.filter(id__in=product["cart_product_id"], cart=cart)
+            for product in shipping_information:
+                # Get Cart Products
+                cart_products = CartProduct.objects.filter(id__in=product["cart_product_id"], cart=cart)
 
-            for cart_product in cart_products:
-                if str(product["company_id"]).isnumeric():
-                    cart_product.company_id = product["company_id"]
-                cart_product.shipper_name = str(product["shipper"]).upper()
-                cart_product.delivery_fee = product["shipping_fee"]
-                cart_product.save()
+                for cart_product in cart_products:
+                    if str(product["company_id"]).isnumeric():
+                        cart_product.company_id = product["company_id"]
+                    cart_product.shipper_name = str(product["shipper"]).upper()
+                    cart_product.delivery_fee = product["shipping_fee"]
+                    cart_product.save()
 
-        validate = validate_product_in_cart(customer)
-        if validate:
-            return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
+            validate = validate_product_in_cart(customer)
+            if validate:
+                return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create Order
-        order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
+            # Create Order
+            order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
 
-        # PROCESS PAYMENT
-        success, detail = order_payment(request, payment_method, order, pin)
-        if success is False:
-            return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"detail": detail})
+            # PROCESS PAYMENT
+            success, detail = order_payment(request, payment_method, order, pin)
+            if success is False:
+                return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": detail})
 
-        # except Exception as ex:
-        #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as ex:
+            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OrderAPIView(APIView, CustomPagination):
