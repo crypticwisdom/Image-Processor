@@ -369,7 +369,7 @@ class OrderAPIView(APIView, CustomPagination):
                     order = Order.objects.filter(orderproduct__status=order_status,
                                                  customer__user=request.user).distinct()
                 else:
-                    order = Order.objects.filter(customer__user=request.user).order_by("-id")
+                    order = Order.objects.filter(customer__user=request.user, payment_status="success").order_by("-id")
                 queryset = self.paginate_queryset(order, request)
                 serializer = OrderSerializer(queryset, many=True).data
                 data = self.get_paginated_response(serializer).data
