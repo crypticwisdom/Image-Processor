@@ -189,6 +189,23 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 
 class MallDealSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
+
+    def get_product(self, obj):
+        request = self.context.get("request")
+        if obj.product:
+            image = None
+            if obj.product.image:
+                image = request.build_absolute_uri(obj.product.image.image.url),
+
+            return [{
+                'id': product.id,
+                'name': product.name,
+                'image': image,
+                'category': product.category.name,
+                'store_name': product.store.name,
+            } for product in obj.product.all()]
+
     class Meta:
         model = Promo
         fields = ['product', ]
