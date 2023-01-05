@@ -13,7 +13,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from account.models import Address
-from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime, get_next_date
+from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime, get_next_date, \
+    get_year_start_and_end_datetime, get_previous_month_date
 from merchant.merchant_email import merchant_order_placement_email
 from module.billing_service import BillingService
 from module.shipping_service import ShippingService
@@ -165,9 +166,15 @@ def top_weekly_products(request):
 def top_monthly_categories(request):
     top_categories = []
     today_date = timezone.now()
-    month_start, month_end = get_month_start_and_end_datetime(today_date)
+    # month_start, month_end = get_year_start_and_end_datetime(today_date)
+    # queryset = Product.objects.filter(
+    #     created_on__gte=month_start, created_on__lte=month_end, status='active', store__is_active=True
+    # ).order_by("-sale_count").values("category__id", "category__name", "category__image").annotate(Sum("sale_count")).order_by(
+    #     "-sale_count__sum")[:100]
+
+    date_end = get_previous_month_date(today_date, 8)
     queryset = Product.objects.filter(
-        created_on__gte=month_start, created_on__lte=month_end, status='active', store__is_active=True
+        created_on__gte=date_end, created_on__lte=today_date, status='active', store__is_active=True
     ).order_by("-sale_count").values("category__id", "category__name", "category__image").annotate(Sum("sale_count")).order_by(
         "-sale_count__sum")[:100]
     for product in queryset:
