@@ -352,7 +352,8 @@ def order_payment(request, payment_method, order, pin=None):
             bal = wallet_info["wallet"]["balance"]
             balance = decimal.Decimal(bal)
         if balance < amount:
-            return False, f"Wallet Balance {balance} cannot be less than order amount, please fund wallet"
+            # return False, f"Wallet Balance {balance} cannot be less than order amount, please fund wallet"
+            return False, "Insufficient wallet balance. Please fund your wallet and try again"
 
         # Charge wallet
         response = BillingService.charge_customer(

@@ -189,22 +189,22 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 
 class MallDealSerializer(serializers.ModelSerializer):
-    # product = serializers.SerializerMethodField()
+    product = serializers.SerializerMethodField()
 
-    # def get_product(self, obj):
-    #     request = self.context.get("request")
-    #     for product in obj.product.all():
-    #         image = None
-    #         if product.image:
-    #             image = request.build_absolute_uri(product.image.image.url),
-    #         data = {
-    #             'id': product.id,
-    #             'name': product.name,
-    #             'image': image,
-    #             'category': product.category.name,
-    #             'store_name': product.store.name,
-    #         }
-    #         return data
+    def get_product(self, obj):
+        request = self.context.get("request")
+        for product in obj.product.all():
+            image = None
+            if product.image:
+                image = request.build_absolute_uri(product.image.image.url)
+            data = {
+                'id': product.id,
+                'name': product.name,
+                'image': image,
+                'category': product.category.name,
+                'store_name': product.store.name,
+            }
+            return data
 
     class Meta:
         model = Promo
@@ -262,6 +262,14 @@ class OrderProductSerializer(serializers.ModelSerializer):
     seller_id = serializers.IntegerField(source="product_detail.product.store.seller.id")
     store_name = serializers.CharField(source="product_detail.product.store.name")
     product_name = serializers.CharField(source="product_detail.product.name")
+    product_image = serializers.SerializerMethodField()
+
+    def get_product_image(self, obj):
+        request = self.context.get("request")
+        image = None
+        if obj.product_detail.product.image:
+            image = request.build_absolute_uri(obj.product_detail.product.image.image.url)
+        return image
 
     class Meta:
         model = OrderProduct

@@ -54,7 +54,8 @@ class MallLandPageView(APIView):
             # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
             # deal_end_date = timezone.timedelta(days=1)
             deals_query_set = Promo.objects.filter(promo_type="deal").order_by("-id")[:5]
-            response_container["deals_of_the_day"] = MallDealSerializer(deals_query_set, many=True).data
+            response_container["deals_of_the_day"] = MallDealSerializer(
+                deals_query_set, many=True, context={"request": request}).data
 
             # (2) Hot New Arrivals in last 3 days ( now changed to most recent 15 products)
             # end_date1 = timezone.timedelta(days=3)
@@ -463,7 +464,7 @@ class CustomerDashboardView(APIView):
             # Recent Orders
             recent_orders = OrderProduct.objects.filter(order__customer=profile).order_by("-id")[:10]
             response['profile_detail'] = ProfileSerializer(profile, context={"request": request}).data
-            response['recent_orders'] = OrderProductSerializer(recent_orders, many=True).data
+            response['recent_orders'] = OrderProductSerializer(recent_orders, context={"request": request}, many=True).data
             response['wallet_information'] = wallet_bal
             response['total_amount_spent'] = Transaction.objects.filter(
                 order__customer__user=request.user, status="success"
