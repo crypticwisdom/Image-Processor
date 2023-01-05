@@ -193,18 +193,18 @@ class MallDealSerializer(serializers.ModelSerializer):
 
     def get_product(self, obj):
         request = self.context.get("request")
-        if obj.product:
+        for product in obj.product.all():
             image = None
-            if obj.product.image:
-                image = request.build_absolute_uri(obj.product.image.image.url),
-
-            return [{
+            if product.image:
+                image = request.build_absolute_uri(product.image.image.url),
+            data = {
                 'id': product.id,
                 'name': product.name,
                 'image': image,
                 'category': product.category.name,
                 'store_name': product.store.name,
-            } for product in obj.product.all()]
+            }
+            return data
 
     class Meta:
         model = Promo
