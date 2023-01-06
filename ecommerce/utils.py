@@ -326,14 +326,13 @@ def get_shipping_rate(customer, address_id=None):
     return response
 
 
-def order_payment(request, payment_method, order, pin=None):
+def order_payment(request, payment_method, delivery_amount, order, pin=None):
     from account.utils import get_wallet_info
 
     # create Transaction
     # get order amount
     product_amount = CartProduct.objects.filter(cart__order=order).aggregate(Sum("price"))["price__sum"] or 0
-    delivery_amount = CartProduct.objects.filter(cart__order=order).aggregate(
-        Sum("delivery_fee"))["delivery_fee__sum"] or 0
+    print(type(product_amount))
 
     amount = product_amount + delivery_amount
     trans, created = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)

@@ -328,6 +328,7 @@ class ProductCheckoutView(APIView):
             address = Address.objects.get(customer=customer, id=address_id)
             cart = Cart.objects.get(user=request.user, status="open")
 
+            delivery_fee = []
             for product in shipping_information:
                 # Get Cart Products
                 cart_products = CartProduct.objects.filter(id__in=product["cart_product_id"], cart=cart)
@@ -339,6 +340,9 @@ class ProductCheckoutView(APIView):
                     cart_product.delivery_fee = product["shipping_fee"]
                     cart_product.save()
 
+                first_cart_product = cart_products.first()
+                delivery_fee.append(first_cart_product.delivery_fee)
+
             validate = validate_product_in_cart(customer)
             if validate:
                 return Response({"detail": validate}, status=status.HTTP_400_BAD_REQUEST)
@@ -347,7 +351,8 @@ class ProductCheckoutView(APIView):
             order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
 
             # PROCESS PAYMENT
-            success, detail = order_payment(request, payment_method, order, pin)
+            delivery_amount = sum(delivery_fee)
+            success, detail = order_payment(request, payment_method, delivery_amount, order, pin)
             if success is False:
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
             return Response({"detail": detail})
