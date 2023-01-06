@@ -359,8 +359,8 @@ def order_payment(request, payment_method, delivery_amount, order, pin=None):
             payment_type="wallet", customer_id=email, narration=f"Payment for OrderID: {order.id}",
             pin=pin, amount=str(amount)
         )
-        if "status" in response and response["status"] != "Successful":
-            return False, response["status"]
+        if "success" in response and response["success"] is False:
+            return False, "Could not debit your wallet at the moment. Please try later, or use another payment method"
         # Update transaction status
         trans.status = "success"
         trans.transaction_detail = f"Payment for OrderID: {order.id}"
@@ -379,7 +379,7 @@ def order_payment(request, payment_method, delivery_amount, order, pin=None):
             payment_type=payment_method, customer_id=email, narration=f"Payment for OrderID: {order.id}",
             pin=pin, amount=str(amount), callback_url=redirect_url
         )
-        if "status" in response:
+        if "success" in response and response["success"] is True:
 
             payment_link = response["paymentUrl"]
             transaction_ref = response["transactionId"]
