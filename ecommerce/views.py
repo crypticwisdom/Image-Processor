@@ -73,8 +73,9 @@ class MallLandPageView(APIView):
             response_container["top_monthly_categories"] = top_monthly_cat
 
             # (5) Recommended Products
-            product_list = [item.product.id for item in ProductDetail.objects.filter(stock__gte=1)]
-            recommended = ProductSerializer(Product.objects.filter(is_featured=True, status="active", store__is_active=True, id__in=product_list), many=True, context={"request": request}).data
+            recommended = ProductSerializer(Product.objects.filter(
+                is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
+            ).data
             response_container["recommended_products"] = recommended[:10]
 
             # (6) All categories - to include sub categories and product types

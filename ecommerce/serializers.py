@@ -107,9 +107,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_average_rating(self, obj):
         rating = 0
-        query_set = ProductReview.objects.filter(product=obj).aggregate(Avg('rating'))
+        query_set = ProductReview.objects.filter(product=obj)
         if query_set:
-            rating = query_set['rating__avg']
+            rating = query_set.aggregate(Avg('rating'))['rating__avg'] or 0
         return rating
 
     def get_image(self, obj):
@@ -262,6 +262,7 @@ class OrderProductSerializer(serializers.ModelSerializer):
     seller_id = serializers.IntegerField(source="product_detail.product.store.seller.id")
     store_name = serializers.CharField(source="product_detail.product.store.name")
     product_name = serializers.CharField(source="product_detail.product.name")
+    category = serializers.CharField(source="product_detail.product.category.name")
     product_image = serializers.SerializerMethodField()
 
     def get_product_image(self, obj):
