@@ -19,7 +19,7 @@ from ecommerce.serializers import *
 from account.serializers import *
 from ecommerce.utils import top_monthly_categories
 from home.utils import get_previous_date, get_month_start_and_end_datetime, get_year_start_and_end_datetime, \
-    get_week_start_and_end_datetime
+    get_week_start_and_end_datetime, log_request
 from merchant.merchant_email import merchant_account_approval_email, merchant_upload_guide_email
 from merchant.permissions import *
 from merchant.models import Seller, BankAccount
@@ -416,7 +416,6 @@ class UpdateMerchantStatusAPIView(APIView):
                     account_no=bank_account.account_number, account_name=bank_account.account_name,
                     bank_code=bank_account.bank_code, fep_type=str(fep_type).upper()[0], feel=feel
                 )
-                print(response)
                 if response["RESPONSE_CODE"] != "00":
                     reason = response["RESPONSE_DESCRIPTION"]
                     seller.status = "inactive"
@@ -438,6 +437,7 @@ class UpdateMerchantStatusAPIView(APIView):
                 Store.objects.filter(seller=seller).update(is_active=True)
             return Response({"detail": "Merchant status updated successfully"})
         except Exception as ex:
+            log_request(f"Exception Error: {ex}")
             return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
