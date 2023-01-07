@@ -384,61 +384,61 @@ class UpdateMerchantStatusAPIView(APIView):
         feel = request.data.get("FEEL")
         fep_type = request.data.get("FEP_TYPE")
 
-        # try:
-        seller = Seller.objects.get(id=seller_id)
-        seller.status = seller_status
+        try:
+            seller = Seller.objects.get(id=seller_id)
+            seller.status = seller_status
 
-        if seller_status == "approve":
-            if not all([biller_code, feel, fep_type]):
-                return Response({"detail": "Biller Code, FEEL1 and FEP_TYPE are required to onboard "
-                                           "merchant"}, status=status.HTTP_400_BAD_REQUEST)
+            if seller_status == "approve":
+                if not all([biller_code, feel, fep_type]):
+                    return Response({"detail": "Biller Code, FEEL1 and FEP_TYPE are required to onboard "
+                                               "merchant"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if not (fep_type == "flat" or fep_type == "rate"):
-                return Response({"detail": "FEP TYPE can either be 'rate' or 'flat'"},
-                                status=status.HTTP_400_BAD_REQUEST)
+                if not (fep_type == "flat" or fep_type == "rate"):
+                    return Response({"detail": "FEP TYPE can either be 'rate' or 'flat'"},
+                                    status=status.HTTP_400_BAD_REQUEST)
 
-            seller.biller_code = biller_code
-            seller.feel = feel
-            seller.fep_type = fep_type
-            seller.merchant_id = merchant_id
-            seller.status = "active"
-            seller.approved_by = request.user
+                seller.biller_code = biller_code
+                seller.feel = feel
+                seller.fep_type = fep_type
+                seller.merchant_id = merchant_id
+                seller.status = "active"
+                seller.approved_by = request.user
 
-            store_name = Store.objects.filter(seller=seller).last().name
-            bank_account = BankAccount.objects.filter(seller=seller).last()
+                store_name = Store.objects.filter(seller=seller).last().name
+                bank_account = BankAccount.objects.filter(seller=seller).last()
 
-            if not bank_account:
-                return Response({"detail": "Merchant has no bank account"}, status=status.HTTP_400_BAD_REQUEST)
+                if not bank_account:
+                    return Response({"detail": "Merchant has no bank account"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Update seller on UMAP
-            response = u_map_registration(
-                biller_id=biller_code, description=str(store_name).upper(), merchant_id=merchant_id,
-                account_no=bank_account.account_number, account_name=bank_account.account_name,
-                bank_code=bank_account.bank_code, fep_type=str(fep_type).upper()[0], feel=feel
-            )
-            print(response)
-            if response["RESPONSE_CODE"] != "00":
-                reason = response["RESPONSE_DESCRIPTION"]
-                seller.status = "inactive"
-                seller.save()
-                return Response(
-                    {
-                        "detail": f"An error has occurred while registering merchant on UMAP. {reason}"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
+                # Update seller on UMAP
+                response = u_map_registration(
+                    biller_id=biller_code, description=str(store_name).upper(), merchant_id=merchant_id,
+                    account_no=bank_account.account_number, account_name=bank_account.account_name,
+                    bank_code=bank_account.bank_code, fep_type=str(fep_type).upper()[0], feel=feel
                 )
+                print(response)
+                if response["RESPONSE_CODE"] != "00":
+                    reason = response["RESPONSE_DESCRIPTION"]
+                    seller.status = "inactive"
+                    seller.save()
+                    return Response(
+                        {
+                            "detail": f"An error has occurred while registering merchant on UMAP. {reason}"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-            # Send Approval Email to seller
-            Thread(target=merchant_account_approval_email, args=[seller.user.email]).start()
-            Thread(target=merchant_upload_guide_email, args=[seller.user.email]).start()
+                # Send Approval Email to seller
+                Thread(target=merchant_account_approval_email, args=[seller.user.email]).start()
+                Thread(target=merchant_upload_guide_email, args=[seller.user.email]).start()
 
-        seller.save()
+            seller.save()
 
-        if seller_status == "active" or seller_status == "approve":
-            Store.objects.filter(seller=seller).update(is_active=True)
-        return Response({"detail": "Merchant status updated successfully"})
-        # except Exception as ex:
-        #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            if seller_status == "active" or seller_status == "approve":
+                Store.objects.filter(seller=seller).update(is_active=True)
+            return Response({"detail": "Merchant status updated successfully"})
+        except Exception as ex:
+            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Admin User
