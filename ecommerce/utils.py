@@ -379,7 +379,7 @@ def order_payment(request, payment_method, delivery_amount, order, pin=None):
             payment_type=payment_method, customer_id=email, narration=f"Payment for OrderID: {order.id}",
             pin=pin, amount=str(amount), callback_url=redirect_url
         )
-        if "success" in response and response["success"] is True:
+        if "paymentUrl" in response:
 
             payment_link = response["paymentUrl"]
             transaction_ref = response["transactionId"]
