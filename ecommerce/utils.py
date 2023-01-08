@@ -157,9 +157,10 @@ def top_weekly_products(request):
         review = ProductReview.objects.filter(product=product).aggregate(Avg('rating'))['rating__avg'] or 0
         product_detail = ProductDetail.objects.filter(product=product).last()
         top_products.append(
-            {"id": product.id, "name": product.name, "image": image,
-             "rating": review, "product_detail_id": product_detail.id, "store_name": product.store.name,
-             "price": product_detail.price, "discount": product_detail.discount, "featured": product.is_featured})
+            {"id": product.id, "name": product.name, "image": image, "rating": review, "stock": product_detail.stock,
+             "product_detail_id": product_detail.id, "store_name": product.store.name,
+             "price": product_detail.price, "discount": product_detail.discount,
+             "featured": product.is_featured, "low_stock_threshold": product_detail.low_stock_threshold})
     return top_products
 
 
