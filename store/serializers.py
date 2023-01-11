@@ -40,6 +40,10 @@ class StoreProductSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     discount = serializers.SerializerMethodField()
+    product_detail_id = serializers.SerializerMethodField()
+
+    def get_product_detail_id(self, obj):
+        return ProductDetail.objects.filter(product=obj).first().id or None
 
     def get_image(self, obj):
         if obj.image:
@@ -57,7 +61,10 @@ class StoreProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ["id", "name", "category", "image", "description", "average_rating", "price", "discount", "sale_count", "view_count"]
+        fields = [
+            "id", "name", "category", "image", "description", "average_rating", "price", "discount", "sale_count",
+            "view_count", "product_detail_id"
+        ]
 
 
 class StoreSerializer(serializers.ModelSerializer):
