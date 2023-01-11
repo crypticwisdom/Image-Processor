@@ -38,6 +38,20 @@ class ProductCategorySerializer(serializers.ModelSerializer):
 class StoreSerializer(serializers.ModelSerializer):
     seller = SellerSerializer(many=False)
     # categories = ProductCategorySerializer(many=True)
+    products = serializers.SerializerMethodField()
+
+    def get_products(self, obj):
+        result = [{
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "category_id": product.category.id,
+            "category_name": product.category.name,
+            "is_featured": product.is_featured,
+            "total_views": product.view_count,
+            "total_sold": product.sale_count
+        } for product in Product.objects.filter(store=obj, status="active")]
+        return result
 
     class Meta:
         model = Store
