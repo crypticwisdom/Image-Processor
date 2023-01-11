@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from ecommerce.models import Cart, OrderProduct
+from ecommerce.models import Cart, OrderProduct, Product
+from ecommerce.serializers import ProductSerializer
 from merchant.models import Seller
 from store.serializers import CartSerializer
 from .models import Profile, Address
@@ -57,6 +58,16 @@ class ProfileSerializer(serializers.ModelSerializer):
     is_merchant = serializers.SerializerMethodField()
     cart = serializers.SerializerMethodField()
     total_purchase_count = serializers.SerializerMethodField()
+    recently_viewed_products = serializers.SerializerMethodField()
+
+    def get_recently_viewed_products(self, obj):
+        recent_view = None
+        if obj.recent_viewed_products:
+            shopper_views = obj.recent_viewed_products.split(",")
+            recent_view = ProductSerializer(Product.objects.filter(
+                id__in=shopper_views, status="active", store__is_active=True).order_by("?")[:10], many=True,
+                                            context={"request": self.context.get("request")}).data
+        return recent_view
 
     def get_total_purchase_count(self, obj):
         return OrderProduct.objects.filter(order__customer=obj, order__payment_status="success").count()

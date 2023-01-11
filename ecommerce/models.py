@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.template.defaultfilters import slugify
@@ -81,6 +83,7 @@ class Product(models.Model):
 
     # View Count: number of times the product is viewed by users.
     view_count = models.PositiveBigIntegerField(default=0)
+    last_viewed_date = models.DateTimeField(blank=True, null=True)
 
     # Top Selling: The highest sold product. Field updates when this product has been successfully paid for.
     sale_count = models.IntegerField(default=0)

@@ -17,6 +17,7 @@ class Profile(models.Model):
     wallet_pin = models.TextField(blank=True, null=True)
     verification_code = models.CharField(max_length=100, null=True, blank=True)
     code_expiration_date = models.DateTimeField(null=True, blank=True)
+    recent_viewed_products = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return str(self.user)

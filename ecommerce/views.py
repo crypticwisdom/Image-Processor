@@ -78,11 +78,31 @@ class MallLandPageView(APIView):
             ).data
             response_container["recommended_products"] = recommended[:10]
 
+            most_viewed = ProductSerializer(
+                Product.objects.filter(status="active", store__is_active=True).order_by("-view_count")[:20], many=True,
+                context={"request": request}).data
+            response_container["most_viewed_products"] = most_viewed
+
+
             # (6) All categories - to include sub categories and product types
             categories = CategoriesSerializer(
                 ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
             ).data
             response_container["categories"] = categories
+
+            # recently viewed products:
+            # these are products that were recently viewed by the shopper, or last viewed products
+            recent_view = ProductSerializer(Product.objects.filter(
+                status="active", store__is_active=True).order_by("-last_viewed_date")[:10], many=True,
+                                            context={"request": request}).data
+            if request.user.is_authenticated:
+                shopper = Profile.objects.get(user=request.user)
+                shopper_views = shopper.recent_viewed_products.split(",")
+                recent_view = ProductSerializer(Product.objects.filter(
+                    id__in=shopper_views, status="active", store__is_active=True).order_by("?"), many=True,
+                                                context={"request": request}).data
+
+            response_container["recently_viewed"] = recent_view
 
             response.append(response_container)
             return Response({"detail": response})
@@ -275,6 +295,13 @@ class ProductView(APIView, CustomPagination):
             if pk:
                 product = Product.objects.get(id=pk, status="active", store__is_active=True)
                 product.view_count += 1
+                product.last_viewed_date = datetime.datetime.now()
+                if request.user.is_authenticated:
+                    shopper = Profile.objects.get(user=request.user)
+                    viewed_products = str(shopper.recent_viewed_products).split(',')
+                    if str(product.id) not in viewed_products:
+                        shopper.recent_viewed_products = str("{},{}").format(shopper.recent_viewed_products, product.id)
+                        shopper.save()
                 product.save()
                 serializer = ProductSerializer(product, context={"request": request}).data
             else:

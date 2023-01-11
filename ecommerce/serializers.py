@@ -69,6 +69,7 @@ class ProductSerializer(serializers.ModelSerializer):
     product_detail = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     similar = serializers.SerializerMethodField()
+    also_viewed = serializers.SerializerMethodField()
     merchant_id = serializers.CharField(source="store.seller.merchant_id")
     checked_by = serializers.SerializerMethodField()
     approved_by = serializers.SerializerMethodField()
@@ -91,6 +92,15 @@ class ProductSerializer(serializers.ModelSerializer):
             product = product.filter(store__seller=self.context.get('seller'))
         return SimilarProductSerializer(product[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True,
                                         context={"request": self.context.get("request")}).data
+
+    def get_also_viewed(self, obj):
+        viewed = Product.objects.filter(store__is_active=True, status='active',
+                                        sub_category=obj.sub_category).order_by('?').exclude(pk=obj.id).distinct()
+        if self.context.get('seller'):
+            viewed = viewed.filter(store__seller=self.context.get('seller'))
+        return SimilarProductSerializer(viewed[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True,
+                                        context={"request": self.context.get("request")}).data
+
 
     def get_store(self, obj):
         return {"id": obj.store.id, "name": obj.store.name}
