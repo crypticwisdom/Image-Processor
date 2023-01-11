@@ -97,4 +97,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet', 'is_merchant', 'cart', 'total_purchase_count']
+        fields = [
+            'id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet', 'is_merchant', 'cart',
+            'total_purchase_count', 'recently_viewed_products'
+        ]

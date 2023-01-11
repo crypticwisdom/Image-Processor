@@ -62,7 +62,7 @@ AWS_SECRET_ACCESS_KEY = 'TjvAExwWyT9NhpM/S9oM0J6Cg/8YabaqtfGNF/kd2+k='
 AWS_STORAGE_BUCKET_NAME = 'PayArena_Mall'
 AWS_LOCATION = 'payarena'
 # AWS_S3_ENDPOINT_URL = 'https://objectstorage.uk-london-1.oraclecloud.com'
-AWS_S3_ENDPOINT_URL = 'https://objectstorage.uk-london-1.oraclecloud.com/p/XVChU1H4bNtoDFCydI3D5rTwhAgxvnz9o3W5p6ZFUwm62GgE7oklhuTrxGh5iPXQ/n/lrwjqwnpynlp/b/oci-logs._flowlogs.ocid1.compartment.oc1..aaaaaaaaeg7l77wuwajeubw2o5jjvo4xkfdzpq7n6l2jkyzy3f3pimfpccqq/o/'
+AWS_S3_ENDPOINT_URL = 'https://objectstorage.uk-london-1.oraclecloud.com/p/qYpwHmiW6wENt1W2vSzGI0Y6uau7Kq3QMovAzZIZfHfQaqgUZwd4uO9RYqRRV_d_/n/lrwjqwnpynlp/b/PayArena_Mall/o/'
 AWS_S3_CUSTOM_DOMAIN = ''
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
