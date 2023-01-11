@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 from rest_framework import serializers
 
 from ecommerce.models import ProductImage, ProductReview, ProductWishlist, CartProduct, Brand, Product, \
@@ -35,23 +35,44 @@ class ProductCategorySerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class StoreProductSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    discount = serializers.SerializerMethodField()
+
+    def get_image(self, obj):
+        if obj.image:
+            return self.context.get("request").build_absolute_uri(obj.image.image.url)
+        return None
+
+    def get_price(self, obj):
+        return ProductDetail.objects.filter(product=obj).first().price or 0
+
+    def get_discount(self, obj):
+        return ProductDetail.objects.filter(product=obj).first().discount or 0
+
+    def get_average_rating(self, obj):
+        return ProductReview.objects.filter(product=obj).aggregate(Avg('rating'))['rating__avg'] or 0
+
+    class Meta:
+        model = Product
+        fields = ["id", "name", "category", "image", "description", "average_rating", "price", "discount", "sale_count", "view_count"]
+
+
 class StoreSerializer(serializers.ModelSerializer):
     seller = SellerSerializer(many=False)
     # categories = ProductCategorySerializer(many=True)
     products = serializers.SerializerMethodField()
 
     def get_products(self, obj):
-        result = [{
-            "id": product.id,
-            "name": product.name,
-            "description": product.description,
-            "category_id": product.category.id,
-            "category_name": product.category.name,
-            "is_featured": product.is_featured,
-            "total_views": product.view_count,
-            "total_sold": product.sale_count
-        } for product in Product.objects.filter(store=obj, status="active")]
-        return result
+        request = self.context.get("request")
+        response = list()
+        data = dict()
+        data["recent"] = StoreProductSerializer(Product.objects.filter(store=obj, status="active").order_by("-id")[:10], many=True, context={"request": request}).data
+        data["best_selling"] = StoreProductSerializer(Product.objects.filter(store=obj, status="active").order_by("-sale_count")[:10], many=True, context={"request": request}).data
+        response.append(data)
+        return response
 
     class Meta:
         model = Store

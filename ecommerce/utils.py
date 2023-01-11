@@ -30,7 +30,9 @@ encryption_iv = bytes(settings.PAYARENA_IV, "utf-8")
 
 
 def sorted_queryset(order_by, query):
-    queryset = Product.objects.filter(query).order_by('-updated_on').distinct()
+    queryset = Product.objects.filter(query).distinct()
+    if order_by == "latest":
+        queryset = Product.objects.filter(query).order_by('-published_on').distinct()
     if order_by == 'highest_price':
         queryset = Product.objects.filter(query).order_by('-productdetail__price').distinct()
     if order_by == 'lowest_price':

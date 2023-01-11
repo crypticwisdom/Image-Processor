@@ -19,7 +19,7 @@ from home.utils import get_previous_date
 from merchant.merchant_email import merchant_order_placement_email
 from module.apis import call_name_enquiry
 from store.models import Store
-from store.serializers import CartSerializer, StoreSerializer
+from store.serializers import CartSerializer, StoreSerializer, StoreProductSerializer
 from superadmin.exceptions import raise_serializer_error_msg
 from transaction.models import Transaction
 from .filters import ProductFilter
@@ -616,6 +616,36 @@ class MobileStoreDetailRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = StoreSerializer
     queryset = Store.objects.filter(is_active=True, seller__status="active")
     lookup_field = "id"
+
+
+class MiniStoreAPIView(generics.ListAPIView):
+    permission_classes = []
+    pagination_class = CustomPagination
+    serializer_class = StoreProductSerializer
+
+    def get_queryset(self):
+        store_id = self.kwargs.get("store_id")
+        order_by = self.request.GET.get('sort_by', '')
+        category_id = self.request.GET.get("category_id")
+        search = self.request.GET.get("search")
+
+        query = Q(status='active', store__is_active=True, store__id=store_id)
+
+        if category_id:
+            query &= Q(category_id=category_id)
+
+        if search:
+            query &= Q(name__icontains=search)
+
+        if order_by:
+            queryset = sorted_queryset(order_by, query)
+            return queryset
+
+        queryset = Product.objects.filter(query).distinct()
+        return queryset
+
+
+
 
 
 

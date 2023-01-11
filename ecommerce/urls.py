@@ -46,5 +46,6 @@ urlpatterns = [
     path("mobile/category/<int:id>/", views.MobileCategoryDetailRetrieveAPIView.as_view(), name="mobile-category-detail"),
     path("mobile/store", views.MobileStoreListAPIView.as_view(), name="mobile-store"),
     path("mobile/store/<int:id>/", views.MobileStoreDetailRetrieveAPIView.as_view(), name="mobile-store-detail"),
+    path("mobile/store/<int:store_id>/product", views.MiniStoreAPIView.as_view(), name="mobile-store-detail"),
 
 ]
