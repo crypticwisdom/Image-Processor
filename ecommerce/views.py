@@ -97,10 +97,11 @@ class MallLandPageView(APIView):
                                             context={"request": request}).data
             if request.user.is_authenticated:
                 shopper = Profile.objects.get(user=request.user)
-                shopper_views = shopper.recent_viewed_products.split(",")
-                recent_view = ProductSerializer(Product.objects.filter(
-                    id__in=shopper_views, status="active", store__is_active=True).order_by("?"), many=True,
-                                                context={"request": request}).data
+                if shopper.recent_viewed_products:
+                    shopper_views = shopper.recent_viewed_products.split(",")
+                    recent_view = ProductSerializer(Product.objects.filter(
+                        id__in=shopper_views, status="active", store__is_active=True).order_by("?"), many=True,
+                                                    context={"request": request}).data
 
             response_container["recently_viewed"] = recent_view
 
