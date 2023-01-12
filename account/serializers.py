@@ -63,7 +63,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_recently_viewed_products(self, obj):
         recent_view = None
         if obj.recent_viewed_products:
-            shopper_views = obj.recent_viewed_products.split(",")
+            shopper_views = obj.recent_viewed_products.split(",")[1:]
             recent_view = ProductSerializer(Product.objects.filter(
                 id__in=shopper_views, status="active", store__is_active=True).order_by("?")[:10], many=True,
                                             context={"request": self.context.get("request")}).data
