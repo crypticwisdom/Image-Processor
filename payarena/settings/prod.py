@@ -2,7 +2,7 @@ from .base import *
 import dj_database_url
 from decouple import config
 
-SECRET_KEY = ''
+SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = False
 
