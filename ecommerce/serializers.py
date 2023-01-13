@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db.models import Sum, Avg
 
+from account.models import Profile
 from superadmin.exceptions import InvalidRequestException
 from .models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo, ProductType, \
     ProductWishlist, CartProduct, OrderProduct, Order, ReturnedProduct, ReturnProductImage, ReturnReason, Brand
@@ -61,6 +62,7 @@ class SimilarProductSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+
     store = serializers.SerializerMethodField()
     total_stock = serializers.SerializerMethodField()
     brand = serializers.SerializerMethodField()
@@ -69,10 +71,24 @@ class ProductSerializer(serializers.ModelSerializer):
     product_detail = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     similar = serializers.SerializerMethodField()
-    also_viewed = serializers.SerializerMethodField()
+    also_viewed_by_others = serializers.SerializerMethodField()
+    recently_viewed = serializers.SerializerMethodField()
     merchant_id = serializers.CharField(source="store.seller.merchant_id")
     checked_by = serializers.SerializerMethodField()
     approved_by = serializers.SerializerMethodField()
+
+    def get_recently_viewed(self, obj):
+        from store.serializers import StoreProductSerializer
+
+        request = self.context.get("request")
+        recent_view = Product.objects.filter(
+            status="active", store__is_active=True).order_by("-last_viewed_date").exclude(pk=obj.id)[:10]
+        if request.user.is_authenticated:
+            shopper = Profile.objects.get(user=request.user)
+            if shopper.recent_viewed_products:
+                shopper_views = shopper.recent_viewed_products.split(",")[1:]
+                recent_view = Product.objects.filter(id__in=shopper_views, status="active", store__is_active=True).order_by("?")[:15]
+        return StoreProductSerializer(recent_view, many=True, context={"request": request}).data
 
     def get_checked_by(self, obj):
         if obj.checked_by:
@@ -93,7 +109,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return SimilarProductSerializer(product[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True,
                                         context={"request": self.context.get("request")}).data
 
-    def get_also_viewed(self, obj):
+    def get_also_viewed_by_others(self, obj):
         viewed = Product.objects.filter(store__is_active=True, status='active',
                                         sub_category=obj.sub_category).order_by('?').exclude(pk=obj.id).distinct()
         if self.context.get('seller'):

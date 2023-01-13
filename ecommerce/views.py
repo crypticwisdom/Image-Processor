@@ -306,7 +306,7 @@ class ProductView(APIView, CustomPagination):
                 product.save()
                 serializer = ProductSerializer(product, context={"request": request}).data
             else:
-                prod = self.paginate_queryset(Product.objects.filter(status="active", store__is_active=True), request)
+                prod = self.paginate_queryset(Product.objects.filter(status="active", store__is_active=True).order_by("-id"), request)
                 queryset = ProductSerializer(prod, many=True, context={"request": request}).data
                 serializer = self.get_paginated_response(queryset).data
             return Response(serializer)
