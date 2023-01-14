@@ -18,7 +18,7 @@ from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_
 from merchant.merchant_email import merchant_order_placement_email
 from module.billing_service import BillingService
 from module.shipping_service import ShippingService
-from transaction.models import Transaction
+from transaction.models import Transaction, MerchantTransaction
 from .models import Cart, Product, ProductDetail, CartProduct, ProductReview, Order, OrderProduct
 
 from django.conf import settings
@@ -530,15 +530,34 @@ def update_purchase(order, payment_method):
 
     success, response = perform_order_pickup(order_products, order.address)
 
+    merchant_list = list()
+    trans = Transaction.objects.filter(order=order).first()
+
     if success is False:
         # Process refund to customer wallet
         pass
 
     for order_product in order_products:
+        merchant = order_product.product_detail.product.store.seller
+        if merchant not in merchant_list:
+            merchant_list.append(order_product.product_detail.product.store.seller)
         # Send order placement email to shopper
         Thread(target=shopper_order_placement_email, args=[order.customer, order.id, order_product]).start()
         # Send order placement email to seller
         Thread(target=merchant_order_placement_email, args=[order.customer, order, order_product]).start()
         # Send order placement email to admins
+
+    for seller in merchant_list:
+        order_prod = order_products.filter(product_detail__product__store__seller=seller)
+        delivery_fee = order_prod.first().delivery_fee
+        shipper_name = order_prod.first().shipper_name
+        seller_price = order_prod.aggregate(Sum("total"))["total__sum"] or 0
+        seller_total = delivery_fee + seller_price
+
+        # Create Merchant Transaction
+        MerchantTransaction.objects.create(
+            order=order, merchant=seller, transaction=trans, shipper=shipper_name, delivery_fee=delivery_fee,
+            amount=seller_price, total=seller_total
+        )
 
     return "Order Updated"
