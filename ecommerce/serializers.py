@@ -117,7 +117,6 @@ class ProductSerializer(serializers.ModelSerializer):
         return SimilarProductSerializer(viewed[:int(settings.SIMILAR_PRODUCT_LIMIT)], many=True,
                                         context={"request": self.context.get("request")}).data
 
-
     def get_store(self, obj):
         return {"id": obj.store.id, "name": obj.store.name}
 

@@ -6,7 +6,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["*", "mall.payarena.com"]
+ALLOWED_HOSTS = ["*", "apimall.payarena.com"]
 
 DATABASES = {
     'default': {

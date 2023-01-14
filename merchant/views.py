@@ -319,13 +319,13 @@ class MerchantTransactionView(APIView, CustomPagination):
 class ProductImageView(APIView):
 
     def post(self, request):
-        try:
-            image = request.data['image']
-            img = Image.objects.create(image=image)
-            return Response({"detail": "Image uploaded successfully", "image_id": img.id,
-                             "image_url": request.build_absolute_uri(img.image.url)})
-        except Exception as ex:
-            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+    # try:
+        image = request.data['image']
+        img = Image.objects.create(image=image)
+        return Response({"detail": "Image uploaded successfully", "image_id": img.id,
+                         "image_url": request.build_absolute_uri(img.image.url)})
+    # except Exception as ex:
+    #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         if not Image.objects.filter(id=pk).exists():
