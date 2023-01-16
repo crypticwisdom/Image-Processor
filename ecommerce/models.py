@@ -303,8 +303,7 @@ class OrderProduct(models.Model):
 
 
 class ReturnReason(models.Model):
-    reason = models.CharField(max_length=200, null=False, blank=False)
-    slug = models.CharField(max_length=200, null=True, blank=True)
+    reason = models.CharField(max_length=200)
 
     def __str__(self):
         return self.reason
