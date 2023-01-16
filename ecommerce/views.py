@@ -392,9 +392,10 @@ class ProductCheckoutView(APIView):
 class OrderAPIView(APIView, CustomPagination):
 
     def get(self, request, pk=None):
+        context = {"request": request}
         try:
             if pk:
-                data = OrderSerializer(Order.objects.get(id=pk, customer__user=request.user)).data
+                data = OrderSerializer(Order.objects.get(id=pk, customer__user=request.user), context=context).data
             else:
                 order_status = request.GET.get("status", None)
                 if order_status:
@@ -403,7 +404,7 @@ class OrderAPIView(APIView, CustomPagination):
                 else:
                     order = Order.objects.filter(customer__user=request.user, payment_status="success").order_by("-id")
                 queryset = self.paginate_queryset(order, request)
-                serializer = OrderSerializer(queryset, many=True, context={"request": request}).data
+                serializer = OrderSerializer(queryset, many=True, context=context).data
                 data = self.get_paginated_response(serializer).data
             return Response(data)
         except (Exception,) as err:
