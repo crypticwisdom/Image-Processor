@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Transaction
+from .models import Transaction, MerchantTransaction
 
 
 class TransactionModelAdmin(admin.ModelAdmin):
@@ -8,5 +8,6 @@ class TransactionModelAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Transaction, TransactionModelAdmin)
+admin.site.register(MerchantTransaction)
 
 

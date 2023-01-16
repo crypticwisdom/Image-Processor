@@ -63,7 +63,6 @@ def check_cart(user=None, cart_id=None, cart_uid=None):
 
 
 def create_or_update_cart_product(variant, cart):
-
     for variation_obj in variant:
         variation_id = variation_obj.get('variant_id', '')
         quantity = variation_obj.get('quantity', 1)
@@ -178,7 +177,8 @@ def top_monthly_categories(request):
     date_end = get_previous_month_date(today_date, 8)
     queryset = Product.objects.filter(
         created_on__gte=date_end, created_on__lte=today_date, status='active', store__is_active=True
-    ).order_by("-sale_count").values("category__id", "category__name", "category__image").annotate(Sum("sale_count")).order_by(
+    ).order_by("-sale_count").values("category__id", "category__name", "category__image").annotate(
+        Sum("sale_count")).order_by(
         "-sale_count__sum")[:100]
     for product in queryset:
         category = dict()
@@ -220,8 +220,9 @@ def get_shipping_rate(customer, address_id=None):
 
     if Address.objects.filter(id=address_id, customer=customer).exists():
         address = Address.objects.get(id=address_id, customer=customer)
+        print(address)
     elif Address.objects.filter(customer=customer, is_primary=True).exists():
-        address = Address.objects.get(customer=customer, is_primary=True)
+        address = Address.objects.filter(customer=customer, is_primary=True).first()
     else:
         address = Address.objects.filter(customer=customer).first()
 
