@@ -7,7 +7,7 @@ SECRET_KEY = 'wRDf2wWTN8zNoNPBvI5ADxwub24fEzOwHh8woTZkwufibfI-0QTSaA'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "89.38.135.41", "hopemail.tm-dev.xyz"]
 
 
 # Database
