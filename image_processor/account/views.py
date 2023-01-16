@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.response import Response
 from .serializers import ClientSerializer
-from .utils import validate_email, validate_text, validate_password #list_of_extensions, list_of_content_types
+from .utils import validate_email, validate_text, validate_password, list_of_extensions, list_of_content_types
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from .models import Client, ValidatorBlock
 from rest_framework.permissions import IsAuthenticated

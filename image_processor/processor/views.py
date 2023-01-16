@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from management.models import ApplicationExtension, ApplicationContentType
-from account.utils import validate_email, validate_text, validate_password, convert_to_kb # list_of_extensions, list_of_content_types, \
+from account.utils import validate_email, validate_text, validate_password, convert_to_kb, list_of_extensions, list_of_content_types
     
 import secrets
 from account.models import Client, ValidatorBlock
