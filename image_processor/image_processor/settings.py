@@ -4,17 +4,30 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-v##0*qw%9)4iptm!=8ar@#(lx*d)v$agp1tki9f9qf&+*btxn+'
+SECRET_KEY = 'wRDf2wWTN8zNoNPBvI5ADxwub24fEzOwHh8woTZkwufibfI-0QTSaA'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "89.38.135.41", "hopemail.tm-dev.xyz"]
+
+# Database
+# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'tm_ip_db',
+        'USER': 'tm_ip',
+        'HOST': 'localhost',
+        'PASSWORD': 'iamherenow',
+        'PORT': 5432
+    }
+}
 
 
 # Application definition
@@ -86,7 +99,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -118,3 +130,25 @@ REST_FRAMEWORK = {
 
 # Django project settings.py
 AUTH_USER_MODEL = 'account.Client'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
+    'UPDATE_LAST_LOGIN': True,
+    'AUTH_HEADER_TYPES': ('Bearer', 'Token',),
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+}
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://localhost:8000",
+    "http://localhost:80",
+    "http://localhost:3000",
+    "http://localhost",
+    "http://127.0.0.1"
+]
+
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS

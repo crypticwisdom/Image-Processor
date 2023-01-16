@@ -7,15 +7,7 @@ from decouple import config
 
 def main():
     """Run administrative tasks."""
-    if os.getenv('env', 'prod') == 'dev' or config('env', 'prod') == 'dev':
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'image_processor.settings.dev')
-
-    elif os.getenv('env', 'dev') == 'prod' or config('env', 'dev') == 'prod':
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'image_processor.settings.prod')
-    else:
-        raise EnvironmentError("\n\nThis application does not have a configured Environment to run on.\n "
-                               "Set Application Environment.\n\n")
-
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'image_processor.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
