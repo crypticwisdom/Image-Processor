@@ -32,6 +32,10 @@ urlpatterns = [
     path("order/return/<int:pk>/", views.OrderReturnView.as_view(), name="return-order-detail"),
     path("order/return/", views.OrderReturnView.as_view(), name="return-all"),
 
+    # Return Reasons
+    path('return-reason/', views.ReturnReasonListAPIView.as_view(), name='return-reason'),
+    path('return-reason/<int:id>/', views.ReturnReasonRetrieveAPIView.as_view(), name='return-reason-detail'),
+
     # Customer Dashboard
     path("dashboard/", views.CustomerDashboardView.as_view(), name="customer-dashboard"),
 

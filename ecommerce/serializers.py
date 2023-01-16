@@ -361,7 +361,7 @@ class ReturnProductImageSerializer(serializers.ModelSerializer):
 class ReturnReasonSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReturnReason
-        fields = ['id', 'reason']
+        exclude = []
 
 
 class ReturnedProductSerializer(serializers.ModelSerializer):
@@ -436,5 +436,11 @@ class MobileCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
         exclude = []
+
+
+# class ReturnReasonSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = ReturnReason
+#         exclude = []
 
 

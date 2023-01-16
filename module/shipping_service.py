@@ -251,7 +251,6 @@ class ShippingService:
         payload = json.dumps(payload)
 
         url = f"{base_url}/operations/bookOrders"
-        log_request(f"url: {url}", f"payload: {payload}")
         response = requests.request("POST", url, data=payload, headers=header).json()
         log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
         return response

@@ -14,7 +14,7 @@ from django.utils import timezone
 
 from account.models import Address
 from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime, get_next_date, \
-    get_year_start_and_end_datetime, get_previous_month_date
+    get_year_start_and_end_datetime, get_previous_month_date, log_request
 from merchant.merchant_email import merchant_order_placement_email
 from module.billing_service import BillingService
 from module.shipping_service import ShippingService
@@ -457,6 +457,7 @@ def perform_order_pickup(order_product, address):
     response = ShippingService.pickup(order_products=order_product, address=address, order_summary=summary)
 
     if "error" in response:
+        log_request(f"Error while booking Order: {response}")
         return False, "Order cannot be placed at the moment"
 
     # Update OrderProduct
@@ -528,7 +529,6 @@ def update_purchase(order, payment_method):
     # Update payment method
     order_products.update(payment_method=payment_method)
     # Call pickup order request
-
     success, response = perform_order_pickup(order_products, order.address)
 
     merchant_list = list()

@@ -44,6 +44,28 @@ class PayArenaServices:
         return res.json()
 
     @classmethod
+    def forget_password(cls, email):
+        url = f"{base_url}/account/forgetpassword"
+        payload = {
+            "EmailAddress": email
+        }
+        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload).json()
+        log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
+        return response
+
+    @classmethod
+    def reset_password(cls, email, pin, password):
+        url = f"{base_url}/account/resetpassword"
+        payload = {
+            "EmailAddress": email,
+            "OTP": pin,
+            "Password": password
+        }
+        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload).json()
+        log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
+        return response
+
+    @classmethod
     def change_password(cls, profile, old_password, new_password):
         url = f"{base_url}/account/changepassword"
         header = cls.get_auth_header(profile)

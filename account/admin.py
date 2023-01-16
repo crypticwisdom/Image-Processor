@@ -1,5 +1,5 @@
 from django.contrib import admin
-from account.models import Profile, ForgotPasswordOTP, Address
+from account.models import Profile, Address
 
 
 class AddressStackInlineAdmin(admin.StackedInline):
@@ -14,4 +14,3 @@ class ProfileAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Profile, ProfileAdmin)
-admin.site.register(ForgotPasswordOTP)

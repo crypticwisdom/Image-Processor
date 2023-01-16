@@ -299,6 +299,29 @@ def confirm_or_create_billing_account(profile, email, password):
     return True
 
 
+def forget_password(email):
+    if not email:
+        return False, "Email address is required"
+
+    PayArenaServices.forget_password(email)
+
+    return True, "An OTP has been sent to your email address"
+
+
+def reset_password(pin, password, email, user):
+    response = PayArenaServices.reset_password(email, pin, password)
+    if "Success" in response:
+        if response["Success"] is True:
+            # Change mall user password
+            password = make_password(password=password)
+            user.password = password
+            user.save()
+        else:
+            return False, "An error has occurred, please try again later"
+
+    return True, "Password reset was successful, please proceed to login"
+
+
 
 
 

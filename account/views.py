@@ -14,13 +14,12 @@ from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
-from .email import forgot_password_mail
 from threading import Thread
 from .serializers import ProfileSerializer, CustomerAddressSerializer, CreateCustomerAddressSerializer
 from .utils import validate_email, merge_carts, create_account, send_shopper_verification_email, \
     register_payarena_user, login_payarena_user, change_payarena_user_password, get_wallet_info, \
     validate_phone_number_for_wallet_creation, create_user_wallet, make_payment_for_wallet, \
-    confirm_or_create_billing_account
+    confirm_or_create_billing_account, forget_password, reset_password
 
 
 class LoginView(APIView):
@@ -150,96 +149,45 @@ class SignupView(APIView):
 
 
 # Pending the flow for Forgot Password.
-class ForgotPasswordSendOTPView(APIView):
+class ForgotPasswordView(APIView):
     permission_classes = []
 
+    def get(self, request):
+        email = request.data.get("email")
+
+        if not email:
+            return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not validate_email(email):
+            return Response({"detail": "Invalid Email Format"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Call UP to send email with OTP to email
+        Thread(target=forget_password, args=[email]).start()
+        return Response({"detail": "An OTP has been sent to your email address"})
+
     def post(self, request):
+        otp = request.data.get("otp")
+        email = request.data.get("email")
+        password = request.data.get("password")
+        password_confirm = request.data.get("password_confirm")
+        response_status = status.HTTP_400_BAD_REQUEST
+
+        if not all([otp, email, password]):
+            return Response({"detail": "otp, email, and password are required"}, status=response_status)
+
+        if password != password_confirm:
+            return Response({"detail": "Passwords mismatch"}, status=response_status)
+
         try:
-            email = request.data.get("email")
-
-            if email is None:
-                return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-            if '@' in email:
-                if not validate_email(email):
-                    return Response({"detail": "Invalid Email Format"}, status=status.HTTP_400_BAD_REQUEST)
-
-                # Get user instance with email
-                user_instance = User.objects.filter(email=email).first()
-                if not user_instance:
-                    return Response({"detail": "No user found with this email"}, status=status.HTTP_400_BAD_REQUEST)
-
-                # email_or_username = user_instance.email
-            # else:
-            #     # Get user instance with username
-            #     user_instance = User.objects.filter(username=email_or_username).first()
-            #
-            #     if not user_instance:
-            #         return Response({"detail": "No user found with this username"}, status=status.HTTP_400_BAD_REQUEST)
-            #
-            #     email_or_username = user_instance.email
-
-            # A forgot_password_instance is created to hold a generated_otp and the user's email.
-            generated_otp = secrets.token_hex(3)
-            forgot_password_instance = ForgotPasswordOTP(otp=generated_otp, email=email,
-                                                         expire_time=timezone.now() + timezone.timedelta(minutes=5))
-            forgot_password_instance.save()
-
-            # Inform user that someone has requested a password reset with his email.
-            # The notification would be sent with a link to redirect them to where they will enter a new password.
-
-            # pass forgot_password_instance, into the 'forgot_password_mail' thread
-            # run a cronjob to change the 'is_used' field to True after 5 minutes.
-            Thread(target=forgot_password_mail, kwargs={"email": email,
-                                                        "forgot_password_instance": forgot_password_instance}).start()
-
-            return Response({"detail": "A message containing an OTP has been sent to your mail"},
-                            status=status.HTTP_200_OK)
-        except (TypeError, Exception) as err:
-            print(err)
-            # Log
-            return Response({"detail": "An error occurred while receiving email for [password forgot]"},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request):
-        try:
-            otp = request.data.get("otp", None)
-            password, password_confirm = request.data.get("password", None), request.data.get("password_confirm", None)
-
-            otp_instance = ForgotPasswordOTP.objects.get(otp=otp)
-            if otp:
-                if otp_instance.is_sent is False or timezone.now() > otp_instance.expire_time or otp_instance.is_used is True:
-                    # Either mail was not sent or token has lived for 5 minutes (expired)
-                    return Response({"detail": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({"detail": "OTP is field required"}, status=status.HTTP_400_BAD_REQUEST)
-
-            if password is None:
-                return Response({"detail": "Password is field required"}, status=status.HTTP_400_BAD_REQUEST)
-
-            if password_confirm is None:
-                return Response({"detail": "Password does not match"}, status=status.HTTP_400_BAD_REQUEST)
-
-            if password != password_confirm:
-                return Response({"detail": "Password does not match"}, status=status.HTTP_400_BAD_REQUEST)
-
-            user = User.objects.get(email=otp_instance.email)
-
-            if user is not None:
-                password = make_password(password=password)
-                user.password = password
-                user.save()
-
-                otp_instance.is_used = True
-                otp_instance.save()
-
-                return Response({"detail": "Password reset successful"}, status=status.HTTP_200_OK)
-
-            return Response({"detail": "Password reset was not successful"}, status=status.HTTP_400_BAD_REQUEST)
+            user = User.objects.get(email=email)
         except (Exception,) as err:
-            print(err)
-            # Log
-            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
+            log_request(f"Error: {err}")
+            return Response({"detail": f"{err}"}, status=response_status)
+
+        success, detail = reset_password(otp, password, email, user)
+        if success is True:
+            response_status = status.HTTP_200_OK
+        return Response({"detail": f"{detail}"}, status=response_status)
 
 
 class ChangePasswordView(APIView):

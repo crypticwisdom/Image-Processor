@@ -25,7 +25,7 @@ from transaction.models import Transaction
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
     CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer, \
-    ProductReviewSerializerOut, ProductReviewSerializerIn, MobileCategorySerializer
+    ProductReviewSerializerOut, ProductReviewSerializerIn, MobileCategorySerializer, ReturnReasonSerializer
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
     OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview
@@ -646,8 +646,17 @@ class MiniStoreAPIView(generics.ListAPIView):
         return queryset
 
 
+class ReturnReasonListAPIView(generics.ListAPIView):
+    queryset = ReturnReason.objects.all()
+    serializer_class = ReturnReasonSerializer
+    permission_classes = []
 
 
+class ReturnReasonRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = ReturnReason.objects.all()
+    serializer_class = ReturnReasonSerializer
+    permission_classes = []
+    lookup_field = "id"
 
 
 

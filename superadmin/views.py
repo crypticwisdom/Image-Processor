@@ -30,10 +30,11 @@ from store.models import Store
 from store.serializers import ProductCategorySerializer
 from superadmin.exceptions import raise_serializer_error_msg
 from superadmin.models import AdminUser, Role
-from superadmin.serializers import AdminUserSerializer, CreateAdminUserSerializerIn, BannerSerializer, RoleSerializerOut
+from superadmin.serializers import AdminUserSerializer, CreateAdminUserSerializerIn, BannerSerializer, \
+    RoleSerializerOut, AdminMerchantTransactionSerializer
 from superadmin.utils import create_or_update_category, check_permission, perform_banner_filter, \
     create_or_edit_banner_obj
-from transaction.models import Transaction
+from transaction.models import Transaction, MerchantTransaction
 from transaction.serializers import TransactionSerializer
 
 
@@ -723,6 +724,21 @@ class AdminRoleListAPIView(generics.ListAPIView):
     permission_classes = [IsSuperAdmin]
     queryset = Role.objects.all().order_by("-created_on")
     serializer_class = RoleSerializerOut
+
+
+class AdminMerchantTransactionListAPIView(generics.ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = MerchantTransaction.objects.all()
+    serializer_class = AdminMerchantTransactionSerializer
+    pagination_class = CustomPagination
+
+
+class AdminMerchantTransactionRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = MerchantTransaction.objects.all()
+    serializer_class = AdminMerchantTransactionSerializer
+    pagination_class = CustomPagination
+    lookup_field = "id"
 
 
 
