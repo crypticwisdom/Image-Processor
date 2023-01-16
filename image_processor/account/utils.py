@@ -1,11 +1,11 @@
 import re
-from management.models import ApplicationExtension, ApplicationContentType
+from .models import ApplicationExtension, ApplicationContentType
 
 # Query list of Available extension-id
-list_of_extensions = [extension.id for extension in ApplicationExtension.objects.all()]
+# list_of_extensions = [extension.id for extension in ApplicationExtension.objects.all()]
 
 # Query list of Available content type-id
-list_of_content_types = [content_type.id for content_type in ApplicationContentType.objects.all()]
+# list_of_content_types = [content_type.id for content_type in ApplicationContentType.objects.all()]
 
 
 def validate_email(email):
