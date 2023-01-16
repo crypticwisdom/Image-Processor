@@ -1,0 +1,9 @@
+*../.idea/
+venv_ip/*
+venv_ip/
+venv/*
+.idea/*
+*__pycache__/
+__pycache__/
+.env
+format.py
