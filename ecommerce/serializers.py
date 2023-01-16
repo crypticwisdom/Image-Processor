@@ -326,7 +326,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_order_products(self, obj):
         if OrderProduct.objects.filter(order=obj).exists():
-            return OrderProductSerializer(OrderProduct.objects.filter(order=obj), many=True).data
+            return OrderProductSerializer(OrderProduct.objects.filter(order=obj), many=True, context={"request": self.context.get("request")}).data
         return None
 
     class Meta:

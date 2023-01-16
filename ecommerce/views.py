@@ -403,7 +403,7 @@ class OrderAPIView(APIView, CustomPagination):
                 else:
                     order = Order.objects.filter(customer__user=request.user, payment_status="success").order_by("-id")
                 queryset = self.paginate_queryset(order, request)
-                serializer = OrderSerializer(queryset, many=True).data
+                serializer = OrderSerializer(queryset, many=True, context={"request": request}).data
                 data = self.get_paginated_response(serializer).data
             return Response(data)
         except (Exception,) as err:
