@@ -6,7 +6,6 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from management.models import ApplicationExtension, ApplicationContentType
 from account.utils import validate_email, validate_text, validate_password, convert_to_kb, list_of_extensions, list_of_content_types
-    
 import secrets
 from account.models import Client, ValidatorBlock
 from processor.serializers import ValidatorBlockSerializer
@@ -117,7 +116,7 @@ class CreateValidationBlockView(APIView):
                                                   image_height_dimension_threshold=image_height_dimension_threshold,
                                                   image_width_dimension_threshold=image_width_dimension_threshold,
                                                   numb_of_images_per_process=numb_of_images_per_process)
-
+            print(allowed_extensions)
             for id_ in allowed_extensions:
                 if id_ not in list_of_extensions:  # 'image/gif', 'image/svg+xml' can be allowed later.
                     block.delete()  # Delete created block.
@@ -128,6 +127,7 @@ class CreateValidationBlockView(APIView):
                 extension = ApplicationExtension.objects.get(id=id_)
                 block.allowed_extensions.add(extension)
 
+            print(content_types)
             for typ_id in content_types:
                 if typ_id not in list_of_content_types:  # 'gif' and more can be allowed later.
                     block.delete()  # Delete created block.
