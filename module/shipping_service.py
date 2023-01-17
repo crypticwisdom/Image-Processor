@@ -75,10 +75,10 @@ class ShippingService:
 
             merchant["PickupAddress"] = seller.get_full_address()
             merchant["PickupCoordinate"] = dict()
-            merchant["PickupCoordinate"]["Latitude"] = 6.639438
-            merchant["PickupCoordinate"]["Longitude"] = 3.330983
-            # merchant["PickupCoordinate"]["Latitude"] = seller.latitude
-            # merchant["PickupCoordinate"]["Longitude"] = seller.longitude
+            # merchant["PickupCoordinate"]["Latitude"] = 6.639438
+            # merchant["PickupCoordinate"]["Longitude"] = 3.330983
+            merchant["PickupCoordinate"]["Latitude"] = seller.latitude
+            merchant["PickupCoordinate"]["Longitude"] = seller.longitude
             merchant["PickupTime"] = str(pickup_time)
             merchant["PickupDate"] = str(pickup_date).replace("-", "/")
             merchant["PickupCity"] = seller.city
@@ -90,10 +90,10 @@ class ShippingService:
             merchant["ReceiverPhoneNumber"] = f"0{customer.phone_number[-10:]}"
             merchant["DeliveryAddress"] = customer_address.get_full_address()
             merchant["DeliveryCoordinate"] = dict()
-            merchant["DeliveryCoordinate"]["Latitude"] = 6.5483777
-            merchant["DeliveryCoordinate"]["Longitude"] = 3.3883414
-            # merchant["DeliveryCoordinate"]["Latitude"] = customer_address.latitude
-            # merchant["DeliveryCoordinate"]["Longitude"] = customer_address.longitude
+            # merchant["DeliveryCoordinate"]["Latitude"] = 6.5483777
+            # merchant["DeliveryCoordinate"]["Longitude"] = 3.3883414
+            merchant["DeliveryCoordinate"]["Latitude"] = customer_address.latitude
+            merchant["DeliveryCoordinate"]["Longitude"] = customer_address.longitude
             merchant["DeliveryState"] = customer_address.state
             merchant["DeliveryStationId"] = 4
             merchant["DeliveryCity"] = customer_address.city
@@ -107,7 +107,7 @@ class ShippingService:
             for product in seller_products:
                 item = dict()
                 quantity = product.get('quantity')
-                uid = product.get('cart_product_id')
+                uid = product.get('merchant_id')
                 weight = product.get("weight")
                 price = product.get("price")
                 description = product.get("detail")
@@ -133,6 +133,7 @@ class ShippingService:
 
         payload["TotalWeight"] = sum(overall_weight)
         payload = json.dumps(payload)
+        log_request(f"payload ------->>>>> {payload}")
 
         url = f"{base_url}/operations/quote"
 
@@ -184,10 +185,10 @@ class ShippingService:
             detail["PickupTime"] = str(pickup_time)
             detail["PickupDate"] = str(pickup_date).replace("-", "/")
             detail["PickupCoordinate"] = dict()
-            detail["PickupCoordinate"]["Latitude"] = 6.639438
-            detail["PickupCoordinate"]["Longitude"] = 3.330983
-            # detail["PickupCoordinate"]["Latitude"] = seller.latitude
-            # detail["PickupCoordinate"]["Longitude"] = seller.longitude
+            # detail["PickupCoordinate"]["Latitude"] = 6.639438
+            # detail["PickupCoordinate"]["Longitude"] = 3.330983
+            detail["PickupCoordinate"]["Latitude"] = seller.latitude
+            detail["PickupCoordinate"]["Longitude"] = seller.longitude
             detail["PickUpLandmark"] = seller.town
             detail["PickupAddress"] = seller.get_full_address()
             detail["SenderPhoneNumber"] = f"0{seller.phone_number[-10:]}"
@@ -196,10 +197,10 @@ class ShippingService:
             detail["RecipientEmail"] = customer.user.email
             detail["DeliveryAddress"] = address.get_full_address()
             detail["DeliveryCoordinate"] = dict()
-            detail["DeliveryCoordinate"]["Latitude"] = 6.5483777
-            detail["DeliveryCoordinate"]["Longitude"] = 3.3883414
-            # detail["DeliveryCoordinate"]["Latitude"] = address.latitude
-            # detail["DeliveryCoordinate"]["Longitude"] = address.longitude
+            # detail["DeliveryCoordinate"]["Latitude"] = 6.5483777
+            # detail["DeliveryCoordinate"]["Longitude"] = 3.3883414
+            detail["DeliveryCoordinate"]["Latitude"] = address.latitude
+            detail["DeliveryCoordinate"]["Longitude"] = address.longitude
             detail["DeliveryType"] = "Normal"
             detail["DeliveryTime"] = "4 AM to 7 PM"
             detail["ReceiverPhoneNumber"] = f"0{customer.phone_number[-10:]}"
@@ -209,10 +210,9 @@ class ShippingService:
             detail["TotalWeight"] = order_product.product_detail.weight
             detail["PickupStationId"] = 4
             detail["DeliveryStationId"] = 4
-            detail["SenderTownId"] = kwargs.get("sender_town_id")
-            detail["ReceiverTownId"] = kwargs.get("receiver_town_id")
+            detail["SenderTownId"] = seller.town_id
+            detail["ReceiverTownId"] = address.town_id
             detail["PickupCity"] = seller.city
-            detail["DeliveryCity"] = address.city
             detail["DeliveryCity"] = address.city
 
             shipment = list()
@@ -251,7 +251,6 @@ class ShippingService:
         payload = json.dumps(payload)
 
         url = f"{base_url}/operations/bookOrders"
-
         response = requests.request("POST", url, data=payload, headers=header).json()
         log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
         return response

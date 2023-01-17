@@ -28,6 +28,7 @@ urlpatterns = [
     path("login/", views.AdminSignInAPIView.as_view(), name="admin-login"),
     path("admins/", views.AdminUserListCreateAPIView.as_view(), name="admin-user"),
     path("admins/<int:id>/", views.AdminUserRetrieveUpdateAPIView.as_view(), name="admin-user-detail"),
+    path("roles/", views.AdminRoleListAPIView.as_view(), name="list-role"),
 
     # Banner/Promo
     path("banner-promo/", views.AdminBannerView.as_view(), name="banner"),
@@ -36,9 +37,12 @@ urlpatterns = [
     # Transaction
     path("transaction/", views.AdminTransactionListAPIView.as_view(), name="transactions"),
     path("transaction/<int:id>/", views.AdminTransactionRetrieveAPIView.as_view(), name="transaction-detail"),
+    path("merchant-transaction/", views.AdminMerchantTransactionListAPIView.as_view(), name="merchant-transactions"),
+    path("merchant-transaction/<int:id>/", views.AdminMerchantTransactionRetrieveAPIView.as_view(), name="merchant-transaction-detail"),
 
     # Customers
-    path("customer/", views.AdminTransactionListAPIView.as_view(), name="transactions"),
+    path("customer/", views.ProfileListAPIView.as_view(), name="customer"),
+    path("customer/<int:id>/", views.ProfileDetailRetrieveAPIView.as_view(), name="customer-detail"),
 
     # Orders
     path('orders/', views.OrdersView.as_view(), name="orders"),

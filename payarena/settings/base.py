@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'storages',
     'rest_framework_simplejwt',
+    'django_elasticsearch_dsl',
 
 ]
 

@@ -7,6 +7,7 @@ from ecommerce.models import Promo, ProductCategory
 from store.models import Store
 from superadmin.models import Role, AdminUser
 from superadmin.exceptions import InvalidRequestException
+from transaction.models import MerchantTransaction
 
 
 class RoleSerializerOut(serializers.ModelSerializer):
@@ -153,7 +154,29 @@ class BannerSerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class AdminMerchantTransactionSerializer(serializers.ModelSerializer):
+    # order_id, customer_id, merchant_id, transaction_id ref, biller_code
+    customer = serializers.SerializerMethodField()
+    merchant = serializers.SerializerMethodField()
+    transaction_ref = serializers.CharField(source="transaction.transaction_reference")
 
+    def get_customer(self, obj):
+        data = dict()
+        data["id"] = obj.order.customer_id
+        data["first_name"] = obj.order.customer.user.first_name
+        data["last_name"] = obj.order.customer.user.last_name
+        data["email"] = obj.order.customer.user.email
+        return data
+
+    def get_merchant(self, obj):
+        data = dict()
+        data["id"] = obj.merchant_id
+        data["biller_code"] = obj.merchant.biller_code
+        return data
+
+    class Meta:
+        model = MerchantTransaction
+        exclude = ["transaction"]
 
 
 

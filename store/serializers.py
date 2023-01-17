@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 from rest_framework import serializers
 
 from ecommerce.models import ProductImage, ProductReview, ProductWishlist, CartProduct, Brand, Product, \
@@ -35,9 +35,51 @@ class ProductCategorySerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class StoreProductSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    discount = serializers.SerializerMethodField()
+    product_detail_id = serializers.SerializerMethodField()
+
+    def get_product_detail_id(self, obj):
+        return ProductDetail.objects.filter(product=obj).first().id or None
+
+    def get_image(self, obj):
+        if obj.image:
+            return self.context.get("request").build_absolute_uri(obj.image.image.url)
+        return None
+
+    def get_price(self, obj):
+        return ProductDetail.objects.filter(product=obj).first().price or 0
+
+    def get_discount(self, obj):
+        return ProductDetail.objects.filter(product=obj).first().discount or 0
+
+    def get_average_rating(self, obj):
+        return ProductReview.objects.filter(product=obj).aggregate(Avg('rating'))['rating__avg'] or 0
+
+    class Meta:
+        model = Product
+        fields = [
+            "id", "name", "category", "image", "description", "average_rating", "price", "discount", "sale_count",
+            "view_count", "product_detail_id"
+        ]
+
+
 class StoreSerializer(serializers.ModelSerializer):
     seller = SellerSerializer(many=False)
     # categories = ProductCategorySerializer(many=True)
+    products = serializers.SerializerMethodField()
+
+    def get_products(self, obj):
+        request = self.context.get("request")
+        response = list()
+        data = dict()
+        data["recent"] = StoreProductSerializer(Product.objects.filter(store=obj, status="active").order_by("-id")[:10], many=True, context={"request": request}).data
+        data["best_selling"] = StoreProductSerializer(Product.objects.filter(store=obj, status="active").order_by("-sale_count")[:10], many=True, context={"request": request}).data
+        response.append(data)
+        return response
 
     class Meta:
         model = Store
@@ -130,20 +172,26 @@ class CartProductSerializer(serializers.ModelSerializer):
     variant_id = serializers.IntegerField(source="product_detail.id")
     store_name = serializers.CharField(source="product_detail.product.store.name")
     product_name = serializers.CharField(source="product_detail.product.name")
+    product_id = serializers.IntegerField(source="product_detail.product.id")
     description = serializers.CharField(source="product_detail.product.description")
     image = serializers.SerializerMethodField()
 
     def get_image(self, obj):
         image = None
         request = self.context.get("request")
-        if ProductImage.objects.filter(product_detail=obj.product_detail).exists():
-            prod_image = ProductImage.objects.filter(product_detail=obj.product_detail).first()
-            image = request.build_absolute_uri(prod_image.image.image.url)
+        if obj.product_detail.product.image:
+            image = request.build_absolute_uri(obj.product_detail.product.image.image.url)
+        # if ProductImage.objects.filter(product_detail=obj.product_detail).exists():
+        #     prod_image = ProductImage.objects.filter(product_detail=obj.product_detail).first()
+        #     image = request.build_absolute_uri(prod_image.image.image.url)
         return image
 
     class Meta:
         model = CartProduct
-        fields = ['variant_id', 'store_name', 'product_name', 'description', 'image', 'price', 'quantity', 'discount', 'created_on', 'updated_on']
+        fields = [
+            'id', 'variant_id', 'store_name', 'product_id', 'product_name', 'description', 'image', 'price', 'quantity',
+            'discount', 'created_on', 'updated_on'
+        ]
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -160,7 +208,7 @@ class CartSerializer(serializers.ModelSerializer):
     def get_cart_products(self, obj):
         request = self.context.get("request")
         if CartProduct.objects.filter(cart=obj).exists():
-            return CartProductSerializer(CartProduct.objects.filter(cart=obj),context={"request": request}, many=True).data
+            return CartProductSerializer(CartProduct.objects.filter(cart=obj), context={"request": request}, many=True).data
         return None
 
     class Meta:

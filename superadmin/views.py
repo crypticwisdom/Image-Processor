@@ -19,7 +19,7 @@ from ecommerce.serializers import *
 from account.serializers import *
 from ecommerce.utils import top_monthly_categories
 from home.utils import get_previous_date, get_month_start_and_end_datetime, get_year_start_and_end_datetime, \
-    get_week_start_and_end_datetime
+    get_week_start_and_end_datetime, log_request
 from merchant.merchant_email import merchant_account_approval_email, merchant_upload_guide_email
 from merchant.permissions import *
 from merchant.models import Seller, BankAccount
@@ -29,11 +29,12 @@ from module.apis import u_map_registration
 from store.models import Store
 from store.serializers import ProductCategorySerializer
 from superadmin.exceptions import raise_serializer_error_msg
-from superadmin.models import AdminUser
-from superadmin.serializers import AdminUserSerializer, CreateAdminUserSerializerIn, BannerSerializer
+from superadmin.models import AdminUser, Role
+from superadmin.serializers import AdminUserSerializer, CreateAdminUserSerializerIn, BannerSerializer, \
+    RoleSerializerOut, AdminMerchantTransactionSerializer
 from superadmin.utils import create_or_update_category, check_permission, perform_banner_filter, \
     create_or_edit_banner_obj
-from transaction.models import Transaction
+from transaction.models import Transaction, MerchantTransaction
 from transaction.serializers import TransactionSerializer
 
 
@@ -99,7 +100,10 @@ class DashboardAPIView(APIView):
             prod = dict()
             prod["product_id"] = product.id
             prod["product_name"] = product.name
-            prod["image"] = request.build_absolute_uri(product.image.image.url)
+            if product.image:
+                prod["image"] = request.build_absolute_uri(product.image.image.url)
+            else:
+                prod["image"] = None
             prod["store_name"] = product.store.name
             prod["category_name"] = product.category.name
             prod["sale_count"] = product.sale_count
@@ -110,7 +114,10 @@ class DashboardAPIView(APIView):
             prod = dict()
             prod["product_id"] = product.id
             prod["product_name"] = product.name
-            prod["image"] = request.build_absolute_uri(product.image.image.url)
+            if product.image:
+                prod["image"] = request.build_absolute_uri(product.image.image.url)
+            else:
+                prod["image"] = None
             prod["store_name"] = product.store.name
             prod["category_name"] = product.category.name
             prod["view_count"] = product.view_count
@@ -119,7 +126,7 @@ class DashboardAPIView(APIView):
         data["last_purchases"] = last_purchased
         data["best_selling_products"] = best_selling
         data["most_viewed_products"] = most_viewed
-        data["top_categories_for_the_month"] = top_monthly_categories()
+        data["top_categories_for_the_month"] = top_monthly_categories(request)
         data["total_merchant"] = Seller.objects.all().count()
         data["total_customer"] = Profile.objects.all().count()
         data["total_product"] = Product.objects.all().count()
@@ -169,8 +176,9 @@ class ProductListAPIView(generics.ListAPIView):
     def get_queryset(self):
         prod_status = self.request.GET.get("status")
         queryset = Product.objects.all().order_by("-id")
-        if status:
+        if prod_status:
             queryset = Product.objects.filter(status=prod_status).order_by("-id")
+        print(queryset)
         return queryset
 
 
@@ -178,10 +186,27 @@ class ProductListAPIView(generics.ListAPIView):
 
 # Profile Start
 class ProfileListAPIView(generics.ListAPIView):
-    permission_classes = [IsAdminUser]
     serializer_class = ProfileSerializer
-    queryset = Profile.objects.all().order_by("-id")
+    permission_classes = [IsAdminUser]
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ["user__first_name", "user__last_name", "user__email", "phone_number"]
+
+    def get_queryset(self):
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
+        queryset = Profile.objects.all().order_by("-id")
+        if date_from and date_to:
+            queryset = Profile.objects.filter(created_on__range=[date_from, date_to]).order_by("-id")
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        response = super(ProfileListAPIView, self).list(request, args, kwargs)
+        response.data['total_customer'] = Profile.objects.all().count()
+        response.data['total_active_customer'] = Profile.objects.filter(user__is_active=True).count()
+        date = get_previous_date(date=datetime.datetime.now(), delta=7)
+        response.data['recent_customer'] = Profile.objects.filter(created_on__gte=date).count()
+        return response
 
 
 class ProfileDetailRetrieveAPIView(generics.RetrieveAPIView):
@@ -192,7 +217,6 @@ class ProfileDetailRetrieveAPIView(generics.RetrieveAPIView):
 
 
 # Profile End
-
 
 # Brand Start
 class BrandListAPIView(generics.ListCreateAPIView):
@@ -357,52 +381,65 @@ class UpdateMerchantStatusAPIView(APIView):
         seller_status = request.data.get("status")
 
         biller_code = request.data.get("biller_code")
-        merchant_id = request.data.get("merchant_id")
+        merchant_id = settings.PAYARENA_MERCHANT_ID
         feel = request.data.get("FEEL")
         fep_type = request.data.get("FEP_TYPE")
 
-        # try:
-        seller = Seller.objects.get(id=seller_id)
-        seller.status = seller_status
+        try:
+            seller = Seller.objects.get(id=seller_id)
+            seller.status = seller_status
 
-        if seller_status == "approve":
-            if not all([biller_code, feel, fep_type, merchant_id]):
-                return Response({"detail": "Biller Code, MerchantID, FEEL1 and FEP_TYPE are required to onboard "
-                                           "merchant"}, status=status.HTTP_400_BAD_REQUEST)
+            if seller_status == "approve":
+                if not all([biller_code, feel, fep_type]):
+                    return Response({"detail": "Biller Code, FEEL1 and FEP_TYPE are required to onboard "
+                                               "merchant"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if not (fep_type == "flat" or fep_type == "rate"):
-                return Response({"detail": "FEP TYPE can either be 'rate' or 'flat'"}, status=status.HTTP_400_BAD_REQUEST)
+                if not (fep_type == "flat" or fep_type == "rate"):
+                    return Response({"detail": "FEP TYPE can either be 'rate' or 'flat'"},
+                                    status=status.HTTP_400_BAD_REQUEST)
 
-            seller.biller_code = biller_code
-            seller.feel = feel
-            seller.fep_type = fep_type
-            seller.merchant_id = merchant_id
+                seller.biller_code = biller_code
+                seller.feel = feel
+                seller.fep_type = fep_type
+                seller.merchant_id = merchant_id
+                seller.status = "active"
+                seller.approved_by = request.user
 
-            store_name = Store.objects.filter(seller=seller).last().name
-            bank_account = BankAccount.objects.filter(seller=seller).last()
+                store_name = Store.objects.filter(seller=seller).last().name
+                bank_account = BankAccount.objects.filter(seller=seller).last()
 
-            # Update seller on UMAP
-            response = u_map_registration(
-                biller_id=biller_code, description=str(store_name).upper(), merchant_id=merchant_id,
-                account_no=bank_account.account_number, account_name=bank_account.account_name,
-                bank_code=bank_account.bank_code, fep_type=str(fep_type).upper()[0], feel=feel
-            )
-            print(response)
-            if response["RESPONSE_CODE"] != "00":
-                reason = response["RESPONSE_DESCRIPTION"]
-                return Response({"detail": reason}, status=status.HTTP_400_BAD_REQUEST)
+                if not bank_account:
+                    return Response({"detail": "Merchant has no bank account"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Send Approval Email to seller
-            Thread(target=merchant_account_approval_email, args=[seller.user.email]).start()
-            Thread(target=merchant_upload_guide_email, args=[seller.user.email]).start()
+                # Update seller on UMAP
+                response = u_map_registration(
+                    biller_id=biller_code, description=str(store_name).upper(), merchant_id=merchant_id,
+                    account_no=bank_account.account_number, account_name=bank_account.account_name,
+                    bank_code=bank_account.bank_code, fep_type=str(fep_type).upper()[0], feel=feel
+                )
+                if response["RESPONSE_CODE"] != "00":
+                    reason = response["RESPONSE_DESCRIPTION"]
+                    seller.status = "inactive"
+                    seller.save()
+                    return Response(
+                        {
+                            "detail": f"An error has occurred while registering merchant on UMAP. {reason}"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-        seller.save()
+                # Send Approval Email to seller
+                Thread(target=merchant_account_approval_email, args=[seller.user.email]).start()
+                Thread(target=merchant_upload_guide_email, args=[seller.user.email]).start()
 
-        if seller_status == "active" or seller_status == "approve":
-            Store.objects.filter(seller=seller).update(is_active=True)
-        return Response({"detail": "Merchant status updated successfully"})
-        # except Exception as ex:
-        #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+            seller.save()
+
+            if seller_status == "active" or seller_status == "approve":
+                Store.objects.filter(seller=seller).update(is_active=True)
+            return Response({"detail": "Merchant status updated successfully"})
+        except Exception as ex:
+            log_request(f"Exception Error: {ex}")
+            return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Admin User
@@ -562,7 +599,6 @@ class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
 class AdminTransactionListAPIView(generics.ListAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = TransactionSerializer
-    queryset = Transaction.objects.all().order_by("-id")
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     search_fields = [
@@ -571,6 +607,15 @@ class AdminTransactionListAPIView(generics.ListAPIView):
         "order__orderproduct__product_detail__product__store__name", "order__orderproduct__waybill_no",
         "order__customer__user__first_name", "order__customer__user__last_name"
     ]
+
+    def get_queryset(self):
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
+
+        queryset = Transaction.objects.all().order_by("-id")
+        if date_from and date_to:
+            queryset = Transaction.objects.filter(created_on__range=[date_from, date_to])
+        return queryset
 
 
 class AdminTransactionRetrieveAPIView(generics.RetrieveAPIView):
@@ -636,7 +681,8 @@ class OrdersView(generics.ListAPIView):
                 if not Order.objects.filter(id=order_id, payment_status="success").exists():
                     return OrderProduct.objects.filter(payment_status="success").order_by('-created_on')
                 order = get_object_or_404(Order, id=order_id)
-                return OrderProduct.objects.filter(order=order, order__payment_status="success").order_by('-created_on').distinct()
+                return OrderProduct.objects.filter(order=order, order__payment_status="success").order_by(
+                    '-created_on').distinct()
 
             return Order.objects.filter(payment_status="success").order_by('-created_on').distinct()
 
@@ -646,7 +692,8 @@ class OrdersView(generics.ListAPIView):
 
             date_from = self.request.GET.get('date_from', '')
             date_to = self.request.GET.get('date_to', '')
-            return Order.objects.filter(created_on__range=[date_from, date_to], payment_status="success").order_by('-created_on').distinct()
+            return Order.objects.filter(created_on__range=[date_from, date_to], payment_status="success").order_by(
+                '-created_on').distinct()
 
         else:
             return Order.objects.filter(orderproduct__status=param).order_by('-created_on').distinct()
@@ -671,6 +718,27 @@ class OrderDetailView(generics.RetrieveAPIView):
         # Send email to seller
 
         return Response({"detail": "Order updated successfully"})
+
+
+class AdminRoleListAPIView(generics.ListAPIView):
+    permission_classes = [IsSuperAdmin]
+    queryset = Role.objects.all().order_by("-created_on")
+    serializer_class = RoleSerializerOut
+
+
+class AdminMerchantTransactionListAPIView(generics.ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = MerchantTransaction.objects.all()
+    serializer_class = AdminMerchantTransactionSerializer
+    pagination_class = CustomPagination
+
+
+class AdminMerchantTransactionRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = MerchantTransaction.objects.all()
+    serializer_class = AdminMerchantTransactionSerializer
+    pagination_class = CustomPagination
+    lookup_field = "id"
 
 
 

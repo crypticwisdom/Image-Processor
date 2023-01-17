@@ -1,6 +1,7 @@
 import base64
 import datetime
 import decimal
+from threading import Thread
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -12,20 +13,26 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from account.models import Address
-from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime, get_next_date
+from home.utils import get_week_start_and_end_datetime, get_month_start_and_end_datetime, get_next_date, \
+    get_year_start_and_end_datetime, get_previous_month_date, log_request
+from merchant.merchant_email import merchant_order_placement_email
 from module.billing_service import BillingService
 from module.shipping_service import ShippingService
-from transaction.models import Transaction
+from transaction.models import Transaction, MerchantTransaction
 from .models import Cart, Product, ProductDetail, CartProduct, ProductReview, Order, OrderProduct
 
 from django.conf import settings
+
+from .shopper_email import shopper_order_placement_email
 
 encryption_key = bytes(settings.PAYARENA_CYPHER_KEY, "utf-8")
 encryption_iv = bytes(settings.PAYARENA_IV, "utf-8")
 
 
 def sorted_queryset(order_by, query):
-    queryset = Product.objects.filter(query).order_by('-updated_on').distinct()
+    queryset = Product.objects.filter(query).distinct()
+    if order_by == "latest":
+        queryset = Product.objects.filter(query).order_by('-published_on').distinct()
     if order_by == 'highest_price':
         queryset = Product.objects.filter(query).order_by('-productdetail__price').distinct()
     if order_by == 'lowest_price':
@@ -56,7 +63,6 @@ def check_cart(user=None, cart_id=None, cart_uid=None):
 
 
 def create_or_update_cart_product(variant, cart):
-
     for variation_obj in variant:
         variation_id = variation_obj.get('variant_id', '')
         quantity = variation_obj.get('quantity', 1)
@@ -65,17 +71,18 @@ def create_or_update_cart_product(variant, cart):
             product_detail = get_object_or_404(ProductDetail.objects.select_for_update(), id=variation_id)
 
         # try:
-        if product_detail.stock <= 0:
-            return False, f"Selected product: ({product_detail.product.name}) is out of stock"
+        if quantity > 0:
+            if product_detail.stock <= 0:
+                return False, f"Selected product: ({product_detail.product.name}) is out of stock"
 
-        if product_detail.stock < quantity:
-            return False, f"Selected product: ({product_detail.product.name}) is quantity"
+            if product_detail.stock < quantity:
+                return False, f"Selected product: ({product_detail.product.name}) quantity cannot be greater than available"
 
-        if product_detail.product.status != "active":
-            return False, f"Selected product: ({product_detail.product.name}) is not available"
+            if product_detail.product.status != "active":
+                return False, f"Selected product: ({product_detail.product.name}) is not available"
 
-        if product_detail.product.store.is_active is False:
-            return False, f"Selected product: ({product_detail.product.name}) is not available"
+            if product_detail.product.store.is_active is False:
+                return False, f"Selected product: ({product_detail.product.name}) is not available"
 
         # Create Cart Product
         # print(cart)
@@ -145,28 +152,41 @@ def top_weekly_products(request):
         "-sale_count"
     )[:20]
     for product in query_set:
+        image = None
+        if product.image:
+            image = request.build_absolute_uri(product.image.image.url),
         review = ProductReview.objects.filter(product=product).aggregate(Avg('rating'))['rating__avg'] or 0
         product_detail = ProductDetail.objects.filter(product=product).last()
         top_products.append(
-            {"id": product.id, "name": product.name, "image": request.build_absolute_uri(product.image.image.url),
-             "rating": review,
-             "price": product_detail.price, "discount": product_detail.discount, "featured": product.is_featured})
+            {"id": product.id, "name": product.name, "image": image, "rating": review, "stock": product_detail.stock,
+             "product_detail_id": product_detail.id, "store_name": product.store.name,
+             "price": product_detail.price, "discount": product_detail.discount,
+             "featured": product.is_featured, "low_stock_threshold": product_detail.low_stock_threshold})
     return top_products
 
 
-def top_monthly_categories():
+def top_monthly_categories(request):
     top_categories = []
     today_date = timezone.now()
-    month_start, month_end = get_month_start_and_end_datetime(today_date)
+    # month_start, month_end = get_year_start_and_end_datetime(today_date)
+    # queryset = Product.objects.filter(
+    #     created_on__gte=month_start, created_on__lte=month_end, status='active', store__is_active=True
+    # ).order_by("-sale_count").values("category__id", "category__name", "category__image").annotate(Sum("sale_count")).order_by(
+    #     "-sale_count__sum")[:100]
+
+    date_end = get_previous_month_date(today_date, 8)
     queryset = Product.objects.filter(
-        created_on__gte=month_start, created_on__lte=month_end, status='active', store__is_active=True
-    ).order_by("-sale_count").values("category__id", "category__name").annotate(Sum("sale_count")).order_by(
-        "-sale_count__sum")[:7]
+        created_on__gte=date_end, created_on__lte=today_date, status='active', store__is_active=True
+    ).order_by("-sale_count").values("category__id", "category__name", "category__image").annotate(
+        Sum("sale_count")).order_by(
+        "-sale_count__sum")[:100]
     for product in queryset:
         category = dict()
         category['id'] = product['category__id']
         category['name'] = product['category__name']
         category['total_sold'] = product['sale_count__sum']
+        category['image'] = f"{request.scheme}://{request.get_host()}/media/{product['category__image']}"
+        # category['image'] = request.build_absolute_uri(product['category__image'])
         top_categories.append(category)
     return top_categories
 
@@ -195,14 +215,14 @@ def validate_product_in_cart(customer):
 
 
 def get_shipping_rate(customer, address_id=None):
-    # response = dict()
-    shippers_list = list()
+    response = list()
     sellers_products = list()
 
     if Address.objects.filter(id=address_id, customer=customer).exists():
         address = Address.objects.get(id=address_id, customer=customer)
+        print(address)
     elif Address.objects.filter(customer=customer, is_primary=True).exists():
-        address = Address.objects.get(customer=customer, is_primary=True)
+        address = Address.objects.filter(customer=customer, is_primary=True).first()
     else:
         address = Address.objects.filter(customer=customer).first()
 
@@ -212,88 +232,117 @@ def get_shipping_rate(customer, address_id=None):
     cart_products = CartProduct.objects.filter(cart=cart)
 
     # Get each seller in cart
-    # sellers_in_cart = list()
-    # for product in cart_products:
-    #     seller = product.product_detail.product.store.seller
-    #     sellers_in_cart.append(seller)
-
+    sellers_in_cart = list()
     for product in cart_products:
-        products_for_seller = {
-            'seller': product.product_detail.product.store.seller,
-            'seller_id': product.product_detail.product.store.seller_id,
-            'products': [
-                {
-                    'cart_product_id': product.id,
-                    'quantity': product.quantity,
-                    'weight': product.product_detail.weight,
-                    'price': product.product_detail.price,
-                    'product': product.product_detail.product,
-                    'detail': product.product_detail.product.description,
-                }
-            ],
-        }
-        if products_for_seller not in sellers_products:
-            sellers_products.append(products_for_seller)
+        seller = product.product_detail.product.store.seller
+        sellers_in_cart.append(seller)
 
-    # Get products belonging to each seller
-    # for seller in sellers_in_cart:
+    # for product in cart_products:
     #     products_for_seller = {
-    #         'seller': seller,
-    #         'seller_id': seller.id,
+    #         'seller': product.product_detail.product.store.seller,
+    #         'seller_id': product.product_detail.product.store.seller_id,
     #         'products': [
     #             {
-    #                 'cart_product_id': cart_product.id,
-    #                 'quantity': cart_product.quantity,
-    #                 'weight': cart_product.product_detail.weight,
-    #                 'price': cart_product.product_detail.price,
-    #                 'product': cart_product.product_detail.product,
-    #                 'detail': cart_product.product_detail.description,
+    #                 'cart_product_id': product.id,
+    #                 'quantity': product.quantity,
+    #                 'weight': product.product_detail.weight,
+    #                 'price': product.product_detail.price,
+    #                 'product': product.product_detail.product,
+    #                 'detail': product.product_detail.product.description,
     #             }
-    #             for cart_product in cart_products.distinct()
-    #             if cart_product.product_detail.product.store.seller == seller
     #         ],
     #     }
     #     if products_for_seller not in sellers_products:
     #         sellers_products.append(products_for_seller)
+    #
+    # Get products belonging to each seller
+    for seller in sellers_in_cart:
+        products_for_seller = {
+            'seller': seller,
+            'seller_id': seller.id,
+            'products': [
+                {
+                    'merchant_id': cart_product.product_detail.product.store.seller.id,
+                    'quantity': cart_product.quantity,
+                    'weight': cart_product.product_detail.weight,
+                    'price': cart_product.product_detail.price,
+                    'product': cart_product.product_detail.product,
+                    'detail': cart_product.product_detail.product.description,
+                }
+                for cart_product in cart_products.distinct()
+                if cart_product.product_detail.product.store.seller == seller
+            ],
+        }
+        if products_for_seller not in sellers_products:
+            sellers_products.append(products_for_seller)
 
     # Call shipping API
     rating = ShippingService.rating(
         sellers=sellers_products, customer=customer, customer_address=address
     )
 
+    result = list()
+    # detail = dict()
+    # shipping_info = dict()
+    # shipping info will be in store_detail, store_detail will be in detail, and detail in result
+
     for rate in rating:
-        shipper = dict()
-        shipper["name"] = rate["ShipperName"]
-        detail_list = list()
-        quote_list = rate["QuoteList"]
-        for item in quote_list:
-            detail = dict()
-            detail["cart_product_id"] = item["Id"]
-            detail["company_id"] = item["CompanyID"]
-            detail["shipping_fee"] = item["Total"]
-            detail_list.append(detail)
-        # shipper["shipping_fee"] = decimal.Decimal(rate["TotalPrice"])
-        shipper["shipping_information"] = detail_list
-        shippers_list.append(shipper)
+        if decimal.Decimal(rate["TotalPrice"]) > 0:
+            quote_list = rate["QuoteList"]
+            for item in quote_list:
+                if item["Id"] is not None:
+                    data = dict()
+                    from store.models import Store
+                    # store_name = Store.objects.get(seller_id=item["Id"]).name
+                    data["store_name"] = Store.objects.get(seller_id=item["Id"]).name
+                    data["shipper"] = rate["ShipperName"]
+                    data["company_id"] = item["CompanyID"]
+                    data["shipping_fee"] = item["Total"]
+                    result.append(data)
 
-    # sub_total = cart_products.aggregate(Sum("price"))["price__sum"] or 0
-    # response["sub_total"] = sub_total
-    # response["shippers"] = shippers_list
-    return shippers_list
+    store_names = []
+    for store in result:
+        store_name = store.get('store_name')
+        if store_name not in store_names:
+            store_names.append(store_name)
+
+    # Compile results per store
+    count = 0
+    for store in store_names:
+        shippers_list = []
+        cart_prod = []
+        carted_prod = cart_products.filter(product_detail__product__store__name=store)
+        for item in carted_prod:
+            cart_prod.append(item.id)
+
+        for item in result:
+            count += 1
+            store_name = item.get('store_name')
+            shipper = item.get('shipper')
+            shipping_fee = item.get('shipping_fee')
+            company_id = item.get('company_id')
+            if store_name == store:
+                shippers_list.append({
+                    "shipper": shipper, "shipping_fee": shipping_fee, "company_id": company_id,
+                    "cart_product_id": cart_prod, "uid": str(count)
+                })
+        response.append({"store_name": store, "shipping_information": shippers_list})
+    return response
 
 
-def order_payment(payment_method, order, pin):
+def order_payment(request, payment_method, delivery_amount, order, pin=None):
     from account.utils import get_wallet_info
 
     # create Transaction
     # get order amount
     product_amount = CartProduct.objects.filter(cart__order=order).aggregate(Sum("price"))["price__sum"] or 0
-    delivery_amount = CartProduct.objects.filter(cart__order=order).aggregate(
-        Sum("delivery_fee"))["delivery_fee__sum"] or 0
 
     amount = product_amount + delivery_amount
-    trans = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
+    trans, created = Transaction.objects.get_or_create(order=order, payment_method=payment_method, amount=amount)
     customer = order.customer
+    email = customer.user.email
+    # redirect_url = f"{request.scheme}://{request.get_host()}/payment-verify"
+    redirect_url = f"https://{request.get_host()}/payment-verify"
 
     if payment_method == "wallet":
         if not pin:
@@ -305,27 +354,49 @@ def order_payment(payment_method, order, pin):
             bal = wallet_info["wallet"]["balance"]
             balance = decimal.Decimal(bal)
         if balance < amount:
-            return False, f"Wallet Balance {balance} cannot be less than order amount, please fund wallet"
+            # return False, f"Wallet Balance {balance} cannot be less than order amount, please fund wallet"
+            return False, "Insufficient wallet balance. Please fund your wallet and try again"
 
         # Charge wallet
         response = BillingService.charge_customer(
-            payment_type="wallet", customer_id=customer.billing_id, narration=f"Payment for OrderID: {order.id}",
-            pin=pin
+            payment_type="wallet", customer_id=email, narration=f"Payment for OrderID: {order.id}",
+            pin=pin, amount=str(amount)
         )
-        if "status" in response and response["status"] != "Successful":
-            return False, response["status"]
+        if "success" in response and response["success"] is False:
+            return False, "Could not debit your wallet at the moment. Please try later, or use another payment method"
+        # Update transaction status
+        trans.status = "success"
+        trans.transaction_detail = f"Payment for OrderID: {order.id}"
+        trans.save()
 
-    # if payment_method == "card"
+        # update order_payment
+        order.payment_status = "success"
+        order.save()
 
-    # Update transaction status
-    trans.status = "success"
-    trans.save()
+        update_purchase(order, payment_method)
+        return True, "Order created"
 
-    # update order_payment
-    order.payment_status = "success"
-    order.save()
+    if payment_method == "card" or payment_method == "pay_attitude":
+        # call billing service to get payment link
+        response = BillingService.charge_customer(
+            payment_type=payment_method, customer_id=email, narration=f"Payment for OrderID: {order.id}",
+            pin=pin, amount=str(amount), callback_url=redirect_url
+        )
+        if "paymentUrl" in response:
 
-    return True, "Payment successful"
+            payment_link = response["paymentUrl"]
+            transaction_ref = response["transactionId"]
+            status = str(response["status"]).lower()
+
+            trans.status = status
+            trans.transaction_reference = transaction_ref
+            trans.transaction_detail = f"Payment for OrderID: {order.id}"
+            trans.save()
+
+            return True, payment_link
+
+        else:
+            return False, "An error has occurred, please try again later"
 
 
 def add_order_product(order):
@@ -381,14 +452,12 @@ def perform_order_cancellation(order, user):
     return True, "Order cancelled successfully"
 
 
-def perform_order_pickup(order_product, address, sender_town_id, receiver_town_id):
+def perform_order_pickup(order_product, address):
     summary = f"Shipment Request to {address.get_full_address()}"
-    response = ShippingService.pickup(
-        order_products=order_product, address=address, order_summary=summary, sender_town_id=sender_town_id,
-        receiver_town_id=receiver_town_id
-    )
+    response = ShippingService.pickup(order_products=order_product, address=address, order_summary=summary)
 
     if "error" in response:
+        log_request(f"Error while booking Order: {response}")
         return False, "Order cannot be placed at the moment"
 
     # Update OrderProduct
@@ -454,4 +523,42 @@ def decrypt_payarena_data(data):
     return result
 
 
+def update_purchase(order, payment_method):
+    # update order
+    order_products = add_order_product(order)
+    # Update payment method
+    order_products.update(payment_method=payment_method)
+    # Call pickup order request
+    success, response = perform_order_pickup(order_products, order.address)
 
+    merchant_list = list()
+    trans = Transaction.objects.filter(order=order).first()
+
+    if success is False:
+        # Process refund to customer wallet
+        pass
+
+    for order_product in order_products:
+        merchant = order_product.product_detail.product.store.seller
+        if merchant not in merchant_list:
+            merchant_list.append(order_product.product_detail.product.store.seller)
+        # Send order placement email to shopper
+        Thread(target=shopper_order_placement_email, args=[order.customer, order.id, order_product]).start()
+        # Send order placement email to seller
+        Thread(target=merchant_order_placement_email, args=[order.customer, order, order_product]).start()
+        # Send order placement email to admins
+
+    for seller in merchant_list:
+        order_prod = order_products.filter(product_detail__product__store__seller=seller)
+        delivery_fee = order_prod.first().delivery_fee
+        shipper_name = order_prod.first().shipper_name
+        seller_price = order_prod.aggregate(Sum("total"))["total__sum"] or 0
+        seller_total = delivery_fee + seller_price
+
+        # Create Merchant Transaction
+        MerchantTransaction.objects.create(
+            order=order, merchant=seller, transaction=trans, shipper=shipper_name, delivery_fee=delivery_fee,
+            amount=seller_price, total=seller_total
+        )
+
+    return "Order Updated"

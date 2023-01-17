@@ -44,6 +44,28 @@ class PayArenaServices:
         return res.json()
 
     @classmethod
+    def forget_password(cls, email):
+        url = f"{base_url}/account/forgetpassword"
+        payload = {
+            "EmailAddress": email
+        }
+        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload).json()
+        log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
+        return response
+
+    @classmethod
+    def reset_password(cls, email, pin, password):
+        url = f"{base_url}/account/resetpassword"
+        payload = {
+            "EmailAddress": email,
+            "OTP": pin,
+            "Password": password
+        }
+        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload).json()
+        log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
+        return response
+
+    @classmethod
     def change_password(cls, profile, old_password, new_password):
         url = f"{base_url}/account/changepassword"
         header = cls.get_auth_header(profile)
@@ -89,9 +111,6 @@ class PayArenaServices:
         header = cls.get_auth_header(profile)
         url = f"{base_url}/mobile/mall-credit-wallet"
         payload = json.dumps({"Amount": amount, "Fee": 100, "PaymentInformation": payment_info})
-        print(url)
-        print(header)
-        print(payload)
         response = requests.request("POST", url, headers=header, data=payload).json()
         log_request(f"url: {url}", f"headers: {header}", f"payload: {payload}", f"response: {response}")
         return response
@@ -99,5 +118,6 @@ class PayArenaServices:
     @classmethod
     def get_payment_status(cls, reference):
         url = f"{pgw_url}/status/{reference}"
-        response = requests.request("GET", url, headers={"Content-Type: application/json"}).json()
-        return response
+        response = requests.request("GET", url)
+        log_request(f"url: {url}", f"response: {response}")
+        return response.json()

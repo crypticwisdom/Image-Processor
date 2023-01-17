@@ -239,9 +239,10 @@ def create_user_wallet(profile, pin, otp):
     return success, message
 
 
-def make_payment_for_wallet(profile, amount, pin):
+def make_payment_for_wallet(request, amount, pin):
+    profile = Profile.objects.get(user=request.user)
     description = "TopUp wallet balance from PayArena Mall"
-    callback = ""
+    callback = f"https://{request.get_host()}/fund-wallet"
     full_name = profile.get_full_name()
     email = profile.email()
 
@@ -253,18 +254,19 @@ def make_payment_for_wallet(profile, amount, pin):
     return payment_link, payment_id
 
 
-def fund_customer_wallet(request, reference):
+def fund_customer_wallet(reference):
     # Check payment status
-    # response = PayArenaServices.get_payment_status(reference)
-    response = {"Order Id":"38104","Amount":"4000.00","Description":"TopUp wallet balance from PayArena Mall^WEBID38104","Convenience Fee":"0.00","Currency":"566","Status":"Approved","Card Holder":None,"PAN":None,"Scheme":None,"TranTime":"11/28/2022 7:24:40 PM","TranDateTime":"11/28/2022 7:24:40 PM","StatusDescription":"Initiated","CustomerName":"Sunday Olaofe","CustomerEmail":"slojararshavin@mailinato.com"}
+    email = ""
+    response = PayArenaServices.get_payment_status(reference)
     status = "pending"
     amount = 0
     if "Status" in response:
         status = str(response["Status"]).lower()
         amount = response["Amount"]
+        email = response["CustomerEmail"]
     if status == "approved":
         # Credit customer wallet
-        profile = Profile.objects.get(user=request.user)
+        profile = Profile.objects.get(user__email=email)
         # Decrypt wallet pin
         decryted_pin = decrypt_text(profile.wallet_pin)
         # Encrypt payment information
@@ -273,33 +275,51 @@ def fund_customer_wallet(request, reference):
         response = PayArenaServices.fund_wallet(profile, amount, encrypted_payment_info)
 
         if "Success" in response:
-            if response["Success"] is True and response["Data"]["Status"] == "Approved":
-                return True, "Wallet credited successfully"
-            else:
-                return False, "An error occurred while funding wallet, please try again later"
+            if response["Success"] is True and response["Data"]["Status"]:
+                return response["Data"]["Status"]
+
+    return status
 
 
 def confirm_or_create_billing_account(profile, email, password):
-    if profile.billing_verified is False:
-        # Validate customer
-        response = BillingService.validate_customer(email)
-        if "error" in response:
-            # Register Customer on billing service
-            f_name = profile.user.first_name
-            l_name = profile.user.last_name
-            phone = profile.phone_number
 
-            result = BillingService.register_customer(first_name=f_name, last_name=l_name, email=email, phone_no=phone, password=password)
-            billing = result[0]
-            billing_id = billing["uuid"]
-            encrypted_billing_id = encrypt_text(billing_id)
-            # Save encrypted billing ID
-            profile.billing_verified = True
-            profile.billing_id = encrypted_billing_id
-            profile.save()
+    # Validate customer
+    response = BillingService.validate_customer(email)
+    if "error" in response:
+        # Register Customer on billing service
+        f_name = profile.user.first_name
+        l_name = profile.user.last_name
+        phone = profile.phone_number
 
-            return True
+        result = BillingService.register_customer(
+            first_name=f_name, last_name=l_name, email=email, phone_no=phone, password=password
+        )
+        log_request(f"Billing account created for {f_name} {l_name}", f"response: {result}")
         return True
+    return True
+
+
+def forget_password(email):
+    if not email:
+        return False, "Email address is required"
+
+    PayArenaServices.forget_password(email)
+
+    return True, "An OTP has been sent to your email address"
+
+
+def reset_password(pin, password, email, user):
+    response = PayArenaServices.reset_password(email, pin, password)
+    if "Success" in response:
+        if response["Success"] is True:
+            # Change mall user password
+            password = make_password(password=password)
+            user.password = password
+            user.save()
+        else:
+            return False, "An error has occurred, please try again later"
+
+    return True, "Password reset was successful, please proceed to login"
 
 
 

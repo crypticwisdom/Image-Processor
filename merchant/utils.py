@@ -123,8 +123,17 @@ def update_product(request, product):
     data = request.data
     if 'name' in data:
         product.name = data.get('name', '')
-    # if 'status' in data:
-    #     product.status = data.get('status', '')
+    if 'status' in data:
+        if request.user.is_staff:
+            product.status = data.get('status', '')
+            if data.get('status') == "declined":
+                product.decline_reason = data.get('declined_reason', '')
+            if data.get('status') == "approve":
+                product.approved_by = request.user
+                product.status = "active"
+                product.published_on = datetime.datetime.now()
+            if data.get('status') == "checked":
+                product.checked_by = request.user
     if 'category_id' in data:
         category_id = data.get('category_id', '')
         category = ProductCategory.objects.get(pk=category_id)
@@ -193,20 +202,9 @@ def validate_bank_details(account_number: str, account_name: str, bank_code: str
     # Call bank enquiry
     # '/bank code/acct_number'
 
-    # success, response = apis.call_name_enquiry(bank_code=bank_code, account_number=account_number)
-    # if not success:
-    #     return False, response
-
-    # BELOW SHOULD BE USED BEFORE GOING LIVE
-    response = {
-            'NameEnquiryResponse': {
-                'ResponseCode': '200',
-                'AccountNumber': '2114616054',
-                'AccountName': 'Nwachukwu Wisdom',
-                'PhoneNumber': '08057784796',
-                'ErrorMessage': 'error'
-            }
-        }
+    success, response = apis.call_name_enquiry(bank_code=bank_code, account_number=account_number)
+    if not success:
+        return False, response
 
     account_name = account_name.lower().split(" ")
     response_name = str(response["NameEnquiryResponse"]["AccountName"]).lower().strip()
@@ -214,7 +212,7 @@ def validate_bank_details(account_number: str, account_name: str, bank_code: str
     # Check if first or last name in 'response_name'
 
     if not(account_name[0] in response_name or account_name[1] in response_name):
-        return False, "Bank account validation failed"
+        return False, "First name or last name does not correspond with bank account name"
 
     return True, "Successfully validated bank details"
 
@@ -243,6 +241,7 @@ def create_seller(request, user, email, phone_number):
             return False, "Business address is required"
 
         business_town: str = request.data.get("business_town", None)
+        town_id: str = request.data.get("town_id", None)
         if not business_town:
             return False, "Business town is required"
 
@@ -254,17 +253,17 @@ def create_seller(request, user, email, phone_number):
         if not business_city:
             return False, "Business City is required"
 
-        latitude: float = request.data.get("latitude", None)  # drop-down
-        if not latitude:
-            return False, "Latitude is required"
+        latitude: float = request.data.get("latitude", 0.0)  # drop-down
+        # if not latitude:
+        #     return False, "Latitude is required"
 
-        longitude: float = request.data.get("longitude", None)  # drop-down
-        if not longitude:
-            return False, "Longitude is required"
+        longitude: float = request.data.get("longitude", 0.0)  # drop-down
+        # if not longitude:
+        #     return False, "Longitude is required"
 
         business_drop_off_address: str = request.data.get("business_drop_off_address", None)
-        if not business_drop_off_address:
-            return False, "Business drop off address is required"
+        # if not business_drop_off_address:
+        #     return False, "Business drop off address is required"
 
         business_type: str = request.data.get("business_type", None)
         if not business_type:
@@ -291,7 +290,7 @@ def create_seller(request, user, email, phone_number):
         # Get bank name
         auth_user = Profile.objects.get(user=request.user)
         success, detail = get_all_banks(auth_user)
-        detail = [{"Name": "Access Bank", "CBNCode": "044"}]
+        # detail = [{"Name": "Access Bank", "CBNCode": "044"}]
         bank_name = ""
         if success is True:
             result = [bank["Name"] for bank in detail if bank["CBNCode"] == bank_code]
@@ -316,7 +315,7 @@ def create_seller(request, user, email, phone_number):
         # Create Seller
         seller = Seller.objects.create(
             user=user, phone_number=phone_number, address=business_address,
-            town=business_town, city=business_city, state=business_state,
+            town=business_town, city=business_city, state=business_state, town_id=town_id,
             longitude=longitude, latitude=latitude
         )
         # Create seller detail
@@ -347,6 +346,8 @@ def create_seller(request, user, email, phone_number):
             return False, "Failed to create a Seller Instance"
 
         if business_type == "unregistered-individual-business":
+            seller_detail.company_name = business_name
+            seller_detail.save()
             if product_category:
                 store.categories.clear()
 
@@ -482,6 +483,7 @@ def update_seller(request, seller_id):
         product_category: list = request.data.get("product_category", [])  # drop-down
         business_address: str = request.data.get("business_address")
         business_town: str = request.data.get("business_town")
+        town_id: str = request.data.get("town_id")
         business_state: str = request.data.get("business_state")  # drop-down
         business_city: str = request.data.get("business_city")  # drop-down
         latitude: float = request.data.get("latitude")  # drop-down
@@ -493,12 +495,21 @@ def update_seller(request, seller_id):
         bank_account_name: str = request.data.get("bank_account_name")
         bank_account_name = bank_account_name.strip()
 
+        status: str = request.data.get("status")
+
+        if status == "checked":
+            seller.status = status
+            seller.checked_by = request.user
+
         seller.address = business_address
         seller.town = business_town
+        seller.town_id = town_id
         seller.city = business_city
         seller.state = business_state
-        seller.longitude = longitude
-        seller.latitude = latitude
+        if longitude:
+            seller.longitude = longitude
+        if latitude:
+            seller.latitude = latitude
         seller.save()
 
         # ---------------------------- Check Bank Details ----------------------------
@@ -578,7 +589,7 @@ def update_seller(request, seller_id):
                     seller_detail.director = direct
             seller_detail.save()
 
-            return True, f"Created {store.name}"
+            return True, f"Updated {store.name}"
 
         else:
             return False, "Invalid Business Type"
@@ -637,7 +648,7 @@ def get_sales_data(store):
     return sales
 
 
-def get_best_sellers_data(store):
+def get_best_sellers_data(store, request):
     best_sellers = []
     query_set = OrderProduct.objects.filter(product_detail__product__store=store, order__payment_status="success"
                                             ).values('product_detail__id').annotate(Sum('quantity')).order_by(
@@ -648,7 +659,10 @@ def get_best_sellers_data(store):
         product['id'] = product_variant.product.id
         product['sku'] = product_variant.sku
         product['name'] = product_variant.product.name
-        product['image'] = product_variant.product.image.image.url
+        if product_variant.product.image:
+            product['image'] = request.build_absolute_uri(product_variant.product.image.image.url)
+        else:
+            product['image'] = None
         product['price'] = product_variant.price
         product['units'] = data['quantity__sum']
         best_sellers.append(product)
@@ -707,7 +721,7 @@ def get_dashboard_data(store, request):
     data['sales'] = get_sales_data(store)
     data['low_in_stock'] = get_low_in_stock(store, request)
     data['out_of_stock'] = out_of_stock(store, request)
-    data['best_sellers'] = get_best_sellers_data(store)
+    data['best_sellers'] = get_best_sellers_data(store, request)
     data['sales_analytics'] = ""
     data['transactions'] = "Still pending ... [Transaction has no relation to merchant.]"
     # data['top_categories'] = get_top_categories_data(store)

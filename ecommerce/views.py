@@ -1,3 +1,4 @@
+import datetime
 from threading import Thread
 
 from django.db import transaction
@@ -14,14 +15,17 @@ from django.utils import timezone
 from account.models import Profile, Address
 from account.serializers import ProfileSerializer
 from account.utils import get_wallet_info
+from home.utils import get_previous_date
 from merchant.merchant_email import merchant_order_placement_email
-from store.serializers import CartSerializer
+from module.apis import call_name_enquiry
+from store.models import Store
+from store.serializers import CartSerializer, StoreSerializer, StoreProductSerializer
 from superadmin.exceptions import raise_serializer_error_msg
 from transaction.models import Transaction
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
     CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer, \
-    ProductReviewSerializerOut, ProductReviewSerializerIn
+    ProductReviewSerializerOut, ProductReviewSerializerIn, MobileCategorySerializer, ReturnReasonSerializer
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
     OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview
@@ -48,15 +52,15 @@ class MallLandPageView(APIView):
             start_date = timezone.datetime.today()
 
             # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
-            deal_end_date = timezone.timedelta(days=1)
-            deals_query_set = Promo.objects.filter(created_on__date__gte=start_date - deal_end_date,
-                                                   promo_type="deal").order_by("-id")[:5]
-            response_container["deals_of_the_day"] = MallDealSerializer(deals_query_set, many=True).data
+            # deal_end_date = timezone.timedelta(days=1)
+            deals_query_set = Promo.objects.filter(promo_type="deal").order_by("-id")[:5]
+            response_container["deals_of_the_day"] = MallDealSerializer(
+                deals_query_set, many=True, context={"request": request}).data
 
-            # (2) Hot New Arrivals in last 3 days
-            end_date1 = timezone.timedelta(days=3)
-            hot_new_arrivals = Product.objects.filter(created_on__date__gte=start_date - end_date1,
-                                                      status="active")  # 3 days ago
+            # (2) Hot New Arrivals in last 3 days ( now changed to most recent 15 products)
+            new_arrivals = Product.objects.filter(status="active")[:25]
+            arrival_list = [product.id for product in new_arrivals]
+            hot_new_arrivals = Product.objects.filter(id__in=arrival_list).order_by("?")
             arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
             response_container["hot_new_arrivals"] = arrival_serializer
 
@@ -65,14 +69,20 @@ class MallLandPageView(APIView):
             response_container["top_selling"] = top_products
 
             # (4) Top categories of the month
-            top_monthly_cat = top_monthly_categories()
+            top_monthly_cat = top_monthly_categories(request)
             response_container["top_monthly_categories"] = top_monthly_cat
 
             # (5) Recommended Products
             recommended = ProductSerializer(Product.objects.filter(
                 is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
             ).data
-            response_container["recommended_products"] = recommended[:5]
+            response_container["recommended_products"] = recommended[:10]
+
+            most_viewed = ProductSerializer(
+                Product.objects.filter(status="active", store__is_active=True).order_by("-view_count")[:20], many=True,
+                context={"request": request}).data
+            response_container["most_viewed_products"] = most_viewed
+
 
             # (6) All categories - to include sub categories and product types
             categories = CategoriesSerializer(
@@ -80,11 +90,24 @@ class MallLandPageView(APIView):
             ).data
             response_container["categories"] = categories
 
+            # recently viewed products:
+            # these are products that were recently viewed by the shopper, or last viewed products
+            recent_view = ProductSerializer(Product.objects.filter(
+                status="active", store__is_active=True).order_by("-last_viewed_date")[:10], many=True,
+                                            context={"request": request}).data
+            if request.user.is_authenticated:
+                shopper = Profile.objects.get(user=request.user)
+                if shopper.recent_viewed_products:
+                    shopper_views = shopper.recent_viewed_products.split(",")[1:]
+                    recent_view = ProductSerializer(Product.objects.filter(
+                        id__in=shopper_views, status="active", store__is_active=True).order_by("?"), many=True,
+                                                    context={"request": request}).data
+
+            response_container["recently_viewed"] = recent_view
+
             response.append(response_container)
             return Response({"detail": response})
         except (Exception,) as err:
-            print(err)
-            # LOG
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -273,10 +296,17 @@ class ProductView(APIView, CustomPagination):
             if pk:
                 product = Product.objects.get(id=pk, status="active", store__is_active=True)
                 product.view_count += 1
+                product.last_viewed_date = datetime.datetime.now()
+                if request.user.is_authenticated:
+                    shopper = Profile.objects.get(user=request.user)
+                    viewed_products = str(shopper.recent_viewed_products).split(',')
+                    if str(product.id) not in viewed_products:
+                        shopper.recent_viewed_products = str("{},{}").format(shopper.recent_viewed_products, product.id)
+                        shopper.save()
                 product.save()
                 serializer = ProductSerializer(product, context={"request": request}).data
             else:
-                prod = self.paginate_queryset(Product.objects.filter(status="active", store__is_active=True), request)
+                prod = self.paginate_queryset(Product.objects.filter(status="active", store__is_active=True).order_by("-id"), request)
                 queryset = ProductSerializer(prod, many=True, context={"request": request}).data
                 serializer = self.get_paginated_response(queryset).data
             return Response(serializer)
@@ -306,22 +336,19 @@ class ProductCheckoutView(APIView):
         payment_method = request.data.get("payment_method")
         pin = request.data.get("pin")
         address_id = request.data.get("address_id")
-        sender_town_id = request.data.get("sender_town_id")
-        receiver_town_id = request.data.get("receiver_town_id")
         shipping_information = request.data.get("shipping_information")
 
         # Expected shipping_information payload
         # shipping_information = [
         #     {
-        #         "cart_product_id": 2,
+        #         "cart_product_id": [2, 23],
         #         "company_id": "234",
         #         "shipper": "GIGLOGISTICS",
-        #         "shipping_fee": "1000"
         #     }
         # ]
 
-        if not all([shipping_information, sender_town_id, receiver_town_id, address_id]):
-            return Response({"detail": "Shipper information, address, sender town, and recipient town are required"},
+        if not all([shipping_information, address_id]):
+            return Response({"detail": "Shipper information and address are required"},
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -329,15 +356,20 @@ class ProductCheckoutView(APIView):
             address = Address.objects.get(customer=customer, id=address_id)
             cart = Cart.objects.get(user=request.user, status="open")
 
+            delivery_fee = []
             for product in shipping_information:
                 # Get Cart Products
-                cart_product = CartProduct.objects.get(id=product["cart_product_id"], cart=cart)
+                cart_products = CartProduct.objects.filter(id__in=product["cart_product_id"], cart=cart)
 
-                if str(product["company_id"]).isnumeric():
-                    cart_product.company_id = product["company_id"]
-                cart_product.shipper_name = str(product["shipper"]).upper()
-                cart_product.delivery_fee = product["shipping_fee"]
-                cart_product.save()
+                for cart_product in cart_products:
+                    if str(product["company_id"]).isnumeric():
+                        cart_product.company_id = product["company_id"]
+                    cart_product.shipper_name = str(product["shipper"]).upper()
+                    cart_product.delivery_fee = product["shipping_fee"]
+                    cart_product.save()
+
+                first_cart_product = cart_products.first()
+                delivery_fee.append(first_cart_product.delivery_fee)
 
             validate = validate_product_in_cart(customer)
             if validate:
@@ -347,30 +379,11 @@ class ProductCheckoutView(APIView):
             order, created = Order.objects.get_or_create(customer=customer, cart=cart, address=address)
 
             # PROCESS PAYMENT
-            success, detail = order_payment(payment_method, order, pin)
+            delivery_amount = sum(delivery_fee)
+            success, detail = order_payment(request, payment_method, delivery_amount, order, pin)
             if success is False:
                 return Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
-
-            # update order
-            order_products = add_order_product(order)
-            # Update payment method
-            order_products.update(payment_method=payment_method)
-            # Call pickup order request
-
-            success, response = perform_order_pickup(order_products, address, sender_town_id, receiver_town_id)
-
-            if success is False:
-                # Process refund to customer wallet
-                return Response({"detail": response}, status=status.HTTP_400_BAD_REQUEST)
-
-            for order_product in order_products:
-                # Send order placement email to shopper
-                Thread(target=shopper_order_placement_email, args=[customer, order.id, order_product]).start()
-                # Send order placement email to seller
-                Thread(target=merchant_order_placement_email, args=[customer, order, order_product]).start()
-                # Send order placement email to admins
-
-            return Response({"detail": "Order placed successfully"})
+            return Response({"detail": detail})
 
         except Exception as ex:
             return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
@@ -379,18 +392,19 @@ class ProductCheckoutView(APIView):
 class OrderAPIView(APIView, CustomPagination):
 
     def get(self, request, pk=None):
+        context = {"request": request}
         try:
             if pk:
-                data = OrderSerializer(Order.objects.get(id=pk, customer__user=request.user)).data
+                data = OrderSerializer(Order.objects.get(id=pk, customer__user=request.user), context=context).data
             else:
                 order_status = request.GET.get("status", None)
                 if order_status:
                     order = Order.objects.filter(orderproduct__status=order_status,
                                                  customer__user=request.user).distinct()
                 else:
-                    order = Order.objects.filter(customer__user=request.user).order_by("-id")
+                    order = Order.objects.filter(customer__user=request.user, payment_status="success").order_by("-id")
                 queryset = self.paginate_queryset(order, request)
-                serializer = OrderSerializer(queryset, many=True).data
+                serializer = OrderSerializer(queryset, many=True, context=context).data
                 data = self.get_paginated_response(serializer).data
             return Response(data)
         except (Exception,) as err:
@@ -483,7 +497,7 @@ class CustomerDashboardView(APIView):
             # Recent Orders
             recent_orders = OrderProduct.objects.filter(order__customer=profile).order_by("-id")[:10]
             response['profile_detail'] = ProfileSerializer(profile, context={"request": request}).data
-            response['recent_orders'] = OrderProductSerializer(recent_orders, many=True).data
+            response['recent_orders'] = OrderProductSerializer(recent_orders, context={"request": request}, many=True).data
             response['wallet_information'] = wallet_bal
             response['total_amount_spent'] = Transaction.objects.filter(
                 order__customer__user=request.user, status="success"
@@ -535,6 +549,115 @@ class ProductReviewAPIView(APIView, CustomPagination):
         result = serializer.save()
         return Response({"detail": "Review added successfully", "data": result})
 
+
+class NameEnquiryAPIView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        bank_code = request.GET.get("bank_code")
+        account_no = request.GET.get("account_no")
+        success, response = call_name_enquiry(bank_code, account_no)
+        return Response({"success": success, "data": response})
+
+
+# Mobile APP
+class MobileCategoryListAPIView(generics.ListAPIView):
+    permission_classes = []
+    pagination_class = CustomPagination
+    queryset = ProductCategory.objects.filter(parent__isnull=True).order_by("-id")
+    serializer_class = MobileCategorySerializer
+
+
+class MobileCategoryDetailRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = []
+    serializer_class = MobileCategorySerializer
+    queryset = ProductCategory.objects.filter(parent__isnull=True).order_by("-id")
+    lookup_field = "id"
+
+
+class MobileStoreListAPIView(generics.ListAPIView):
+    permission_classes = []
+    pagination_class = CustomPagination
+    serializer_class = StoreSerializer
+
+    def get_queryset(self):
+        query = self.request.GET.get("query")
+        queryset = Store.objects.filter(is_active=True, seller__status="active").order_by("-id")
+        if query == "on_sale":
+            queryset = Store.objects.filter(is_active=True, seller__status="active", on_sale=True)
+        if query == "latest":
+            today = datetime.datetime.now()
+            last_7_days = get_previous_date(date=datetime.datetime.now(), delta=7)
+            queryset = Store.objects.filter(is_active=True, seller__status="active", created_on__range=[last_7_days, today])
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        response = super(MobileStoreListAPIView, self).list(request, args, kwargs)
+        today = datetime.datetime.now()
+        last_7_days = get_previous_date(date=datetime.datetime.now(), delta=7)
+        on_sales = [{
+            "id": store.id,
+            "name": store.name,
+            "logo": request.build_absolute_uri(store.logo.url),
+            "description": store.description
+        } for store in Store.objects.filter(is_active=True, seller__status="active", on_sale=True)[:5]]
+
+        latest_store = [{
+            "id": store.id,
+            "name": store.name,
+            "logo": store.logo.url,
+            "description": store.description
+        } for store in Store.objects.filter(is_active=True, seller__status="active", created_on__range=[last_7_days, today])[:5]]
+        response.data["new_stores"] = latest_store
+        response.data["on_sales"] = on_sales
+        return response
+
+
+class MobileStoreDetailRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = []
+    serializer_class = StoreSerializer
+    queryset = Store.objects.filter(is_active=True, seller__status="active")
+    lookup_field = "id"
+
+
+class MiniStoreAPIView(generics.ListAPIView):
+    permission_classes = []
+    pagination_class = CustomPagination
+    serializer_class = StoreProductSerializer
+
+    def get_queryset(self):
+        store_id = self.kwargs.get("store_id")
+        order_by = self.request.GET.get('sort_by', '')
+        category_id = self.request.GET.get("category_id")
+        search = self.request.GET.get("search")
+
+        query = Q(status='active', store__is_active=True, store__id=store_id)
+
+        if category_id:
+            query &= Q(category_id=category_id)
+
+        if search:
+            query &= Q(name__icontains=search)
+
+        if order_by:
+            queryset = sorted_queryset(order_by, query)
+            return queryset
+
+        queryset = Product.objects.filter(query).distinct()
+        return queryset
+
+
+class ReturnReasonListAPIView(generics.ListAPIView):
+    queryset = ReturnReason.objects.all()
+    serializer_class = ReturnReasonSerializer
+    permission_classes = []
+
+
+class ReturnReasonRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = ReturnReason.objects.all()
+    serializer_class = ReturnReasonSerializer
+    permission_classes = []
+    lookup_field = "id"
 
 
 

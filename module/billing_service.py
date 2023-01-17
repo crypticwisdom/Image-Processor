@@ -37,6 +37,7 @@ class BillingService:
         })
         header = {"Content-Type": "application/json"}
         response = requests.request("POST", url, headers=header, data=payload).json()
+        log_request(f"url: {url}, payload: {payload}, response: {response}")
         return response
 
     @classmethod
@@ -63,13 +64,19 @@ class BillingService:
         url = f"{base_url}/operations/charge"
         header = cls.get_header()
 
+        payment_type = kwargs.get("payment_type")
+
+        if payment_type == "pay_attitude":
+            payment_type = "payattitude"
+
         data = dict()
         data["paymentProvider"] = "Unified Payment"
-        data["paymentType"] = kwargs.get("payment_type")
-        data["customerId"] = kwargs.get("customer_id")  # Customer Billing_ID
+        data["paymentType"] = payment_type
+        data["customerId"] = kwargs.get("customer_id")  # Customer email
         data["currency"] = 566
         data["description"] = kwargs.get("narration")
-        data["url"] = kwargs.get("callback_url")
+        data["amount"] = kwargs.get("amount")
+        data["returnUrl"] = kwargs.get("callback_url")
         data["pin"] = kwargs.get("pin")
         data["fee"] = 0
 
@@ -78,6 +85,25 @@ class BillingService:
         response = requests.request("POST", url, headers=header, data=payload).json()
         log_request(f"url: {url}, payload: {payload}, response: {response}")
         return response
+
+    @classmethod
+    def verify_payment(cls, **kwargs):
+
+        header = cls.get_header()
+
+        customer_id = kwargs.get('customer_id')
+        provider = kwargs.get('provider')
+        trans_id = kwargs.get('trans_id')
+        status = str(kwargs.get('status')).upper()
+        approval = kwargs.get('approved')
+
+        url = f"{base_url}/operations/verify-payment/{customer_id}/{provider}?trxId={trans_id}&status=" \
+              f"{status}&approved={approval}"
+
+        response = requests.request("POST", url, headers=header).json()
+        log_request(f"url: {url}, response: {response}")
+        return response
+
 
 
 

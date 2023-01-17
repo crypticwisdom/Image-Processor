@@ -12,13 +12,12 @@ class Profile(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     verified = models.BooleanField(default=False)
-    billing_verified = models.BooleanField(default=False)
-    billing_id = models.TextField(blank=True, null=True)
     pay_auth = models.TextField(blank=True, null=True)
     pay_token = models.TextField(blank=True, null=True)
     wallet_pin = models.TextField(blank=True, null=True)
     verification_code = models.CharField(max_length=100, null=True, blank=True)
     code_expiration_date = models.DateTimeField(null=True, blank=True)
+    recent_viewed_products = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return str(self.user)
@@ -54,38 +53,29 @@ class UserCard(models.Model):
         return f"{self.id}: {self.profile}"
 
 
-class ForgotPasswordOTP(models.Model):
-    otp = models.SlugField(max_length=20, null=False, blank=False)
-    email = models.EmailField(max_length=200, null=True)
-    is_sent = models.BooleanField(help_text="If token was sent successfully", default=False)
-    is_used = models.BooleanField(help_text="If token has been used", default=False)
-    expire_time = models.DateTimeField(help_text="Expires after 5 minutes", blank=True, null=True)
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-
-
 class Address(models.Model):
     customer = models.ForeignKey(Profile, on_delete=models.CASCADE)
     type = models.CharField(max_length=10, choices=address_type_choices, default='home')
     name = models.CharField(max_length=500)
     mobile_number = models.CharField(max_length=17)
-    num = models.CharField(max_length=500)
+    # num = models.CharField(max_length=500)
     locality = models.CharField(max_length=500, blank=True, null=True)
     landmark = models.CharField(max_length=500, blank=True, null=True)
     country = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
     town = models.CharField(max_length=100, blank=True, null=True)
+    town_id = models.CharField(max_length=100, blank=True, null=True)
     postal_code = models.CharField(default=0, blank=True, null=True, max_length=50)
-    longitude = models.FloatField(null=True, blank=True)
-    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True, default=0.0)
+    latitude = models.FloatField(null=True, blank=True, default=0.0)
     is_primary = models.BooleanField(default=False)
     updated_on = models.DateTimeField(auto_now=True)
 
     def get_full_address(self):
         addr = ""
-        if self.num:
-            addr += f"{self.num}, "
+        # if self.num:
+        #     addr += f"{self.num}, "
         if self.locality:
             addr += f"{self.locality}, "
         if self.town:
@@ -99,6 +89,8 @@ class Address(models.Model):
     def __str__(self):
         return "{} {} {}".format(self.type, self.name, self.locality)
 
+    class Meta:
+        verbose_name_plural = "Addresses"
 
 
 

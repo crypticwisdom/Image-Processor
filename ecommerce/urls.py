@@ -32,10 +32,24 @@ urlpatterns = [
     path("order/return/<int:pk>/", views.OrderReturnView.as_view(), name="return-order-detail"),
     path("order/return/", views.OrderReturnView.as_view(), name="return-all"),
 
+    # Return Reasons
+    path('return-reason/', views.ReturnReasonListAPIView.as_view(), name='return-reason'),
+    path('return-reason/<int:id>/', views.ReturnReasonRetrieveAPIView.as_view(), name='return-reason-detail'),
+
     # Customer Dashboard
     path("dashboard/", views.CustomerDashboardView.as_view(), name="customer-dashboard"),
 
     # Product Review
     path("review/", views.ProductReviewAPIView.as_view(), name="review"),
+
+    # Name Enquiry
+    path("name-enquiry/", views.NameEnquiryAPIView.as_view(), name="name-enquiry"),
+
+    # Mobile APP
+    path("mobile/category/", views.MobileCategoryListAPIView.as_view(), name="mobile-category"),
+    path("mobile/category/<int:id>/", views.MobileCategoryDetailRetrieveAPIView.as_view(), name="mobile-category-detail"),
+    path("mobile/store", views.MobileStoreListAPIView.as_view(), name="mobile-store"),
+    path("mobile/store/<int:id>/", views.MobileStoreDetailRetrieveAPIView.as_view(), name="mobile-store-detail"),
+    path("mobile/store/<int:store_id>/product", views.MiniStoreAPIView.as_view(), name="mobile-store-detail"),
 
 ]

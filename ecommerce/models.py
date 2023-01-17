@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.template.defaultfilters import slugify
@@ -74,17 +76,21 @@ class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.TextField(blank=True, null=True)
     status = models.CharField(choices=product_status_choices, max_length=10, default='pending')
+    decline_reason = models.CharField(max_length=200, blank=True, null=True)
 
     # Recommended Product: should be updated to 'True' once the merchant makes' payment.
     is_featured = models.BooleanField(default=False)
 
     # View Count: number of times the product is viewed by users.
     view_count = models.PositiveBigIntegerField(default=0)
+    last_viewed_date = models.DateTimeField(blank=True, null=True)
 
     # Top Selling: The highest sold product. Field updates when this product has been successfully paid for.
     sale_count = models.IntegerField(default=0)
 
     published_on = models.DateTimeField(blank=True, null=True)
+    checked_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name="product_checked_by")
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name="product_approved_by")
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -297,8 +303,7 @@ class OrderProduct(models.Model):
 
 
 class ReturnReason(models.Model):
-    reason = models.CharField(max_length=200, null=False, blank=False)
-    slug = models.CharField(max_length=200, null=True, blank=True)
+    reason = models.CharField(max_length=200)
 
     def __str__(self):
         return self.reason

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from ecommerce.models import Cart
+from ecommerce.models import Cart, OrderProduct, Product
+from ecommerce.serializers import ProductSerializer
 from merchant.models import Seller
 from store.serializers import CartSerializer
 from .models import Profile, Address
@@ -18,10 +19,33 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'phone_number']
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'date_joined']
 
 
 class CustomerAddressSerializer(serializers.ModelSerializer):
+    auth_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    is_primary = serializers.BooleanField()
+
+    class Meta:
+        model = Address
+        exclude = []
+
+    def update(self, instance, validated_data):
+        is_primary = validated_data.get("is_primary")
+        auth_user = validated_data.get("auth_user")
+
+        address = super(CustomerAddressSerializer, self).update(instance, validated_data)
+        if is_primary:
+            address.is_primary = is_primary
+
+        if is_primary is True:
+            # Get all customer address and set their primary to false
+            Address.objects.filter(customer__user=auth_user).exclude(id=instance.id).update(is_primary=False)
+        address.save()
+        return CustomerAddressSerializer(address, context=self.context).data
+
+
+class CreateCustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         exclude = []
@@ -33,6 +57,20 @@ class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     is_merchant = serializers.SerializerMethodField()
     cart = serializers.SerializerMethodField()
+    total_purchase_count = serializers.SerializerMethodField()
+    recently_viewed_products = serializers.SerializerMethodField()
+
+    def get_recently_viewed_products(self, obj):
+        recent_view = None
+        if obj.recent_viewed_products:
+            shopper_views = obj.recent_viewed_products.split(",")[1:]
+            recent_view = ProductSerializer(Product.objects.filter(
+                id__in=shopper_views, status="active", store__is_active=True).order_by("?")[:10], many=True,
+                                            context={"request": self.context.get("request")}).data
+        return recent_view
+
+    def get_total_purchase_count(self, obj):
+        return OrderProduct.objects.filter(order__customer=obj, order__payment_status="success").count()
 
     def get_cart(self, obj):
         request = self.context.get("request")
@@ -59,4 +97,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet', 'is_merchant', 'cart']
+        fields = [
+            'id', 'user', 'profile_picture', 'addresses', 'verified', 'has_wallet', 'is_merchant', 'cart',
+            'total_purchase_count', 'recently_viewed_products'
+        ]
