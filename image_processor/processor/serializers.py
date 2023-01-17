@@ -6,7 +6,8 @@ class ValidatorBlockSerializer(serializers.ModelSerializer):
     allowed_extensions = serializers.SerializerMethodField()
     content_type = serializers.SerializerMethodField()
     file_threshold_size = serializers.SerializerMethodField()
-    image_dimension_threshold = serializers.SerializerMethodField()
+    image_height_dimension_threshold = serializers.SerializerMethodField()
+    image_width_dimension_threshold = serializers.SerializerMethodField()
 
     def get_allowed_extensions(self, obj):
         if obj:
@@ -23,12 +24,18 @@ class ValidatorBlockSerializer(serializers.ModelSerializer):
             return f"{obj.file_threshold_size} KB"
         return None
 
-    def get_image_dimension_threshold(self, obj):
+    def get_image_height_dimension_threshold(self, obj):
         if obj:
-            return f"{obj.image_dimension_threshold} Pixels"
+            return f"{obj.image_height_dimension_threshold} Pixels"
+        return None
+
+    def get_image_width_dimension_threshold(self, obj):
+        if obj:
+            return f"{obj.image_width_dimension_threshold} Pixels"
         return None
 
     class Meta:
         model = ValidatorBlock
-        fields = ['id', 'block_name', 'block_token', 'file_threshold_size', 'image_dimension_threshold',
-                  'allowed_extensions', 'content_type', 'numb_of_images_per_process', 'created_on']
+        fields = ['id', 'block_name', 'block_token', 'file_threshold_size', 'image_height_dimension_threshold',
+                  'image_width_dimension_threshold', 'allowed_extensions', 'content_type', 'numb_of_images_per_process',
+                  'created_on']

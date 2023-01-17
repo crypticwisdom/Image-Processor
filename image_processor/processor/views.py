@@ -34,7 +34,6 @@ class CreateValidationBlockView(APIView):
                 return Response({"detail": "Set 'block_token'."}, status=HTTP_400_BAD_REQUEST)
 
             block = ValidatorBlock.objects.get(block_token=block_token)
-
             if block is not None:
                 serializer = ValidatorBlockSerializer(instance=block, many=False).data
                 return Response({"detail": serializer})
@@ -198,11 +197,11 @@ class CreateValidationBlockView(APIView):
             if not success:
                 return Response({"detail": f"{file_size_value_or_err_msg}"}, status=HTTP_400_BAD_REQUEST)
 
-            if not image_height_dimension_threshold:
-                return Response({"detail": f"Set 'image_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
+            # if not image_height_dimension_threshold:
+            #     return Response({"detail": f"Set 'image_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
 
-            if not image_width_dimension_threshold:
-                return Response({"detail": f"Set 'image_width_threshold'."}, status=HTTP_400_BAD_REQUEST)
+            # if not image_width_dimension_threshold:
+            #     return Response({"detail": f"Set 'image_width_threshold'."}, status=HTTP_400_BAD_REQUEST)
 
             if not allowed_extensions:
                 return Response({"detail": f"Set 'allowed_extensions'."}, status=HTTP_400_BAD_REQUEST)
