@@ -316,10 +316,13 @@ def reset_password(pin, password, email, user):
             password = make_password(password=password)
             user.password = password
             user.save()
+            return True, "Password reset was successful, please proceed to login"
         else:
             return False, "An error has occurred, please try again later"
+    if "Error" in response:
+        return False, response["Error"]
 
-    return True, "Password reset was successful, please proceed to login"
+    return True, ""
 
 
 

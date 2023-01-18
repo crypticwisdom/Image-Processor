@@ -153,7 +153,7 @@ class ForgotPasswordView(APIView):
     permission_classes = []
 
     def get(self, request):
-        email = request.data.get("email")
+        email = request.GET.get("email")
 
         if not email:
             return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
