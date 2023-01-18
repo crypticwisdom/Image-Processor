@@ -175,6 +175,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
     product_types = serializers.SerializerMethodField()
     brand = serializers.SerializerMethodField()
     parent_category = serializers.SerializerMethodField()
+    new_arrived_products = serializers.SerializerMethodField()
 
     def get_parent_category(self, obj):
         data = None
@@ -207,6 +208,30 @@ class CategoriesSerializer(serializers.ModelSerializer):
         if ProductType.objects.filter(category=obj).exists():
             prod_type = ProductTypeSerializer(ProductType.objects.filter(category=obj), many=True).data
         return prod_type
+
+    def get_new_arrived_products(self, obj):
+        # print(obj.parent) // If obj.parent is None that means obj.parent is a sub-category and not a parent category.
+
+        container, details= list(), dict()
+        request = self.context.get("request", None)
+        if not request:
+            return []
+
+        if obj.parent is None:
+            query = Product.objects.filter(category__id=obj.id).order_by('-id')[:10]
+        else:
+            query = Product.objects.filter(sub_category__id=obj.id).order_by('-id')[:10]
+
+        for product in query:
+            product_detail = ProductDetail.objects.get(product=product)
+            container.append({
+                "product_id": product_detail.id,
+                "product_name": product_detail.product.name,
+                "product_image": request.build_absolute_uri(product_detail.product.image.get_image_url()),
+                "price": product_detail.price,
+                "discount": product_detail.discount,
+            })
+        return container
 
     class Meta:
         model = ProductCategory
@@ -409,7 +434,7 @@ class ProductReviewSerializerIn(serializers.Serializer):
         rating = validated_data.get("rating")
         content = validated_data.get("content")
 
-        # Check if user has previously purchase product
+        # Check if user has previously purchased product
         if not OrderProduct.objects.filter(order__customer__user=user, product_detail__product_id=product, status="delivered").exists():
             raise InvalidRequestException({"detail": "You have no recent purchase for selected product"})
 
