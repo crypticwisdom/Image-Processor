@@ -224,7 +224,7 @@ class CreateValidationBlockView(APIView):
                 for content_type in content_types:
                     block.content_type.add(content_type)
                 block.save()
-                return Response({"detail": "Validation Block has been updated. |"})
+                return Response({"detail": "Validation Block has been updated."})
             return Response({"detail": f"'{block_name}' update failed."}, status=HTTP_400_BAD_REQUEST)
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
