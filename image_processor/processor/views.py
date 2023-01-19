@@ -156,7 +156,6 @@ class CreateValidationBlockView(APIView):
                                                                None)  # width and height checks in pixels
             allowed_extensions = request.data.get('allowed_extensions', [])
             content_types = request.data.get("content_types", [])
-
             if not client_token:
                 return Response({"detail": "Set 'client_token'."}, status=HTTP_400_BAD_REQUEST)
 
@@ -224,8 +223,9 @@ class CreateValidationBlockView(APIView):
                 block.content_type.clear()
                 for content_type in content_types:
                     block.content_type.add(content_type)
-
-            return Response({"detail": "Validation Block has been updated."})
+                block.save()
+                return Response({"detail": "Validation Block has been updated."})
+            return Response({"detail": f"'{block_name}' update failed."}, status=HTTP_400_BAD_REQUEST)
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
 
