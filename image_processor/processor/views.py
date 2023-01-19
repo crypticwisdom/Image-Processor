@@ -154,7 +154,6 @@ class CreateValidationBlockView(APIView):
                                                                 None)  # width and height checks in pixels
             image_width_dimension_threshold = request.data.get('image_width_dimension_threshold',
                                                                None)  # width and height checks in pixels
-
             allowed_extensions = request.data.get('allowed_extensions', [])
             content_types = request.data.get("content_types", [])
 
@@ -197,11 +196,11 @@ class CreateValidationBlockView(APIView):
             if not success:
                 return Response({"detail": f"{file_size_value_or_err_msg}"}, status=HTTP_400_BAD_REQUEST)
 
-            # if not image_height_dimension_threshold:
-            #     return Response({"detail": f"Set 'image_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
+            if not image_height_dimension_threshold:
+                return Response({"detail": f"Set 'image_height_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
 
-            # if not image_width_dimension_threshold:
-            #     return Response({"detail": f"Set 'image_width_threshold'."}, status=HTTP_400_BAD_REQUEST)
+            if not image_width_dimension_threshold:
+                return Response({"detail": f"Set 'image_width_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
 
             if not allowed_extensions:
                 return Response({"detail": f"Set 'allowed_extensions'."}, status=HTTP_400_BAD_REQUEST)
