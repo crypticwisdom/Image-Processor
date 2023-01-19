@@ -1,6 +1,5 @@
 import json
 import re
-
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from account.models import Profile
@@ -12,10 +11,10 @@ from ecommerce.shopper_email import shopper_signup_verification_email
 from ecommerce.utils import encrypt_text, decrypt_text, encrypt_payarena_data
 from home.utils import log_request
 from module.apis import payment_for_wallet
-
+import requests
 from module.payarena_service import PayArenaServices
 from module.billing_service import BillingService
-
+from django.conf import settings
 
 def send_shopper_verification_email(email, profile):
     try:
@@ -322,6 +321,29 @@ def reset_password(pin, password, email, user):
     return True, "Password reset was successful, please proceed to login"
 
 
-
+# def image_processor(request, client_token, block_token):
+#     try:
+#         url = f"{settings.IMAGE_PROCESS_BASE_URL}/processor/validation"
+#
+#         images = request.FILES.get("images", None)
+#
+#         if images is None:
+#             return False, "'images' field is required."
+#
+#         data = {
+#             "images": images,
+#             "block_token": block_token,
+#             "client_token": client_token
+#         }
+#
+#         headers = {
+#             "Content-Type": "multipart/form-data"
+#         }
+#         response = requests.request(method="POST", url=f"{settings.IMAGE_PROCESS_BASE_URL}", data=data, headers=headers)
+#         print(response, "-----------")
+#
+#         return True, "Success"
+#     except (Exception, ) as err:
+#         return False, f"{err}"
 
 

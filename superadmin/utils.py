@@ -121,7 +121,6 @@ def create_or_edit_banner_obj(data, obj, product_id=None):
                 log_request(ex)
 
     obj.save()
-
     return True
 
 
