@@ -224,6 +224,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
         for product in query:
             product_detail = ProductDetail.objects.filter(product=product).last()
+            print(product_detail)
             container.append({
                 "product_id": product.id,
                 "product_name": product.name,
