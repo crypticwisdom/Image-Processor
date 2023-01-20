@@ -178,7 +178,6 @@ class ProductListAPIView(generics.ListAPIView):
         queryset = Product.objects.all().order_by("-id")
         if prod_status:
             queryset = Product.objects.filter(status=prod_status).order_by("-id")
-        print(queryset)
         return queryset
 
 
