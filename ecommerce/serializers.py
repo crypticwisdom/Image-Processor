@@ -227,7 +227,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
             container.append({
                 "product_id": product.id,
                 "product_name": product.name,
-                "product_image": request.build_absolute_uri(product.image.image.get_image_url()),
+                "product_image": request.build_absolute_uri(product.image.image.url),
                 "price": product_detail.price,
                 "discount": product_detail.discount,
             })
