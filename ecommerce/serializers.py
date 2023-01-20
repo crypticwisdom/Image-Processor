@@ -84,11 +84,13 @@ class ProductSerializer(serializers.ModelSerializer):
         recent_view = Product.objects.filter(
             status="active", store__is_active=True).order_by("-last_viewed_date").exclude(pk=obj.id)[:10]
         if request.user.is_authenticated:
-            shopper = Profile.objects.get(user=request.user)
-            if shopper.recent_viewed_products:
-                shopper_views = shopper.recent_viewed_products.split(",")[1:]
-                recent_view = Product.objects.filter(id__in=shopper_views, status="active", store__is_active=True).order_by("?")[:15]
+            if Profile.objects.filter(user=request.user).exists():
+                shopper = Profile.objects.get(user=request.user)
+                if shopper.recent_viewed_products:
+                    shopper_views = shopper.recent_viewed_products.split(",")[1:]
+                    recent_view = Product.objects.filter(id__in=shopper_views, status="active", store__is_active=True).order_by("?")[:15]
         return StoreProductSerializer(recent_view, many=True, context={"request": request}).data
+
 
     def get_checked_by(self, obj):
         if obj.checked_by:
