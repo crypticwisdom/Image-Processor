@@ -212,7 +212,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
     def get_new_arrived_products(self, obj):
         # print(obj.parent) // If obj.parent is None that means obj.parent is a sub-category and not a parent category.
 
-        container, details= list(), dict()
+        container, details = list(), dict()
         request = self.context.get("request", None)
         if not request:
             return []
@@ -223,11 +223,11 @@ class CategoriesSerializer(serializers.ModelSerializer):
             query = Product.objects.filter(sub_category__id=obj.id).order_by('-id')[:10]
 
         for product in query:
-            product_detail = ProductDetail.objects.get(product=product)
+            product_detail = ProductDetail.objects.filter(product=product).last()
             container.append({
-                "product_id": product_detail.id,
-                "product_name": product_detail.product.name,
-                "product_image": request.build_absolute_uri(product_detail.product.image.get_image_url()),
+                "product_id": product.id,
+                "product_name": product.name,
+                "product_image": request.build_absolute_uri(product.image.image.get_image_url()),
                 "price": product_detail.price,
                 "discount": product_detail.discount,
             })

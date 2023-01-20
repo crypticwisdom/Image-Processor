@@ -47,68 +47,68 @@ class MallLandPageView(APIView):
     permission_classes = []
 
     def get(self, request):
-    # try:
-        response, response_container, start_date = list(), dict(), timezone.datetime.today()
-        start_date = timezone.datetime.today()
+        try:
+            response, response_container, start_date = list(), dict(), timezone.datetime.today()
+            start_date = timezone.datetime.today()
 
-        # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
-        # deal_end_date = timezone.timedelta(days=1)
-        deals_query_set = Promo.objects.filter(promo_type="deal").order_by("-id")[:5]
-        response_container["deals_of_the_day"] = MallDealSerializer(
-            deals_query_set, many=True, context={"request": request}).data
+            # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
+            # deal_end_date = timezone.timedelta(days=1)
+            deals_query_set = Promo.objects.filter(promo_type="deal").order_by("-id")[:5]
+            response_container["deals_of_the_day"] = MallDealSerializer(
+                deals_query_set, many=True, context={"request": request}).data
 
-        # (2) Hot New Arrivals in last 3 days ( now changed to most recent 15 products)
-        new_arrivals = Product.objects.filter(status="active")[:25]
-        arrival_list = [product.id for product in new_arrivals]
-        hot_new_arrivals = Product.objects.filter(id__in=arrival_list).order_by("?")
-        arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
-        response_container["hot_new_arrivals"] = arrival_serializer
+            # (2) Hot New Arrivals in last 3 days ( now changed to most recent 15 products)
+            new_arrivals = Product.objects.filter(status="active")[:25]
+            arrival_list = [product.id for product in new_arrivals]
+            hot_new_arrivals = Product.objects.filter(id__in=arrival_list).order_by("?")
+            arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
+            response_container["hot_new_arrivals"] = arrival_serializer
 
-        # (3) Top weekly selling products
-        top_products = top_weekly_products(request)
-        response_container["top_selling"] = top_products
+            # (3) Top weekly selling products
+            top_products = top_weekly_products(request)
+            response_container["top_selling"] = top_products
 
-        # (4) Top categories of the month
-        top_monthly_cat = top_monthly_categories(request)
-        response_container["top_monthly_categories"] = top_monthly_cat
+            # (4) Top categories of the month
+            top_monthly_cat = top_monthly_categories(request)
+            response_container["top_monthly_categories"] = top_monthly_cat
 
-        # (5) Recommended Products
-        recommended = ProductSerializer(Product.objects.filter(
-            is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
-        ).data
-        response_container["recommended_products"] = recommended[:10]
+            # (5) Recommended Products
+            recommended = ProductSerializer(Product.objects.filter(
+                is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
+            ).data
+            response_container["recommended_products"] = recommended[:10]
 
-        most_viewed = ProductSerializer(
-            Product.objects.filter(status="active", store__is_active=True).order_by("-view_count")[:20], many=True,
-            context={"request": request}).data
-        response_container["most_viewed_products"] = most_viewed
+            most_viewed = ProductSerializer(
+                Product.objects.filter(status="active", store__is_active=True).order_by("-view_count")[:20], many=True,
+                context={"request": request}).data
+            response_container["most_viewed_products"] = most_viewed
 
 
-        # (6) All categories - to include sub categories and product types
-        categories = CategoriesSerializer(
-            ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
-        ).data
-        response_container["categories"] = categories
+            # (6) All categories - to include sub categories and product types
+            categories = CategoriesSerializer(
+                ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
+            ).data
+            response_container["categories"] = categories
 
-        # recently viewed products:
-        # these are products that were recently viewed by the shopper, or last viewed products
-        recent_view = ProductSerializer(Product.objects.filter(
-            status="active", store__is_active=True).order_by("-last_viewed_date")[:10], many=True,
-                                        context={"request": request}).data
-        if request.user.is_authenticated:
-            shopper = Profile.objects.get(user=request.user)
-            if shopper.recent_viewed_products:
-                shopper_views = shopper.recent_viewed_products.split(",")[1:]
-                recent_view = ProductSerializer(Product.objects.filter(
-                    id__in=shopper_views, status="active", store__is_active=True).order_by("?"), many=True,
-                                                context={"request": request}).data
+            # recently viewed products:
+            # these are products that were recently viewed by the shopper, or last viewed products
+            recent_view = ProductSerializer(Product.objects.filter(
+                status="active", store__is_active=True).order_by("-last_viewed_date")[:10], many=True,
+                                            context={"request": request}).data
+            if request.user.is_authenticated:
+                shopper = Profile.objects.get(user=request.user)
+                if shopper.recent_viewed_products:
+                    shopper_views = shopper.recent_viewed_products.split(",")[1:]
+                    recent_view = ProductSerializer(Product.objects.filter(
+                        id__in=shopper_views, status="active", store__is_active=True).order_by("?"), many=True,
+                                                    context={"request": request}).data
 
-        response_container["recently_viewed"] = recent_view
+            response_container["recently_viewed"] = recent_view
 
-        response.append(response_container)
-        return Response({"detail": response})
-    # except (Exception,) as err:
-    #     return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+            response.append(response_container)
+            return Response({"detail": response})
+        except (Exception,) as err:
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CategoriesView(APIView, CustomPagination):
