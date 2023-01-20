@@ -148,7 +148,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_product_detail(self, obj):
         request = self.context.get("request")
-        serializer = ProductDetailSerializer(ProductDetail.objects.filter(product=obj).order_by('-stock').first(),
+        serializer = ProductDetailSerializer(ProductDetail.objects.filter(product=obj).order_by('-stock'),
                                              context={"request": request})
         return serializer.data
 
