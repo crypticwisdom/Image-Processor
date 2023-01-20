@@ -223,14 +223,17 @@ class CategoriesSerializer(serializers.ModelSerializer):
             query = Product.objects.filter(sub_category__id=obj.id).order_by('-id')[:10]
 
         for product in query:
-            product_detail = ProductDetail.objects.filter(product=product).last()
-            print(product_detail)
+            price = discount = 0
+            if ProductDetail.objects.filter(product=product).exists():
+                product_detail = ProductDetail.objects.filter(product=product).last()
+                price = product_detail.price
+                discount = product_detail.discount
             container.append({
                 "product_id": product.id,
                 "product_name": product.name,
                 "product_image": request.build_absolute_uri(product.image.image.url),
-                "price": product_detail.price,
-                "discount": product_detail.discount,
+                "price": price,
+                "discount": discount,
             })
         return container
 
