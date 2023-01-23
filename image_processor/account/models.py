@@ -30,7 +30,7 @@ class ValidatorBlock(models.Model):
                                               help_text="Any file size above this threshold will be "
                                                         "rejected. Sizes are converted to KB.")
     # Dimension = width (pixels) X height (pixels)
-    # Resolution tells the amount of Pixels present in an Image.
+    # Resolution tellList of fields:s the amount of Pixels present in an Image.
     # 6000(w) X 6000(h) = 40,000 Pixels are present in the img
     # 6000 pixels in width (6000 pixels per col.) and 4000 pixels in height (4000 pixels per row).
 

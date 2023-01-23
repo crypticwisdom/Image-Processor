@@ -19,10 +19,11 @@ from .utils import variance_of_laplacian, check_if_blur
 
 class CreateValidationBlockView(APIView):
     """
-        This endpoint is used to create, update, delete and read a validation block with all fields required on creation.
-        List of fields:
-            client_token, block_name, file_threshold, file_size_unit, number_of_images, image_dimension_threshold,
-            image_height, allowed_extensions, content_types.
+    This endpoint is used to create, update, delete and read a validation block with all fields required on creation.
+
+    List of fields:
+        client_token, block_name, file_threshold, file_size_unit, number_of_images, image_dimension_threshold,
+        image_height, allowed_extensions, content_types.
     """
     permission_classes = []
 
