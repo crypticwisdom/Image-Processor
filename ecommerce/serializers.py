@@ -84,11 +84,13 @@ class ProductSerializer(serializers.ModelSerializer):
         recent_view = Product.objects.filter(
             status="active", store__is_active=True).order_by("-last_viewed_date").exclude(pk=obj.id)[:10]
         if request.user.is_authenticated:
-            shopper = Profile.objects.get(user=request.user)
-            if shopper.recent_viewed_products:
-                shopper_views = shopper.recent_viewed_products.split(",")[1:]
-                recent_view = Product.objects.filter(id__in=shopper_views, status="active", store__is_active=True).order_by("?")[:15]
+            if Profile.objects.filter(user=request.user).exists():
+                shopper = Profile.objects.get(user=request.user)
+                if shopper.recent_viewed_products:
+                    shopper_views = shopper.recent_viewed_products.split(",")[1:]
+                    recent_view = Product.objects.filter(id__in=shopper_views, status="active", store__is_active=True).order_by("?")[:15]
         return StoreProductSerializer(recent_view, many=True, context={"request": request}).data
+
 
     def get_checked_by(self, obj):
         if obj.checked_by:
@@ -148,8 +150,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_product_detail(self, obj):
         request = self.context.get("request")
-        serializer = ProductDetailSerializer(ProductDetail.objects.filter(product=obj).order_by('-stock').first(),
-                                             context={"request": request})
+        serializer = ProductDetailSerializer(ProductDetail.objects.filter(product=obj).order_by('-stock'),
+                                             many=True, context={"request": request})
         return serializer.data
 
     def get_category(self, obj):
@@ -235,7 +237,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
     def get_new_arrived_products(self, obj):
         # print(obj.parent) // If obj.parent is None that means obj.parent is a sub-category and not a parent category.
 
-        container, details= list(), dict()
+        container, details = list(), dict()
         request = self.context.get("request", None)
         if not request:
             return []
@@ -246,13 +248,17 @@ class CategoriesSerializer(serializers.ModelSerializer):
             query = Product.objects.filter(sub_category__id=obj.id, store__is_active=True, status='active').order_by('-id')[:10]
 
         for product in query:
-            product_detail = ProductDetail.objects.get(product=product)
+            price = discount = 0
+            if ProductDetail.objects.filter(product=product).exists():
+                product_detail = ProductDetail.objects.filter(product=product).last()
+                price = product_detail.price
+                discount = product_detail.discount
             container.append({
-                "product_id": product_detail.id,
-                "product_name": product_detail.product.name,
-                "product_image": request.build_absolute_uri(product_detail.product.image.get_image_url()),
-                "price": product_detail.price,
-                "discount": product_detail.discount,
+                "product_id": product.id,
+                "product_name": product.name,
+                "product_image": request.build_absolute_uri(product.image.image.url),
+                "price": price,
+                "discount": discount,
             })
         return container
 

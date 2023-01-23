@@ -214,8 +214,8 @@ class MerchantOrderProductsView(generics.ListAPIView):
         query = Q(product_detail__product__store__seller__user=self.request.user)
         queryset = OrderProduct.objects.filter(query).order_by('-id')
 
-        start_date = self.request.GET.get("start_date", None)
-        end_date = self.request.GET.get("end_date", None)
+        start_date = self.request.GET.get("date_from", None)
+        end_date = self.request.GET.get("date_to", None)
         status_ = self.request.GET.get("status", None)
 
         if (start_date is not None and end_date is None) or (end_date is not None and start_date is None):
