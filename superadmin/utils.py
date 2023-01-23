@@ -120,6 +120,7 @@ def create_or_edit_banner_obj(data, obj, product_id=None):
             except Exception as ex:
                 log_request(ex)
 
+    obj.position = data.get("position")
     obj.save()
 
     return True

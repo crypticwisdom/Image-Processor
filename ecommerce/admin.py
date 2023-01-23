@@ -1,6 +1,7 @@
 from django.contrib import admin
+from account.models import Address
 from ecommerce.models import Promo, ProductType, Image, OrderProduct, Order, ReturnReason, ReturnedProduct, \
-    ReturnProductImage, Address, ProductWishlist
+    ReturnProductImage, ProductWishlist, DailyDeal
 
 
 class OrderProductTabularInlineAdmin(admin.TabularInline):
@@ -18,6 +19,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderProductTabularInlineAdmin]
 
 
+admin.site.register(DailyDeal)
 admin.site.register(Promo)
 admin.site.register(ProductWishlist)
 admin.site.register(Address)

@@ -1,6 +1,7 @@
 from django.db.models import Sum, Avg
 from rest_framework import serializers
 
+from account.models import Profile
 from ecommerce.models import ProductImage, ProductReview, ProductWishlist, CartProduct, Brand, Product, \
     ProductDetail, Shipper, Cart
 from merchant.serializers import SellerSerializer
@@ -71,6 +72,7 @@ class StoreSerializer(serializers.ModelSerializer):
     seller = SellerSerializer(many=False)
     # categories = ProductCategorySerializer(many=True)
     products = serializers.SerializerMethodField()
+    total_follower = serializers.SerializerMethodField()
 
     def get_products(self, obj):
         request = self.context.get("request")
@@ -80,6 +82,12 @@ class StoreSerializer(serializers.ModelSerializer):
         data["best_selling"] = StoreProductSerializer(Product.objects.filter(store=obj, status="active").order_by("-sale_count")[:10], many=True, context={"request": request}).data
         response.append(data)
         return response
+
+    def get_total_follower(self, obj):
+        follower = 0
+        if Profile.objects.filter(following=obj):
+            follower = Profile.objects.filter(following=obj).count()
+        return follower
 
     class Meta:
         model = Store

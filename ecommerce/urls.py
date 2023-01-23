@@ -52,4 +52,7 @@ urlpatterns = [
     path("mobile/store/<int:id>/", views.MobileStoreDetailRetrieveAPIView.as_view(), name="mobile-store-detail"),
     path("mobile/store/<int:store_id>/product", views.MiniStoreAPIView.as_view(), name="mobile-store-detail"),
 
+    # Followers
+    path('mobile/follow/', views.StoreFollowerAPIView.as_view(), name='follower'),
+
 ]

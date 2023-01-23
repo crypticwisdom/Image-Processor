@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+
+from store.models import Store
 from .choices import card_from_choices, address_type_choices
 
 
@@ -16,6 +18,7 @@ class Profile(models.Model):
     pay_token = models.TextField(blank=True, null=True)
     wallet_pin = models.TextField(blank=True, null=True)
     verification_code = models.CharField(max_length=100, null=True, blank=True)
+    following = models.ManyToManyField(Store, blank=True)
     code_expiration_date = models.DateTimeField(null=True, blank=True)
     recent_viewed_products = models.TextField(blank=True, null=True)
 

@@ -1,8 +1,6 @@
 from .base import *
 from decouple import config
 
-print("------------------ You are on Pay Arena's Development Environment --------------------")
-
 SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = True
@@ -116,4 +114,8 @@ ELASTICSEARCH_DSL = {
         'hosts': ELASTICSEARCH_URL
     },
 }
+
+CRONJOBS = [
+    ('59 23 */2 * *', 'ecommerce.cron.remove_redundant_cart_cron'),
+]
 

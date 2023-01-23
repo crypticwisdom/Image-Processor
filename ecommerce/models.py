@@ -4,13 +4,16 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.template.defaultfilters import slugify
 
-from account.models import Profile, Address
 from merchant.models import Seller
 from store.choices import product_status_choices, cart_status_choices, payment_status_choices, order_status_choices, \
     order_entry_status
 
-
-# from store.models import Store
+status_choice = (('active', 'Active'), ('inactive', 'Inactive'))
+BANNER_POSITION_CHOICES = (
+    ("header_banner", "Header Banner"), ("footer_banner", "Footer Banner"),
+    ("big_banner", "Big Banner"), ("medium_banner", "Medium Banner"), ("small_banner", "Small Banner"),
+    ("big_deal", "Big Deal"), ("medium_deal", "Medium Deal"), ("small_deal", "Small Deal")
+)
 
 
 # Create your models here.
@@ -241,7 +244,7 @@ class Promo(models.Model):
     product_type = models.ManyToManyField(ProductType, blank=True)
     product = models.ManyToManyField(Product, blank=True)
     banner_image = models.ImageField(upload_to='promo-banners', null=True, blank=True)
-    status_choice = (('active', 'Active'), ('inactive', 'Inactive'))
+    position = models.CharField(max_length=300, choices=BANNER_POSITION_CHOICES, default="small_banner")
     status = models.CharField(max_length=50, default='active', choices=status_choice)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
@@ -251,9 +254,9 @@ class Promo(models.Model):
 
 
 class Order(models.Model):
-    customer = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True)
+    customer = models.ForeignKey("account.Profile", on_delete=models.SET_NULL, null=True)
     cart = models.ForeignKey(Cart, on_delete=models.SET_NULL, null=True)
-    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
+    address = models.ForeignKey("account.Address", on_delete=models.SET_NULL, null=True)
     payment_status = models.CharField(max_length=200, choices=payment_status_choices, default="pending")
     created_on = models.DateTimeField(auto_now_add=True)
     updates_on = models.DateTimeField(auto_now=True)
@@ -385,3 +388,11 @@ class OrderEntry(models.Model):
             )
         ]
 
+
+class DailyDeal(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"ID {self.id}: - {self.product.name}"
