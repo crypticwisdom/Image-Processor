@@ -96,7 +96,7 @@ class MallLandPageView(APIView):
                 footer_banner, many=True, context={"request": request}).data
 
         # (2) Hot New Arrivals in last 3 days ( now changed to most recent 15 products)
-            new_arrivals = Product.objects.filter(status="active")[:25]
+            new_arrivals = Product.objects.filter(status="active").order_by("-id")[:25]
             arrival_list = [product.id for product in new_arrivals]
             hot_new_arrivals = Product.objects.filter(id__in=arrival_list).order_by("?")
             arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
