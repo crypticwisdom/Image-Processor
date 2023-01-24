@@ -31,7 +31,7 @@ class PayArenaServices:
         payload["Password"] = kwargs.get("password")
 
         payload = json.dumps(payload)
-        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload).json()
+        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload, verify=False).json()
         log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
         return response
 
@@ -39,7 +39,7 @@ class PayArenaServices:
     def login(cls, email, password):
         url = f"{base_url}/account/login"
         payload = f'Username={email}&Password={password}'
-        res = requests.request("POST", url, headers={'Content-Type': 'application/x-www-form-urlencoded'}, data=payload)
+        res = requests.request("POST", url, headers={'Content-Type': 'application/x-www-form-urlencoded'}, data=payload, verify=False)
         log_request(f"url: {url}", f"payload: {payload}", f"response: {res.text}")
         return res.json()
 
@@ -49,7 +49,7 @@ class PayArenaServices:
         payload = {
             "EmailAddress": email
         }
-        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload).json()
+        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload, verify=False).json()
         log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
         return response
 
@@ -61,7 +61,7 @@ class PayArenaServices:
             "OTP": pin,
             "Password": password
         }
-        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload).json()
+        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload, verify=False).json()
         log_request(f"url: {url}", f"payload: {payload}", f"response: {response}")
         return response
 
@@ -73,7 +73,7 @@ class PayArenaServices:
             "OldPassword": f"{old_password}",
             "NewPassword": f"{new_password}"
         })
-        response = requests.request("POST", url, headers=header, data=payload).json()
+        response = requests.request("POST", url, headers=header, data=payload, verify=False).json()
         log_request(f"url: {url}", f"headers: {header}", f"payload: {payload}", f"response: {response}")
         return response
 
@@ -81,7 +81,7 @@ class PayArenaServices:
     def get_wallet_info(cls, profile):
         header = cls.get_auth_header(profile)
         url = f"{base_url}/mobile/balance"
-        response = requests.request("GET", url, headers=header).json()
+        response = requests.request("GET", url, headers=header, verify=False).json()
         log_request(f"url: {url}", f"headers: {header}", f"response: {response}")
         return response
 
@@ -89,7 +89,7 @@ class PayArenaServices:
     def validate_number(cls, profile):
         header = cls.get_auth_header(profile)
         url = f"{base_url}/mobile/validate-phone-number"
-        response = requests.request("GET", url, headers=header).json()
+        response = requests.request("GET", url, headers=header, verify=False).json()
         log_request(f"url: {url}", f"headers: {header}", f"response: {response}")
         return response
 
@@ -102,7 +102,7 @@ class PayArenaServices:
             "AuthCode": otp,
             "Token": ott
         })
-        response = requests.request("POST", url, headers=header, data=payload).json()
+        response = requests.request("POST", url, headers=header, data=payload, verify=False).json()
         log_request(f"url: {url}", f"headers: {header}", f"payload: {payload}", f"response: {response}")
         return response
 
@@ -111,13 +111,13 @@ class PayArenaServices:
         header = cls.get_auth_header(profile)
         url = f"{base_url}/mobile/mall-credit-wallet"
         payload = json.dumps({"Amount": amount, "Fee": 100, "PaymentInformation": payment_info})
-        response = requests.request("POST", url, headers=header, data=payload).json()
+        response = requests.request("POST", url, headers=header, data=payload, verify=False).json()
         log_request(f"url: {url}", f"headers: {header}", f"payload: {payload}", f"response: {response}")
         return response
 
     @classmethod
     def get_payment_status(cls, reference):
         url = f"{pgw_url}/status/{reference}"
-        response = requests.request("GET", url)
+        response = requests.request("GET", url, verify=False)
         log_request(f"url: {url}", f"response: {response}")
         return response.json()
