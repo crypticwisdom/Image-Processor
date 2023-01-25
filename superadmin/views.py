@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from account.utils import validate_email, register_payarena_user, create_account
 from ecommerce.pagination import CustomPagination
@@ -648,7 +648,9 @@ class AdminSignInAPIView(APIView):
 
         data = AdminUserSerializer(AdminUser.objects.get(user=user)).data
         return Response({"detail": "Login successful",
-                         "token": f"{RefreshToken.for_user(user).access_token}", "data": data})
+                         "token": f"{AccessToken.for_user(user)}",
+                         "refresh_token": f"{RefreshToken.for_user(user)}",
+                         "data": data})
 
 
 class OrdersView(generics.ListAPIView):
