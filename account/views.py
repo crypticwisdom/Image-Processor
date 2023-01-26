@@ -26,72 +26,73 @@ class LoginView(APIView):
     permission_classes = []
 
     def post(self, request):
-        try:
-            email = request.data.get('email', None)
-            password, user = request.data.get('password', None), None
-            cart_uid = request.data.get("cart_uid", None)
+    # try:
+        email = request.data.get('email', None)
+        password, user = request.data.get('password', None), None
+        cart_uid = request.data.get("cart_uid", None)
 
-            if AdminUser.objects.filter(user__email=email).exists():
-                return Response({"detail": "Invalid customer credential"}, status=status.HTTP_400_BAD_REQUEST)
+        if AdminUser.objects.filter(user__email=email).exists():
+            return Response({"detail": "Invalid customer credential"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if email is None:
-                return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if email is None:
+            return Response({"detail": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if password is None:
-                return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if password is None:
+            return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if '@' in email:
-                check = validate_email(email)
+        if '@' in email:
+            check = validate_email(email)
 
-                if check is False:
-                    return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
+            if check is False:
+                return Response({"detail": "Email is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if user is on UP USER ENGINE
-            user = None
-            if not User.objects.filter(email=email).exists():
-                profile = login_payarena_user(profile=None, email=email, password=password)
-                if profile is not None:
-                    user = profile.user
+        # Check if user is on UP USER ENGINE
+        user = None
+        if not User.objects.filter(email=email).exists():
+            profile = login_payarena_user(profile=None, email=email, password=password)
+            if profile is not None:
+                user = profile.user
 
-            if not User.objects.filter(email=email).exists():
-                return Response({"detail": "Customer with this credential not found"}, status=status.HTTP_400_BAD_REQUEST)
+        if not User.objects.filter(email=email).exists():
+            return Response({"detail": "Customer with this credential not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-            user = User.objects.get(email=email)
-            log_request(f"user: {user}")
+        user = User.objects.get(email=email)
+        log_request(f"user: {user}")
 
-            # Check: if user is empty and password does not match.
-            if not user.check_password(password):
-                return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
+        # Check: if user is empty and password does not match.
+        if not user.check_password(password):
+            return Response({"detail": "Incorrect user login details"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if user:
-                profile = Profile.objects.get(user=user)
-                if profile.verified is False:
-                    return Response({"detail": "User not verified, please request a verification link."},
-                                    status=status.HTTP_400_BAD_REQUEST)
+        if user:
+            profile = Profile.objects.get(user=user)
+            if profile.verified is False:
+                return Response({"detail": "User not verified, please request a verification link."},
+                                status=status.HTTP_400_BAD_REQUEST)
 
-                has_merged, message = merge_carts(cart_uid=cart_uid, user=user)
-                # Log 'message'
+            has_merged, message = merge_carts(cart_uid=cart_uid, user=user)
+            # Log 'message'
 
-                # Login to PayArena Auth Engine
-                Thread(target=login_payarena_user, args=[profile, email, password]).start()
-                time.sleep(2)
-                wallet_balance = get_wallet_info(profile)
+            # Login to PayArena Auth Engine
+            Thread(target=login_payarena_user, args=[profile, email, password]).start()
+            time.sleep(2)
+            wallet_balance = get_wallet_info(profile)
 
-                Thread(target=confirm_or_create_billing_account, args=[profile, email, password]).start()
+            # Thread(target=confirm_or_create_billing_account, args=[profile, email, password]).start()
+            confirm_or_create_billing_account(profile, email, password)
 
-                return Response({
-                    "detail": "Login successful",
-                    "token": f"{AccessToken.for_user(user)}",
-                    "refresh_token": f"{RefreshToken.for_user(user)}",
-                    "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
-                    "wallet_information": wallet_balance
-                })
-
-        except Exception as err:
-            log_request(err)
             return Response({
-                "detail": "Login error, please confirm email and password are correct", "error": str(err)
-            }, status=status.HTTP_400_BAD_REQUEST)
+                "detail": "Login successful",
+                "token": f"{AccessToken.for_user(user)}",
+                "refresh_token": f"{RefreshToken.for_user(user)}",
+                "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
+                "wallet_information": wallet_balance
+            })
+
+    # except Exception as err:
+    #     log_request(err)
+    #     return Response({
+    #         "detail": "Login error, please confirm email and password are correct", "error": str(err)
+    #     }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):

@@ -29,13 +29,13 @@ class BillingService:
         return header
 
     @classmethod
-    def validate_customer(cls, email):
+    def validate_customer(cls, user_email):
         url = f"{base_url}/validate-customer"
         payload = json.dumps({
             "companyId": uid,
-            "customerEmail": email
+            "customerEmail": user_email
         })
-        header = {"Content-Type": "application/json"}
+        header = cls.get_header()
         response = requests.request("POST", url, headers=header, data=payload).json()
         log_request(f"url: {url}, payload: {payload}, response: {response}")
         return response
