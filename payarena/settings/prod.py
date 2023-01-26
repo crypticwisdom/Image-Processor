@@ -115,9 +115,9 @@ ELASTICSEARCH_DSL = {
     },
 }
 
-# CRONJOBS = [
-#     ('*/5 * * * *', 'myapp.cron.my_scheduled_job')
-# ]
+CRONJOBS = [
+    ('59 23 */2 * *', 'ecommerce.cron.remove_redundant_cart_cron'),
+]
 
 
 
