@@ -26,7 +26,7 @@ def get_bank_codes(token):
             'Authorization': f'Bearer {token}',
             'Content-Type': 'application/json'
         }
-        response = requests.get(url=get_banks_url, headers=header)
+        response = requests.get(url=get_banks_url, headers=header, verify=False)
         log_request(f"url: {response.url}, headers: {header}, response: {response.json()}")
         if response.status_code != 200:
             return False, "Request was not successful"
@@ -41,7 +41,7 @@ def get_bank_codes(token):
 def call_name_enquiry(bank_code: str, account_number: str):
     try:
         # response = requests.get(url=f'{settings.NAME_ENQUIRY}/214/1774691015')
-        response = requests.get(url=f'{settings.NAME_ENQUIRY}/{bank_code}/{account_number}')
+        response = requests.get(url=f'{settings.NAME_ENQUIRY}/{bank_code}/{account_number}', verify=False)
         if response.status_code != 200:
             return False, "Error while requesting for name enquiry"
 
@@ -81,7 +81,7 @@ def payment_for_wallet(**kwargs):
 
     payload = json.dumps(data)
 
-    response = requests.request("POST", url, headers=header, data=payload)
+    response = requests.request("POST", url, headers=header, data=payload, verify=False)
     log_request(f"url: {url}, payload: {payload}, response: {response}")
     if response.status_code == 200 and str(response.text).isnumeric():
         link = f"{payment_gw_url}/{response.text}"
@@ -96,7 +96,7 @@ def u_map_registration(**kwargs):
           f'ACCOUNT_NAME={kwargs.get("account_name")}&BANK_CODE={kwargs.get("bank_code")}&' \
           f'FEP_TYPE={kwargs.get("fep_type")}&FEEL1={kwargs.get("feel")}&USER_ID=USAPITEST&PASSWORD=vnp-1234'
 
-    response = requests.request("POST", url, headers={}).json()
+    response = requests.request("POST", url, headers={}, verify=False).json()
     log_request(f"Calling UMAP API ---->>> url: {url}, Response: {response}")
     return response
 
