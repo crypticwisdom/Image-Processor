@@ -94,7 +94,8 @@ def u_map_registration(**kwargs):
     url = f'{u_map_url}?BILLER_CODE={kwargs.get("biller_id")}&BILLER_DESCRIPTION={kwargs.get("description")}&' \
           f'MERCHANT_ID={kwargs.get("merchant_id")}&BILLER_ACCOUNT={kwargs.get("account_no")}&' \
           f'ACCOUNT_NAME={kwargs.get("account_name")}&BANK_CODE={kwargs.get("bank_code")}&' \
-          f'FEP_TYPE={kwargs.get("fep_type")}&FEEL1={kwargs.get("feel")}&USER_ID=USAPITEST&PASSWORD=vnp-1234'
+          f'FEP_TYPE={kwargs.get("fep_type")}&FEEL1={kwargs.get("feel")}&' \
+          f'USER_ID={u_map_user_id}&PASSWORD={u_map_password}'
 
     response = requests.request("POST", url, headers={}, verify=False).json()
     log_request(f"Calling UMAP API ---->>> url: {url}, Response: {response}")
