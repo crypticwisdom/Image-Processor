@@ -174,7 +174,6 @@ class MerchantOrderProductsView(generics.ListAPIView):
 
     def get_queryset(self):
         query = Q(product_detail__product__store__seller__user=self.request.user)
-        queryset = OrderProduct.objects.filter(query).order_by('-id')
 
         start_date = self.request.GET.get("date_from", None)
         end_date = self.request.GET.get("date_to", None)
@@ -186,7 +185,6 @@ class MerchantOrderProductsView(generics.ListAPIView):
 
         if start_date is not None and end_date is not None:
             if status_ == "cancelled":
-
                 query &= Q(cancelled_on__date__range=[start_date, end_date])
             elif status_ == "paid":
                 query &= Q(payment_on__date__range=[start_date, end_date])
@@ -194,7 +192,7 @@ class MerchantOrderProductsView(generics.ListAPIView):
                 query &= Q(delivered_on__date__range=[start_date, end_date])
             elif status_ == "returned":
                 query &= Q(returned_on__date__range=[start_date, end_date])
-            elif status_ == "packed":
+            elif status_ == "processed":
                 query &= Q(packed_on__date__range=[start_date, end_date])
             elif status_ == "shipped":
                 query &= Q(shipped_on__date__range=[start_date, end_date])
@@ -202,6 +200,8 @@ class MerchantOrderProductsView(generics.ListAPIView):
                 query &= Q(returned_on__date__range=[start_date, end_date])
             elif status_ == "refunded":
                 query &= Q(refunded_on__date__range=[start_date, end_date])
+            else:
+                query &= Q(created_on__range=[start_date, end_date])
 
         queryset = OrderProduct.objects.filter(query).order_by('-id')
         return queryset
