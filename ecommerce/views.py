@@ -30,7 +30,7 @@ from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerial
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
     OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview, DailyDeal
-from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
+from ecommerce.pagination import CustomPagination
 import uuid
 
 from .shopper_email import shopper_order_placement_email
@@ -265,7 +265,7 @@ class CartProductOperationsView(APIView):
 
 class FilteredSearchView(generics.ListAPIView):
     permission_classes = []
-    pagination_class = DesktopResultsSetPagination
+    pagination_class = CustomPagination
     serializer_class = ProductSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filter_class = ProductFilter
