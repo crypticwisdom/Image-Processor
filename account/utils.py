@@ -322,31 +322,3 @@ def reset_password(pin, password, email, user):
         return False, response["Error"]
 
     return True, ""
-
-
-# def image_processor(request, client_token, block_token):
-#     try:
-#         url = f"{settings.IMAGE_PROCESS_BASE_URL}/processor/validation"
-#
-#         images = request.FILES.get("images", None)
-#
-#         if images is None:
-#             return False, "'images' field is required."
-#
-#         data = {
-#             "images": images,
-#             "block_token": block_token,
-#             "client_token": client_token
-#         }
-#
-#         headers = {
-#             "Content-Type": "multipart/form-data"
-#         }
-#         response = requests.request(method="POST", url=f"{settings.IMAGE_PROCESS_BASE_URL}", data=data, headers=headers)
-#         print(response, "-----------")
-#
-#         return True, "Success"
-#     except (Exception, ) as err:
-#         return False, f"{err}"
-
-

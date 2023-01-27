@@ -9,7 +9,7 @@ def shopper_signup_verification_email(email, profile):
     if not profile.user.first_name:
         first_name = "Payarena Shopper"
 
-    message = f"Dear {first_name}, <br><br>Welcome to Payarena Mall. <br>Please click <a href='{settings.FRONTEND_VERIFICATION_URL}/{profile.verification_code}/'>here</a> to verify your email."
+    message = f"Dear {first_name}, <br><br>Welcome to Payarena Mall. <br>Please click <a href='{settings.FRONTEND_VERIFICATION_URL}/{profile.verification_code}/' target='_blank'>here</a> to verify your email."
     subject = "Payarena Mall Email Verification"
     contents = render(None, 'default_template.html', context={'message': message}).content.decode('utf-8')
     send_email(contents, email, subject)

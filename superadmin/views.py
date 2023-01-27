@@ -36,6 +36,7 @@ from superadmin.utils import create_or_update_category, check_permission, perfor
     create_or_edit_banner_obj
 from transaction.models import Transaction, MerchantTransaction
 from transaction.serializers import TransactionSerializer
+from services import utils
 
 
 class DashboardAPIView(APIView):
@@ -493,7 +494,9 @@ class AdminBannerView(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         name = request.data.get('title')
+        banner_image = dict(request.FILES)['banner_image'][0]
 
+        data = {}
         if Promo.objects.filter(title=name).exists():
             return Response({"detail": "Promo with this title already exist"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -514,21 +517,32 @@ class AdminBannerView(generics.ListCreateAPIView):
                 return Response({'detail': 'No data found'}, status=status.HTTP_400_BAD_REQUEST)
 
         product_id = [product.id for product in result]
-
-        data = request.data
-
         serializer = self.serializer_class(data=request.data)
+
         if not serializer.is_valid():
             return Response(
                 {"detail": "An error has occurred", "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Validate Banner
+        if not banner_image:
+            return Response({"detail": "Banner image is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if len(banner_image) == 0 or len(banner_image) > 1:
+            # Making sure that the number of banner this end point receives is just 1 image.
+            return Response({"detail": "You can only provide not more than 1 image."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        success, response = utils.image_processor(1, image=banner_image)
+        data.update({"detail": f"{response}"})
+
+        if not success:
+            return Response(data, status=status.HTTP_404_NOT_FOUND)
+
         obj = serializer.save()
         create_or_edit_banner_obj(data, obj, product_id)
 
-        data = {
-            'detail': "Banner created successfully"
-        }
+        data.update({'detail': "Banner created successfully"})
         return Response(data)
 
 

@@ -116,5 +116,4 @@ ELASTICSEARCH_DSL = {
 }
 
 
-
-
+# Production credentials for Image Processor will should be added.

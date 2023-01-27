@@ -14,9 +14,8 @@ urlpatterns = [
     path('transactions/', views.MerchantTransactionView.as_view(), name="merchant-transaction"),
     path('products/<int:pk>/', views.ProductAPIView.as_view(), name="product"),
 
-    path('product/image/', views.ProductImageView.as_view(), name="product-image"),
-    path('product/reviews/', views.MerchantProductReviewsView.as_view(), name="product-image"),
-    path('product/reviews/<int:pk>/', views.MerchantProductReviewsView.as_view(), name="product-image"),
+    path('product/reviews/', views.MerchantProductReviewsView.as_view(), name="product-review"),
+    path('product/reviews/<int:pk>/', views.MerchantProductReviewsView.as_view(), name="product-review-detail"),
 
     # Orders
     path('orders/', views.MerchantOrderProductsView.as_view(), name="merchant-orders"),
