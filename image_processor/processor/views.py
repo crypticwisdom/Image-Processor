@@ -257,14 +257,12 @@ class ValidationView(APIView):
     def post(self, request):
         """
             Synopsis: Use for running Validation on the number of images passed in.
-
             This lock is used to run validation on any number of images passed.
                 1. Get "validation block token" from request body data.
                 2. Run validation based on the specifications in the "Validation block".
 
                 - Check for number of images passed against the "numb_of_images_per_process" field on the
                     'ValidatorBlock'.
-                -
         """
         try:
             client_token = request.data.get("client_token", None)
@@ -274,7 +272,6 @@ class ValidationView(APIView):
                 return Response({"detail": "'images' field is required."}, status=HTTP_400_BAD_REQUEST)
 
             images = dict(request.FILES)['images']
-
             if not client_token:
                 return Response({"detail": "'client_token' field is required."}, status=HTTP_400_BAD_REQUEST)
 
@@ -348,7 +345,7 @@ class ValidationView(APIView):
                     if not os.path.exists(path_):
                         os.mkdir(f"{path_}")
 
-                    # System only saves with JPEG type not JPG, so i did an Adjust to change all JPSs to JPEG.
+                    # System only saves with JPEG type not JPG, so I did an Adjust to change all JPSs to JPEG.
                     ext = "JPEG" if str(image.name).split(".")[-1].upper() == "JPG" else str(image.name).split(".")[
                         -1].upper()
 
