@@ -6,7 +6,7 @@ from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from ecommerce.shopper_email import shopper_welcome_email
 from home.utils import log_request
 from superadmin.models import AdminUser
@@ -81,7 +81,8 @@ class LoginView(APIView):
 
                 return Response({
                     "detail": "Login successful",
-                    "token": f"{RefreshToken.for_user(user).access_token}",
+                    "token": f"{AccessToken.for_user(user)}",
+                    "refresh_token": f"{RefreshToken.for_user(user)}",
                     "data": ProfileSerializer(Profile.objects.get(user=user), context={"request": request}).data,
                     "wallet_information": wallet_balance
                 })

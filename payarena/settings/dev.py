@@ -1,8 +1,6 @@
 from .base import *
 from decouple import config
 
-print("------------------ You are on Pay Arena's Development Environment --------------------")
-
 SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = True
@@ -117,6 +115,9 @@ ELASTICSEARCH_DSL = {
     },
 }
 
+CRONJOBS = [
+    ('59 23 */2 * *', 'ecommerce.cron.remove_redundant_cart_cron'),
+]
 
 # These are Production Credentials.
 IMAGE_PROCESSOR_EMAIL = env('IMAGE_PROCESSOR_EMAIL', None)
@@ -146,4 +147,7 @@ IMAGE_PROCESSOR_MALL_MEDIUM_BANNER_TOKEN=env('IMAGE_PROCESSOR_MALL_MEDIUM_BANNER
 
 IMAGE_PROCESSOR_MALL_SMALL_BANNER_BLOCK_NAME=env('IMAGE_PROCESSOR_MALL_SMALL_BANNER_BLOCK_NAME', None)
 IMAGE_PROCESSOR_MALL_SMALL_BANNER_BLOCK_TOKEN=env('IMAGE_PROCESSOR_MALL_SMALL_BANNER_BLOCK_TOKEN', None)
+
+
+
 

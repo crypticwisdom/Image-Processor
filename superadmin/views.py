@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from account.utils import validate_email, register_payarena_user, create_account
 from ecommerce.pagination import CustomPagination
@@ -448,6 +448,8 @@ class AdminUserListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = AdminUserSerializer
     pagination_class = CustomPagination
     queryset = AdminUser.objects.all().order_by("-id")
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ['user__first_name', 'user__last_name']
 
     def post(self, request, *args, **kwargs):
         serializer = CreateAdminUserSerializerIn(data=request.data)
@@ -514,7 +516,9 @@ class AdminBannerView(generics.ListCreateAPIView):
         if not request.data.get("product"):
             result = perform_banner_filter(request)
             if not result:
-                return Response({'detail': 'No data found'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'detail': 'No product found for selected configuration'}, status=status.HTTP_400_BAD_REQUEST
+                )
 
         product_id = [product.id for product in result]
         serializer = self.serializer_class(data=request.data)
@@ -658,7 +662,9 @@ class AdminSignInAPIView(APIView):
 
         data = AdminUserSerializer(AdminUser.objects.get(user=user)).data
         return Response({"detail": "Login successful",
-                         "token": f"{RefreshToken.for_user(user).access_token}", "data": data})
+                         "token": f"{AccessToken.for_user(user)}",
+                         "refresh_token": f"{RefreshToken.for_user(user)}",
+                         "data": data})
 
 
 class OrdersView(generics.ListAPIView):

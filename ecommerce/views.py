@@ -25,10 +25,11 @@ from transaction.models import Transaction
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
     CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer, \
-    ProductReviewSerializerOut, ProductReviewSerializerIn, MobileCategorySerializer, ReturnReasonSerializer
+    ProductReviewSerializerOut, ProductReviewSerializerIn, MobileCategorySerializer, ReturnReasonSerializer, \
+    DailyDealSerializer
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
-    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview
+    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview, DailyDeal
 from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
 import uuid
 
@@ -47,68 +48,104 @@ class MallLandPageView(APIView):
     permission_classes = []
 
     def get(self, request):
-    # try:
-        response, response_container, start_date = list(), dict(), timezone.datetime.today()
-        start_date = timezone.datetime.today()
+        try:
+            response, response_container, start_date = list(), dict(), timezone.datetime.today()
 
-        # (1) Deals of the day: percent, is_featured, prod. image, prod. id, prod. name, rate, price
-        # deal_end_date = timezone.timedelta(days=1)
-        deals_query_set = Promo.objects.filter(promo_type="deal").order_by("-id")[:5]
-        response_container["deals_of_the_day"] = MallDealSerializer(
-            deals_query_set, many=True, context={"request": request}).data
+            # Deals of the Day
+            response_container["deals_of_the_day"] = DailyDealSerializer(
+                DailyDeal.objects.all().order_by("-id"), many=True, context={"request": request}).data
+
+            # Small Deal
+            response_container["small_deal"] = MallDealSerializer(Promo.objects.filter(
+                promo_type="deal", status="active", position="small_deal").order_by("-id"), many=True,
+                                                                  context={"request": request}).data
+
+            # Medium Deal
+            response_container["medium_deal"] = MallDealSerializer(
+                Promo.objects.filter(promo_type="deal", status="active", position="medium_deal").order_by("-id"),
+                many=True, context={"request": request}).data
+
+            # Big Deal
+            response_container["big_deal"] = MallDealSerializer(
+                Promo.objects.filter(promo_type="deal", status="active", position="big_deal").order_by("-id"),
+                many=True, context={"request": request}).data
+
+            # Small Banners
+            response_container["small_banner"] = MallDealSerializer(
+                Promo.objects.filter(promo_type="banner", status="active", position="small_banner").order_by("-id"),
+                many=True, context={"request": request}).data
+
+            # Medium Banners
+            response_container["medium_banner"] = MallDealSerializer(
+                Promo.objects.filter(promo_type="banner", status="active", position="medium_banner").order_by(
+                    "-id"), many=True, context={"request": request}).data
+
+            # Big Banners
+            response_container["big_banner"] = MallDealSerializer(
+                Promo.objects.filter(promo_type="banner", status="active", position="big_banner").order_by("-id"),
+                many=True, context={"request": request}).data
+
+            # Header Banner
+            header_banner = Promo.objects.filter(promo_type="banner", status="active", position="header_banner")
+            response_container["header_banner"] = MallDealSerializer(
+                header_banner, many=True, context={"request": request}).data
+
+            # Footer Banner
+            footer_banner = Promo.objects.filter(promo_type="banner", status="active", position="footer_banner")
+            response_container["footer_banner"] = MallDealSerializer(
+                footer_banner, many=True, context={"request": request}).data
 
         # (2) Hot New Arrivals in last 3 days ( now changed to most recent 15 products)
-        new_arrivals = Product.objects.filter(status="active")[:25]
-        arrival_list = [product.id for product in new_arrivals]
-        hot_new_arrivals = Product.objects.filter(id__in=arrival_list).order_by("?")
-        arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
-        response_container["hot_new_arrivals"] = arrival_serializer
+            new_arrivals = Product.objects.filter(status="active").order_by("-id")[:25]
+            arrival_list = [product.id for product in new_arrivals]
+            hot_new_arrivals = Product.objects.filter(id__in=arrival_list).order_by("?")
+            arrival_serializer = ProductSerializer(hot_new_arrivals, many=True, context={"request": request}).data
+            response_container["hot_new_arrivals"] = arrival_serializer
 
-        # (3) Top weekly selling products
-        top_products = top_weekly_products(request)
-        response_container["top_selling"] = top_products
+            # (3) Top weekly selling products
+            top_products = top_weekly_products(request)
+            response_container["top_selling"] = top_products
 
-        # (4) Top categories of the month
-        top_monthly_cat = top_monthly_categories(request)
-        response_container["top_monthly_categories"] = top_monthly_cat
+            # (4) Top categories of the month
+            top_monthly_cat = top_monthly_categories(request)
+            response_container["top_monthly_categories"] = top_monthly_cat
 
-        # (5) Recommended Products
-        recommended = ProductSerializer(Product.objects.filter(
-            is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
-        ).data
-        response_container["recommended_products"] = recommended[:10]
+            # (5) Recommended Products
+            recommended = ProductSerializer(Product.objects.filter(
+                is_featured=True, status="active", store__is_active=True), many=True, context={"request": request}
+            ).data
+            response_container["recommended_products"] = recommended[:10]
 
-        most_viewed = ProductSerializer(
-            Product.objects.filter(status="active", store__is_active=True).order_by("-view_count")[:20], many=True,
-            context={"request": request}).data
-        response_container["most_viewed_products"] = most_viewed
+            most_viewed = ProductSerializer(
+                Product.objects.filter(status="active", store__is_active=True).order_by("-view_count")[:20], many=True,
+                context={"request": request}).data
+            response_container["most_viewed_products"] = most_viewed
 
+            # (6) All categories - to include sub categories and product types
+            categories = CategoriesSerializer(
+                ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
+            ).data
+            response_container["categories"] = categories
 
-        # (6) All categories - to include sub categories and product types
-        categories = CategoriesSerializer(
-            ProductCategory.objects.filter(parent=None), many=True, context={"request": request}
-        ).data
-        response_container["categories"] = categories
+            # recently viewed products:
+            # these are products that were recently viewed by the shopper, or last viewed products
+            recent_view = ProductSerializer(Product.objects.filter(
+                status="active", store__is_active=True).order_by("-last_viewed_date")[:10], many=True,
+                                            context={"request": request}).data
+            if request.user.is_authenticated:
+                shopper = Profile.objects.get(user=request.user)
+                if shopper.recent_viewed_products:
+                    shopper_views = shopper.recent_viewed_products.split(",")[1:]
+                    recent_view = ProductSerializer(Product.objects.filter(
+                        id__in=shopper_views, status="active", store__is_active=True).order_by("?"), many=True,
+                                                    context={"request": request}).data
 
-        # recently viewed products:
-        # these are products that were recently viewed by the shopper, or last viewed products
-        recent_view = ProductSerializer(Product.objects.filter(
-            status="active", store__is_active=True).order_by("-last_viewed_date")[:10], many=True,
-                                        context={"request": request}).data
-        if request.user.is_authenticated:
-            shopper = Profile.objects.get(user=request.user)
-            if shopper.recent_viewed_products:
-                shopper_views = shopper.recent_viewed_products.split(",")[1:]
-                recent_view = ProductSerializer(Product.objects.filter(
-                    id__in=shopper_views, status="active", store__is_active=True).order_by("?"), many=True,
-                                                context={"request": request}).data
+            response_container["recently_viewed"] = recent_view
 
-        response_container["recently_viewed"] = recent_view
-
-        response.append(response_container)
-        return Response({"detail": response})
-    # except (Exception,) as err:
-    #     return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+            response.append(response_container)
+            return Response({"detail": response})
+        except (Exception,) as err:
+            return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CategoriesView(APIView, CustomPagination):
@@ -658,6 +695,22 @@ class ReturnReasonRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = ReturnReasonSerializer
     permission_classes = []
     lookup_field = "id"
+
+
+class StoreFollowerAPIView(APIView):
+    def post(self, request):
+        store = request.data.get("store", [])
+        profile = Profile.objects.get(user=request.user)
+
+        try:
+            profile.following.clear()
+            for store_id in store:
+                profile.following.add(store_id)
+            return Response({"detail": "Update successful"})
+        except Exception as err:
+            return Response({"detail": "An error has occurred", "error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 

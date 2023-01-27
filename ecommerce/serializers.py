@@ -4,7 +4,8 @@ from django.db.models import Sum, Avg
 from account.models import Profile
 from superadmin.exceptions import InvalidRequestException
 from .models import ProductCategory, Product, ProductDetail, ProductImage, ProductReview, Promo, ProductType, \
-    ProductWishlist, CartProduct, OrderProduct, Order, ReturnedProduct, ReturnProductImage, ReturnReason, Brand
+    ProductWishlist, CartProduct, OrderProduct, Order, ReturnedProduct, ReturnProductImage, ReturnReason, Brand, \
+    DailyDeal
 from rest_framework import serializers
 
 
@@ -488,6 +489,14 @@ class MobileCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategory
+        exclude = []
+
+
+class DailyDealSerializer(serializers.ModelSerializer):
+    product = ProductSerializer()
+
+    class Meta:
+        model = DailyDeal
         exclude = []
 
 

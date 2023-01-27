@@ -725,5 +725,5 @@ def get_dashboard_data(store, request):
     data['sales_analytics'] = ""
     data['transactions'] = "Still pending ... [Transaction has no relation to merchant.]"
     # data['top_categories'] = get_top_categories_data(store)
-    # data['recent_orders'] = get_recent_orders_data(store)
+    data['recent_orders'] = get_recent_orders_data(store)
     return data
