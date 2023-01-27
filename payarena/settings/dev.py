@@ -119,3 +119,5 @@ CRONJOBS = [
     ('59 23 */2 * *', 'ecommerce.cron.remove_redundant_cart_cron'),
 ]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
