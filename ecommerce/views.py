@@ -26,10 +26,10 @@ from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
     CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer, \
     ProductReviewSerializerOut, ProductReviewSerializerIn, MobileCategorySerializer, ReturnReasonSerializer, \
-    DailyDealSerializer
+    DailyDealSerializer, ProductTypeSerializer
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
-    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview, DailyDeal
+    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview, DailyDeal, ProductType
 from home.pagination import CustomPagination
 import uuid
 
@@ -165,6 +165,13 @@ class CategoriesView(APIView, CustomPagination):
 
         except (Exception,) as err:
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductTypeListAPIView(generics.ListAPIView):
+    permission_classes = []
+    queryset = ProductType.objects.all()
+    serializer_class = ProductTypeSerializer
+    pagination_class = CustomPagination
 
 
 class TopSellingProductsView(APIView, CustomPagination):
