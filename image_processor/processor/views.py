@@ -111,11 +111,10 @@ class CreateValidationBlockView(APIView):
                 return Response({"detail": f"Set 'content_types'."}, status=HTTP_400_BAD_REQUEST)
 
             block = ValidatorBlock.objects.create(block_name=str(block_name).title(), block_token=block_token,
-                                                  client=client, file_threshold_size=file_threshold_size,
+                                                  client=client, file_threshold_size=file_size_value_or_err_msg,
                                                   image_height_dimension_threshold=image_height_dimension_threshold,
                                                   image_width_dimension_threshold=image_width_dimension_threshold,
                                                   numb_of_images_per_process=numb_of_images_per_process)
-            print(allowed_extensions)
             for id_ in allowed_extensions:
                 if id_ not in list_of_extensions:  # 'image/gif', 'image/svg+xml' can be allowed later.
                     block.delete()  # Delete created block.
@@ -126,7 +125,6 @@ class CreateValidationBlockView(APIView):
                 extension = ApplicationExtension.objects.get(id=id_)
                 block.allowed_extensions.add(extension)
 
-            print(content_types)
             for typ_id in content_types:
                 if typ_id not in list_of_content_types:  # 'gif' and more can be allowed later.
                     block.delete()  # Delete created block.
