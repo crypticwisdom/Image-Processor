@@ -389,11 +389,15 @@ class MerchantBannerListCreateAPIView(generics.ListCreateAPIView):
         return MerchantBanner.objects.filter(seller=seller).order_by("-id")
 
     def create(self, request, *args, **kwargs):
-        serializer = MerchantBannerSerializerIn(data=request.data, context=self.get_serializer_context())
-        serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
-        serializer.save()
-        return Response({"detail": "Banner added successfully", "data": serializer})
-
+        try:
+            # print(request.data['image'], request.data.getlist('image'))
+            # print(request.data.getlist('image', None))
+            serializer = MerchantBannerSerializerIn(data=request.data, context=self.get_serializer_context())
+            serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
+            serializer = serializer.save()
+            return Response({"detail": "Banner added successfully", "data": serializer})
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class MerchantBannerRetrieveUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated & (IsAdminUser | IsMerchant)]

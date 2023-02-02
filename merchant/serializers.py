@@ -235,17 +235,19 @@ class MerchantBannerSerializerIn(serializers.Serializer):
     is_active = serializers.BooleanField(required=False)
 
     def create(self, validated_data):
+        request = self.context['request']
+
+        print(request.data.getlist('image'))
         user = validated_data.get("auth_user")
         seller = validated_data.get("seller_id")
-        image = validated_data.get("image")
+        # image = validated_data.get("image")
+        image = request.data.getlist('image')[0]
         # size = validated_data.get("size") # Commented out incase needed later.
         is_active = validated_data.get("is_active")
 
         if user.is_staff and seller:
             seller = Seller.objects.get(id=seller)
-            banner = MerchantBanner.objects.create(
-                seller=seller, banner_image=image, is_active=is_active
-            )
+            banner = MerchantBanner.objects.create(seller=seller, banner_image=image, is_active=is_active)
         else:
             seller = Seller.objects.get(user=user)
             banner = MerchantBanner.objects.create(seller=seller, banner_image=image)
