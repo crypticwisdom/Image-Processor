@@ -59,7 +59,6 @@ class CreateValidationBlockView(APIView):
                                                                None)  # width and height checks in pixels
 
             block_token = secrets.token_urlsafe(15)
-
             allowed_extensions = request.data.get('allowed_extensions', [])
             content_types = request.data.get("content_types", [])
 
