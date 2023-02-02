@@ -4,6 +4,7 @@ from rest_framework import serializers
 from account.models import Profile
 from ecommerce.models import ProductImage, ProductReview, ProductWishlist, CartProduct, Brand, Product, \
     ProductDetail, Shipper, Cart
+from merchant.models import MerchantBanner
 from merchant.serializers import SellerSerializer
 from .models import *
 
@@ -73,6 +74,10 @@ class StoreSerializer(serializers.ModelSerializer):
     # categories = ProductCategorySerializer(many=True)
     products = serializers.SerializerMethodField()
     total_follower = serializers.SerializerMethodField()
+    banner_image = serializers.SerializerMethodField()
+
+    def get_banner_image(self, obj):
+        return MerchantBanner.objects.filter(seller=obj.seller).last() or None
 
     def get_products(self, obj):
         request = self.context.get("request")
