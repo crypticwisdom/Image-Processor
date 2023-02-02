@@ -231,31 +231,31 @@ class MerchantBannerSerializerIn(serializers.Serializer):
     auth_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     seller_id = serializers.IntegerField(required=False)
     image = serializers.ImageField()
-    size = serializers.CharField()
+    # size = serializers.CharField() # Commented out incase needed later.
     is_active = serializers.BooleanField(required=False)
 
     def create(self, validated_data):
         user = validated_data.get("auth_user")
         seller = validated_data.get("seller_id")
         image = validated_data.get("image")
-        size = validated_data.get("size")
+        # size = validated_data.get("size") # Commented out incase needed later.
         is_active = validated_data.get("is_active")
 
         if user.is_staff and seller:
             seller = Seller.objects.get(id=seller)
             banner = MerchantBanner.objects.create(
-                seller=seller, banner_image=image, banner_size=size, is_active=is_active
+                seller=seller, banner_image=image, is_active=is_active
             )
         else:
             seller = Seller.objects.get(user=user)
-            banner = MerchantBanner.objects.create(seller=seller, banner_image=image, banner_size=size)
+            banner = MerchantBanner.objects.create(seller=seller, banner_image=image)
 
         data = MerchantBannerSerializerOut(banner, context=self.context).data
         return data
 
     def update(self, instance, validated_data):
         user = validated_data.get("auth_user")
-        size = validated_data.get("size")
+        # size = validated_data.get("size") # Commented out incase needed later.
         image = validated_data.get("image")
 
         if user.is_staff:
@@ -263,8 +263,8 @@ class MerchantBannerSerializerIn(serializers.Serializer):
                 instance.is_active = validated_data.get("is_active")
         if image:
             instance.banner_image = image
-        if size:
-            instance.banner_size = size
+        # if size:
+        #     instance.banner_size = size # Commented out incase needed later.
         instance.save()
 
         data = MerchantBannerSerializerOut(instance, context=self.context).data

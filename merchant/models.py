@@ -30,9 +30,9 @@ BUSINESS_TYPES = (
     ('limited-liability-company', 'Limited Liability'),
 )
 
-BANNER_SIZE_CHOICES = (
-    ('small', 'Small'), ('medium', 'Medium'), ('large', 'Large')
-)
+# BANNER_SIZE_CHOICES = (
+#     ('small', 'Small'), ('medium', 'Medium'), ('large', 'Large')
+# ) # Used by MerchantBanner model.
 
 FEP_TYPE_CHOICES = (
     ('flat', "Flat"), ('rate', 'Rate')
@@ -136,7 +136,7 @@ class BankAccount(models.Model):
 class MerchantBanner(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE)
     banner_image = models.ImageField(upload_to='promo-banners')
-    banner_size = models.CharField(max_length=50, choices=BANNER_SIZE_CHOICES, default='small')
+    # banner_size = models.CharField(max_length=50, choices=BANNER_SIZE_CHOICES, default='small') # Commented 'size' out
     is_active = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
