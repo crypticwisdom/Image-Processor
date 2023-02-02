@@ -79,7 +79,7 @@ class StoreSerializer(serializers.ModelSerializer):
     def get_banner_image(self, obj):
         request = self.context.get("request")
         if MerchantBanner.objects.filter(seller=obj.seller).exists():
-            image = MerchantBanner.objects.filter(seller=obj).last().banner_image
+            image = MerchantBanner.objects.filter(seller=obj.seller).last().banner_image
             image = request.build_absolute_uri(image.url)
             return image
         return None
