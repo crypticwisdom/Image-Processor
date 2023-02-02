@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from account.utils import validate_email, register_payarena_user, create_account
-from ecommerce.pagination import CustomPagination
+from home.pagination import CustomPagination
 from ecommerce.serializers import *
 
 from account.serializers import *

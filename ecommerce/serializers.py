@@ -177,7 +177,7 @@ class ProductTypeSerializer(serializers.ModelSerializer):
 
         product_types = Product.objects.filter(product_type=obj, store__is_active=True, status='active').order_by('-id')[:10]
         for product in product_types:
-            product_detail = ProductDetail.objects.get(product=product)
+            product_detail = ProductDetail.objects.filter(product=product).first()
             container.append({
                 "product_id": product_detail.id,
                 "product_name": product_detail.product.name,

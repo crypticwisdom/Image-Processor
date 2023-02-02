@@ -75,45 +75,7 @@ class BecomeAMerchantView(APIView):
             success, msg = create_seller(request, user, email, phone_number)
 
             if not success:
-                return Response({"detail": f"{msg}"})
-
-            # Create Merchant for Un-Authenticated User
-            # if request.user.is_authenticated is False:
-            #     password = request.data.get('password', None)
-            #     if not password:
-            #         return Response({"detail": "Password field is required"}, status=status.HTTP_400_BAD_REQUEST)
-            #
-            #     password_confirm = request.data.get('password_confirm', None)
-            #     if not password_confirm:
-            #         return Response({"detail": "Password confirm field is required"},
-            #                         status=status.HTTP_400_BAD_REQUEST)
-            #
-            #     if password_confirm != password_confirm:
-            #         return Response({"detail": "Passwords does not match"}, status=status.HTTP_400_BAD_REQUEST)
-            #
-            #     # Check: If user details for un-authenticated user is found in the database the throw an error.
-            #     check_for_user_existence = User.objects.filter(email=email)
-            #     if check_for_user_existence.exists():
-            #         return Response({"detail": f"This user detail already exist, please login to Register as a Merchant"}, status=status.HTTP_400_BAD_REQUEST)
-            #
-            #     # I used email to fill the username field since, there would be a duplicate error if i user a value.
-            #     user = User.objects.create_user(username=email, email=email, password=password)
-            #
-            #     # Check: to see if this user instance has a profile instance else, create a profile
-            #     if not Profile.objects.filter(user=user).exists():
-            #         profile = Profile.objects.create(user=user, phone_number=phone_number)
-            #
-            #     msg, success = create_seller(request, user, email, phone_number)
-            #
-            #     if msg == "improper merchant creation" and success is True:
-            #         return Response(
-            #             {"detail": f"User created successfully but, an error happened during Merchant Registration, "
-            #                        f"kindly login to register"}, status=status.HTTP_201_CREATED)
-            #
-            #     elif success is True:
-            #         return Response({"detail": f"{msg}"}, status=status.HTTP_200_OK)
-
-            # Send email to merchant
+                return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
             Thread(target=merchant_account_creation_email, args=[email]).start()
             return Response({"detail": f"{msg}."})
         except (Exception,) as err:
@@ -213,7 +175,6 @@ class MerchantOrderProductsView(generics.ListAPIView):
 
     def get_queryset(self):
         query = Q(product_detail__product__store__seller__user=self.request.user)
-        queryset = OrderProduct.objects.filter(query).order_by('-id')
 
         start_date = self.request.GET.get("date_from", None)
         end_date = self.request.GET.get("date_to", None)
@@ -225,7 +186,6 @@ class MerchantOrderProductsView(generics.ListAPIView):
 
         if start_date is not None and end_date is not None:
             if status_ == "cancelled":
-
                 query &= Q(cancelled_on__date__range=[start_date, end_date])
             elif status_ == "paid":
                 query &= Q(payment_on__date__range=[start_date, end_date])
@@ -233,7 +193,7 @@ class MerchantOrderProductsView(generics.ListAPIView):
                 query &= Q(delivered_on__date__range=[start_date, end_date])
             elif status_ == "returned":
                 query &= Q(returned_on__date__range=[start_date, end_date])
-            elif status_ == "packed":
+            elif status_ == "processed":
                 query &= Q(packed_on__date__range=[start_date, end_date])
             elif status_ == "shipped":
                 query &= Q(shipped_on__date__range=[start_date, end_date])
@@ -241,6 +201,8 @@ class MerchantOrderProductsView(generics.ListAPIView):
                 query &= Q(returned_on__date__range=[start_date, end_date])
             elif status_ == "refunded":
                 query &= Q(refunded_on__date__range=[start_date, end_date])
+            else:
+                query &= Q(created_on__range=[start_date, end_date])
 
         queryset = OrderProduct.objects.filter(query).order_by('-id')
         return queryset

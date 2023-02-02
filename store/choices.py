@@ -12,7 +12,7 @@ payment_status_choices = (
 )
 
 order_status_choices = (
-    ('cancelled', 'Cancelled'), ('packed', 'Packed'), ('shipped', 'Shipped'), ('delivered', 'Delivered'),
+    ('cancelled', 'Cancelled'), ('processed', 'Processed'), ('shipped', 'Shipped'), ('delivered', 'Delivered'),
     ('returned', 'Returned'), ('paid', 'Paid'), ('refunded', 'Refunded'), ('pending', 'Pending')
 )
 

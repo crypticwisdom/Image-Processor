@@ -468,7 +468,7 @@ def perform_order_pickup(order_product, address):
         waybill = data["TrackingNo"]
 
         order_product.filter(shipper_name=shipper).update(
-            tracking_id=order_no, delivery_fee=delivery_fee, waybill_no=waybill, status="packed",
+            tracking_id=order_no, delivery_fee=delivery_fee, waybill_no=waybill, status="processed",
             packed_on=datetime.datetime.now()
         )
 
