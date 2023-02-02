@@ -122,7 +122,6 @@ def create_or_edit_banner_obj(data, obj, product_id=None):
 
     obj.position = data.get("position")
     obj.save()
-
     return True
 
 

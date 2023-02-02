@@ -1,6 +1,5 @@
 import json
 import re
-
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from account.models import Profile
@@ -12,10 +11,10 @@ from ecommerce.shopper_email import shopper_signup_verification_email
 from ecommerce.utils import encrypt_text, decrypt_text, encrypt_payarena_data
 from home.utils import log_request
 from module.apis import payment_for_wallet
-
+import requests
 from module.payarena_service import PayArenaServices
 from module.billing_service import BillingService
-
+from django.conf import settings
 
 def send_shopper_verification_email(email, profile):
     try:
@@ -323,8 +322,3 @@ def reset_password(pin, password, email, user):
         return False, response["Error"]
 
     return True, ""
-
-
-
-
-

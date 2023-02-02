@@ -166,6 +166,26 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     sub_category_id = serializers.IntegerField(source="category.id")
+    products = serializers.SerializerMethodField()
+
+    def get_products(self, obj):
+        request = self.context.get("request", None)
+        container, details = list(), dict()
+
+        if request is None:
+            return []
+
+        product_types = Product.objects.filter(product_type=obj, store__is_active=True, status='active').order_by('-id')[:10]
+        for product in product_types:
+            product_detail = ProductDetail.objects.get(product=product)
+            container.append({
+                "product_id": product_detail.id,
+                "product_name": product_detail.product.name,
+                "product_image": request.build_absolute_uri(product_detail.product.image.get_image_url()),
+                "price": product_detail.price,
+                "discount": product_detail.discount,
+            })
+        return container
 
     class Meta:
         model = ProductType
@@ -208,10 +228,13 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
     def get_product_types(self, obj):
         prod_type = None
-        if ProductType.objects.filter(category=obj).exists():
-            prod_type = ProductTypeSerializer(ProductType.objects.filter(category=obj), many=True).data
-        return prod_type
+        request = self.context.get("request", None)
+        if request:
+            if ProductType.objects.filter(category=obj).exists():
+                prod_type = ProductTypeSerializer(ProductType.objects.filter(category=obj), many=True, context={"request": request}).data
+            return prod_type
 
+    # Last 10 Products Under a Category or a Sub-Category.
     def get_new_arrived_products(self, obj):
         # print(obj.parent) // If obj.parent is None that means obj.parent is a sub-category and not a parent category.
 
@@ -221,9 +244,9 @@ class CategoriesSerializer(serializers.ModelSerializer):
             return []
 
         if obj.parent is None:
-            query = Product.objects.filter(category__id=obj.id).order_by('-id')[:10]
+            query = Product.objects.filter(category__id=obj.id, store__is_active=True, status='active').order_by('-id')[:10]
         else:
-            query = Product.objects.filter(sub_category__id=obj.id).order_by('-id')[:10]
+            query = Product.objects.filter(sub_category__id=obj.id, store__is_active=True, status='active').order_by('-id')[:10]
 
         for product in query:
             price = discount = 0
@@ -425,7 +448,6 @@ class ProductReviewSerializerOut(serializers.ModelSerializer):
     class Meta:
         model = ProductReview
         exclude = ["user"]
-
 
 class ProductReviewSerializerIn(serializers.Serializer):
     auth_user = serializers.HiddenField(default=serializers.CurrentUserDefault())

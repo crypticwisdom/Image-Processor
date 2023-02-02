@@ -22,6 +22,7 @@ from .permissions import IsMerchant
 from ecommerce.models import ProductDetail, Product, ProductCategory, OrderProduct, Order
 from django_filters import rest_framework as filters
 from .filters import MerchantOrderProductFilter
+from services import utils
 
 
 class MerchantView(APIView, CustomPagination):
@@ -279,15 +280,25 @@ class MerchantTransactionView(APIView, CustomPagination):
 
 
 class ProductImageView(APIView):
-
     def post(self, request):
-    # try:
-        image = request.data['image']
-        img = Image.objects.create(image=image)
-        return Response({"detail": "Image uploaded successfully", "image_id": img.id,
-                         "image_url": request.build_absolute_uri(img.image.url)})
-    # except Exception as ex:
-    #     return Response({"detail": "An error has occurred", "error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            image_dict = dict(request.FILES)['image']
+
+            if len(image_dict) == 0 or len(image_dict) > 1:
+                # Making sure that the number of image this end point receives is just 1 image.
+                return Response({"detail": "You can only provide not more than 1 image."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            image = image_dict[0]
+            success, msg = utils.image_processor(2, image=image, request=request, image_param='image')
+
+            if success is False:
+                return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
+
+            img = Image.objects.create(image=image)
+            return Response({"detail": "Image uploaded successfully", "image_id": img.id,
+                             "image_url": request.build_absolute_uri(img.image.url)})
+        except Exception as ex:
+            return Response({"detail": f"{str(ex)}"}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         if not Image.objects.filter(id=pk).exists():
