@@ -390,8 +390,11 @@ class MerchantBannerListCreateAPIView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         try:
-            # print(request.data['image'], request.data.getlist('image'))
-            # print(request.data.getlist('image', None))
+            image = request.data.getlist('image')[0]
+            success, msg = utils.image_processor(8, image)
+            if not success:
+                return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
+
             serializer = MerchantBannerSerializerIn(data=request.data, context=self.get_serializer_context())
             serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
             serializer = serializer.save()

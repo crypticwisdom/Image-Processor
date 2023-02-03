@@ -496,7 +496,7 @@ class AdminBannerView(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         name = request.data.get('title')
-        banner_image = dict(request.FILES)['banner_image'][0]
+        banner_image = request.data.getlist('banner_image')[0]
 
         data = {}
         if Promo.objects.filter(title=name).exists():
@@ -532,13 +532,13 @@ class AdminBannerView(generics.ListCreateAPIView):
         if not banner_image:
             return Response({"detail": "Banner image is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(banner_image) == 0 or len(banner_image) > 1:
+        if len(banner_image) > 1:
             # Making sure that the number of banner this end point receives is just 1 image.
             return Response({"detail": "You can only provide not more than 1 image."},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        success, response = utils.image_processor(1, image=banner_image)
-        data.update({"detail": f"{response}"})
+        success, msg = utils.image_processor(1, image=banner_image)
+        data.update({"detail": f"{msg}"})
 
         if not success:
             return Response(data, status=status.HTTP_404_NOT_FOUND)
@@ -557,7 +557,6 @@ class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
 
     def put(self, request, *args, **kwargs):
-
         pk = self.kwargs.get("id")
         if not Promo.objects.filter(id=pk).exists():
             return Response({'detail': "Invalid promo"}, status=status.HTTP_400_BAD_REQUEST)
@@ -571,6 +570,16 @@ class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
                 "detail": "Promo with this title already exist"
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+        # ----------- Implemented image processor ----------
+        banner_image = data.get('banner_image', None)
+        if banner_image is not None:
+            banner_image = request.data.getlist('banner_image')[0]
+            success, msg = utils.image_processor(1, image=banner_image)
+
+            if not success:
+                return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
+        # ------------ Implementation ends -------------
 
         if request.data.get("price_promo") == 'true':
             if not request.data.get('min_price') or not request.data.get('max_price'):
@@ -599,7 +608,6 @@ class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
             )
 
         obj = serializer.save()
-
         create_or_edit_banner_obj(data, obj, product_id)
         return Response({'detail': "Banner updated successfully"})
 

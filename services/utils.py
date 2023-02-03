@@ -21,7 +21,9 @@ def image_processor(block_token_num, image=None, request=None, image_param=None)
             5: settings.IMAGE_PROCESSOR_MALL_BIG_BANNER_TOKEN,
             6: settings.IMAGE_PROCESSOR_MALL_MEDIUM_BANNER_TOKEN,
             7: settings.IMAGE_PROCESSOR_MALL_SMALL_BANNER_BLOCK_TOKEN,
+            8: settings.IMAGE_PROCESSOR_MALL_MERCHANT_BANNER_BLOCK_TOKEN
         }
+        print(collections_of_block_names[block_token_num])
 
         IMAGE_BASE_URL: str = settings.IMAGE_PROCESS_BASE_URL
         # HEADER = {'Content-Type': 'multipart/form-data; boundary=<calculated when request is sent>'}
@@ -37,12 +39,11 @@ def image_processor(block_token_num, image=None, request=None, image_param=None)
                 # System only saves with JPEG type not JPG, so I did an Adjust to change all JPGs to JPEG.
                 ext = "JPEG" if str(image.name).split(".")[-1].upper() == "JPG" else str(image.name).split(".")[-1].upper()
 
-                # Save image to images/ folder.
+                # Save image to images / folder.
                 image_item.save(fp=f"{path_}/{image.name}", format=ext)
                 # shutil.rmtree(path_)
             except (FileNotFoundError, FileExistsError, Exception) as err:
                 # Log Error Message
-                print(err)
                 shutil.rmtree(path_)
 
             payload = {
@@ -55,7 +56,7 @@ def image_processor(block_token_num, image=None, request=None, image_param=None)
             response = requests.post(url=f"{IMAGE_BASE_URL}/processor/validation", files=files, data=payload, headers=HEADER)
 
             if response.status_code != 200:
-                return False, f"Status code: {response.status_code}"
+                return False, f"{response.json()['detail']}"
 
             return True, response.json()['detail']
 
