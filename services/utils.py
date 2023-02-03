@@ -5,7 +5,7 @@ from PIL import Image
 
 PAYARENA_IMAGE_PROCESSOR_CLIENT_TOKEN = settings.IMAGE_PROCESSOR_CLIENT_TOKEN
 IMAGE_PROCESSOR_BLOCK_TOKEN = settings.IMAGE_PROCESSOR_CLIENT_TOKEN
-def image_processor(block_token_num, image=None, request=None, image_param=None):
+def image_processor(block_token_num, image=None):
     try:
         if not block_token_num:
             return False, "'block_token_num' are required arguments"
@@ -21,9 +21,9 @@ def image_processor(block_token_num, image=None, request=None, image_param=None)
             5: settings.IMAGE_PROCESSOR_MALL_BIG_BANNER_TOKEN,
             6: settings.IMAGE_PROCESSOR_MALL_MEDIUM_BANNER_TOKEN,
             7: settings.IMAGE_PROCESSOR_MALL_SMALL_BANNER_BLOCK_TOKEN,
-            8: settings.IMAGE_PROCESSOR_MALL_MERCHANT_BANNER_BLOCK_TOKEN
+            8: settings.IMAGE_PROCESSOR_MALL_MERCHANT_BANNER_BLOCK_TOKEN,
+            9: settings.IMAGE_PROCESSOR_MALL_SPA_BRAND_UPLOAD_BLOCK_TOKEN
         }
-        print(collections_of_block_names[block_token_num])
 
         IMAGE_BASE_URL: str = settings.IMAGE_PROCESS_BASE_URL
         # HEADER = {'Content-Type': 'multipart/form-data; boundary=<calculated when request is sent>'}
