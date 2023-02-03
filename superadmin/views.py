@@ -224,6 +224,8 @@ class BrandListAPIView(generics.ListCreateAPIView):
     serializer_class = BrandSerializer
     queryset = Brand.objects.all().order_by("-id")
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ["name"]
 
     def create(self, request, *args, **kwargs):
 
@@ -256,6 +258,8 @@ class ProductCategoryListAPIView(generics.ListCreateAPIView):
     serializer_class = ProductCategorySerializer
     queryset = ProductCategory.objects.all().order_by('-id')
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ["name"]
 
     def create(self, request, *args, **kwargs):
         try:
