@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from account.utils import validate_email, register_payarena_user, create_account
-from ecommerce.pagination import CustomPagination
+from home.pagination import CustomPagination
 from ecommerce.serializers import *
 
 from account.serializers import *
@@ -535,15 +535,15 @@ class AdminBannerView(generics.ListCreateAPIView):
         if Promo.objects.filter(title=name).exists():
             return Response({"detail": "Promo with this title already exist"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if request.data.get("price_promo") == 'true':
-            if not request.data.get('min_price') or not request.data.get('max_price'):
-                return Response({'detail': 'min_price and max_price filter is required'},
-                                status=status.HTTP_400_BAD_REQUEST)
-
-        if request.data.get("discount_promo") == 'true':
-            if not request.data.get('min_discount') or not request.data.get('max_discount'):
-                return Response({'detail': 'min_discount and max_discount filter is required'},
-                                status=status.HTTP_400_BAD_REQUEST)
+        # if request.data.get("price_promo") == 'true':
+        #     if not request.data.get('min_price') or not request.data.get('max_price'):
+        #         return Response({'detail': 'min_price and max_price filter is required'},
+        #                         status=status.HTTP_400_BAD_REQUEST)
+        #
+        # if request.data.get("discount_promo") == 'true':
+        #     if not request.data.get('min_discount') or not request.data.get('max_discount'):
+        #         return Response({'detail': 'min_discount and max_discount filter is required'},
+        #                         status=status.HTTP_400_BAD_REQUEST)
 
         result = []
         if not request.data.get("product"):

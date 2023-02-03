@@ -26,11 +26,11 @@ from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
     CartProductSerializer, OrderSerializer, ReturnedProductSerializer, OrderProductSerializer, \
     ProductReviewSerializerOut, ProductReviewSerializerIn, MobileCategorySerializer, ReturnReasonSerializer, \
-    DailyDealSerializer
+    DailyDealSerializer, ProductTypeSerializer
 
 from .models import ProductCategory, Product, ProductDetail, Cart, CartProduct, Promo, ProductWishlist, Order, \
-    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview, DailyDeal
-from ecommerce.pagination import CustomPagination, DesktopResultsSetPagination
+    OrderProduct, ReturnReason, ReturnedProduct, ReturnProductImage, ProductReview, DailyDeal, ProductType
+from home.pagination import CustomPagination
 import uuid
 
 from .shopper_email import shopper_order_placement_email
@@ -167,6 +167,13 @@ class CategoriesView(APIView, CustomPagination):
             return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ProductTypeListAPIView(generics.ListAPIView):
+    permission_classes = []
+    queryset = ProductType.objects.all()
+    serializer_class = ProductTypeSerializer
+    pagination_class = CustomPagination
+
+
 class TopSellingProductsView(APIView, CustomPagination):
     permission_classes = []
 
@@ -265,7 +272,7 @@ class CartProductOperationsView(APIView):
 
 class FilteredSearchView(generics.ListAPIView):
     permission_classes = []
-    pagination_class = DesktopResultsSetPagination
+    pagination_class = CustomPagination
     serializer_class = ProductSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filter_class = ProductFilter
