@@ -225,6 +225,20 @@ class BrandListAPIView(generics.ListCreateAPIView):
     queryset = Brand.objects.all().order_by("-id")
     pagination_class = CustomPagination
 
+    def create(self, request, *args, **kwargs):
+
+        # Image processor implementation
+        image = request.data.getlist('image')[0]
+        success, msg = utils.image_processor(9, image)
+        if not success:
+            return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
+        # Implementation ends here
+
+        # ser = self.serializer_class(data=request.data, context={"request": request})
+        # print(ser.is_valid())
+
+        return Response(self.serializer_class(self.queryset, context={"request": request}).data)
+
 
 class BrandDetailRetrieveAPIView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAdminUser]
@@ -244,23 +258,34 @@ class ProductCategoryListAPIView(generics.ListCreateAPIView):
     pagination_class = CustomPagination
 
     def create(self, request, *args, **kwargs):
-        data = dict()
-        permission = check_permission(request)
-        if permission is False:
-            return Response(
-                {"detail": "You do not have permission to perform this action."}, status=status.HTTP_401_UNAUTHORIZED
-            )
+        try:
+            data = dict()
+            permission = check_permission(request)
 
-        serializer = ProductCategorySerializer(data=request.data)
-        if not serializer.is_valid():
-            data['detail'] = 'Error in data sent'
-            for key, value in serializer.errors.items():
-                for text in value:
-                    data['detail'] = f"Error in '{key}' sent: {text}"
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            if permission is False:
+                return Response(
+                    {"detail": "You do not have permission to perform this action."}, status=status.HTTP_401_UNAUTHORIZED
+                )
 
-        category = create_or_update_category(data=request.data)
-        return Response(ProductCategorySerializer(category, context={"request": request}).data)
+            # Image processor implementation
+            image = request.data.getlist('image')[0]
+            success, msg = utils.image_processor(2, image)
+            if not success:
+                return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
+            # Implementation ends here
+
+            serializer = ProductCategorySerializer(data=request.data)
+            if not serializer.is_valid():
+                data['detail'] = 'Error in data sent'
+                for key, value in serializer.errors.items():
+                    for text in value:
+                        data['detail'] = f"Error in '{key}' sent: {text}"
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+            category = create_or_update_category(data=request.data)
+            return Response(ProductCategorySerializer(category, context={"request": request}).data)
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProductCategoryDetailRetrieveAPIView(generics.RetrieveUpdateAPIView):
@@ -278,6 +303,14 @@ class ProductCategoryDetailRetrieveAPIView(generics.RetrieveUpdateAPIView):
 
         cat_id = self.kwargs.get("id")
         data = dict()
+
+        # Image processor implementation
+        image = request.data.getlist('image')[0]
+        success, msg = utils.image_processor(2, image)
+        if not success:
+            return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
+        # Implementation ends here
+
         serializer = ProductCategorySerializer(data=request.data)
         if not serializer.is_valid():
             data['detail'] = 'Error in data sent'
@@ -496,7 +529,7 @@ class AdminBannerView(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         name = request.data.get('title')
-        banner_image = dict(request.FILES)['banner_image'][0]
+        banner_image = request.data.getlist('banner_image')[0]
 
         data = {}
         if Promo.objects.filter(title=name).exists():
@@ -532,13 +565,13 @@ class AdminBannerView(generics.ListCreateAPIView):
         if not banner_image:
             return Response({"detail": "Banner image is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(banner_image) == 0 or len(banner_image) > 1:
+        if len(banner_image) > 1:
             # Making sure that the number of banner this end point receives is just 1 image.
             return Response({"detail": "You can only provide not more than 1 image."},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        success, response = utils.image_processor(1, image=banner_image)
-        data.update({"detail": f"{response}"})
+        success, msg = utils.image_processor(1, image=banner_image)
+        data.update({"detail": f"{msg}"})
 
         if not success:
             return Response(data, status=status.HTTP_404_NOT_FOUND)
@@ -557,7 +590,6 @@ class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
 
     def put(self, request, *args, **kwargs):
-
         pk = self.kwargs.get("id")
         if not Promo.objects.filter(id=pk).exists():
             return Response({'detail': "Invalid promo"}, status=status.HTTP_400_BAD_REQUEST)
@@ -571,6 +603,16 @@ class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
                 "detail": "Promo with this title already exist"
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+        # ----------- Implemented image processor ----------
+        banner_image = data.get('banner_image', None)
+        if banner_image is not None:
+            banner_image = request.data.getlist('banner_image')[0]
+            success, msg = utils.image_processor(1, image=banner_image)
+
+            if not success:
+                return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
+        # ------------ Implementation ends -------------
 
         if request.data.get("price_promo") == 'true':
             if not request.data.get('min_price') or not request.data.get('max_price'):
@@ -599,7 +641,6 @@ class BannerDetailView(generics.RetrieveUpdateDestroyAPIView):
             )
 
         obj = serializer.save()
-
         create_or_edit_banner_obj(data, obj, product_id)
         return Response({'detail': "Banner updated successfully"})
 

@@ -282,14 +282,14 @@ class MerchantTransactionView(APIView, CustomPagination):
 class ProductImageView(APIView):
     def post(self, request):
         try:
-            image_dict = dict(request.FILES)['image']
+            image = request.data.getlist('image')
 
-            if len(image_dict) == 0 or len(image_dict) > 1:
+            if len(image) > 1:
                 # Making sure that the number of image this end point receives is just 1 image.
                 return Response({"detail": "You can only provide not more than 1 image."},
                                 status=status.HTTP_400_BAD_REQUEST)
-            image = image_dict[0]
-            success, msg = utils.image_processor(2, image=image, request=request, image_param='image')
+            image = image[0]
+            success, msg = utils.image_processor(2, image=image, request=request)
 
             if success is False:
                 return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -352,8 +352,14 @@ class MerchantBannerListCreateAPIView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         try:
-            # print(request.data['image'], request.data.getlist('image'))
-            # print(request.data.getlist('image', None))
+
+            # Image processor implementation
+            image = request.data.getlist('image')[0]
+            success, msg = utils.image_processor(8, image)
+            if not success:
+                return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
+            # Implementation ends here
+
             serializer = MerchantBannerSerializerIn(data=request.data, context=self.get_serializer_context())
             serializer.is_valid() or raise_serializer_error_msg(errors=serializer.errors)
             serializer = serializer.save()
@@ -382,8 +388,14 @@ class MerchantBannerRetrieveUpdateAPIView(generics.RetrieveUpdateDestroyAPIView)
 class ProductImageAPIView(APIView):
     def post(self, request):
         try:
-            image = request.data['image']
+            image = request.data.get('image')
+            success, msg = utils.image_processor(2, image=image)
+
+            if not success:
+                return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
+
             product_image = Image.objects.create(image=image)
+
             return Response({"detail": "Image has been uploaded successfully", "image_id": product_image.id,
                              "image_url": product_image.image.url})
         except Exception as ex:

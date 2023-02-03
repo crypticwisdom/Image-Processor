@@ -7,7 +7,7 @@ urlpatterns = [
     path("", views.DashboardAPIView.as_view(), name="dashboard"),
 
     # Categories
-    path("categories/", views.ProductCategoryListAPIView.as_view(), name=""),
+    path("categories/", views.ProductCategoryListAPIView.as_view(), name="superadmin-categories"),
     path("categories/<int:id>/", views.ProductCategoryDetailRetrieveAPIView.as_view(), name=""),
 
     # Brands

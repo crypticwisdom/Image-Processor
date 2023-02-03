@@ -488,6 +488,8 @@ class OrderReturnView(APIView, CustomPagination):
             comment = request.data.get('comment', None)
             images = request.data.getlist('images', [])
 
+            # I don't need the image processor here !
+
             if pk is None:
                 return Response({"detail": f"Order Product ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
