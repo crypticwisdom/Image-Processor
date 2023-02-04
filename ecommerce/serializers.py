@@ -270,6 +270,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 class MallDealSerializer(serializers.ModelSerializer):
     product = serializers.SerializerMethodField()
+    banner_id = serializers.IntegerField(source="id")
 
     def get_product(self, obj):
         request = self.context.get("request")
@@ -288,7 +289,7 @@ class MallDealSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Promo
-        fields = ['product', ]
+        fields = ['banner_id', 'product']
         depth = 1
 
 

@@ -228,18 +228,18 @@ class BrandListAPIView(generics.ListCreateAPIView):
     search_fields = ["name"]
 
     def create(self, request, *args, **kwargs):
-
-        # Image processor implementation
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         image = request.data.getlist('image')[0]
+        name = request.data.get("name")
+        if Brand.objects.filter(name=name).exists():
+            return Response({'detail': f'Brand: {name}, already exist'}, status=status.HTTP_400_BAD_REQUEST)
+
         success, msg = utils.image_processor(9, image)
         if not success:
             return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
-        # Implementation ends here
-
-        # ser = self.serializer_class(data=request.data, context={"request": request})
-        # print(ser.is_valid())
-
-        return Response(self.serializer_class(self.queryset, context={"request": request}).data)
+        self.perform_create(serializer)
+        return Response(serializer.data)
 
 
 class BrandDetailRetrieveAPIView(generics.RetrieveUpdateAPIView):
