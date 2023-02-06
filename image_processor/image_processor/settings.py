@@ -13,7 +13,7 @@ SECRET_KEY = 'wRDf2wWTN8zNoNPBvI5ADxwub24fEzOwHh8woTZkwufibfI-0QTSaA'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "89.38.135.41", "hopemail.tm-dev.xyz"]
+ALLOWED_HOSTS = ["*", "127.0.0.1", "localhost", "89.38.135.41", "hopemail.tm-dev.xyz"]
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -145,15 +145,17 @@ SIMPLE_JWT = {
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
 }
-CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
+    "https://payarenamall.tm-dev.xyz",
     "http://localhost:8080",
-    "http://localhost:8000",
     "http://localhost:80",
     "http://localhost:3000",
     "http://localhost",
-    "http://127.0.0.1"
+    "http://127.0.0.1",
+    "http://127.0.0.1:3000",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
