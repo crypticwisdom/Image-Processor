@@ -89,7 +89,7 @@ class MerchantDashboardView(APIView):
         try:
             store = Store.objects.get(seller__user=request.user)
             return Response({"detail": get_dashboard_data(store, request)})
-        except (Exception,) as err:
+        except Exception as err:
             return Response({"detail": f"{err}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
