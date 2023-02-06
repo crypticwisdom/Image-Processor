@@ -147,16 +147,16 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "https://payarenamall.tm-dev.xyz",
-    "http://localhost:8080",
-    "http://localhost:80",
-    "http://localhost:3000",
-    "http://localhost",
-    "http://127.0.0.1",
-    "http://127.0.0.1:3000",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "https://payarenamall.tm-dev.xyz",
+#     "http://localhost:8080",
+#     "http://localhost:80",
+#     "http://localhost:3000",
+#     "http://localhost",
+#     "http://127.0.0.1",
+#     "http://127.0.0.1:3000",
+# ]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+# CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
