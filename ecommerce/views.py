@@ -21,6 +21,7 @@ from module.apis import call_name_enquiry
 from store.models import Store
 from store.serializers import CartSerializer, StoreSerializer, StoreProductSerializer
 from superadmin.exceptions import raise_serializer_error_msg
+from superadmin.serializers import BannerSerializer
 from transaction.models import Transaction
 from .filters import ProductFilter
 from .serializers import ProductSerializer, CategoriesSerializer, MallDealSerializer, ProductWishlistSerializer, \
@@ -169,11 +170,27 @@ class CategoriesView(APIView, CustomPagination):
 
 class ProductTypeListAPIView(generics.ListAPIView):
     permission_classes = []
-    queryset = ProductType.objects.all()
+    queryset = ProductType.objects.all().order_by("-id")
     serializer_class = ProductTypeSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     search_fields = ["name"]
+
+
+class BannerPromoListAPIView(generics.ListAPIView):
+    permission_classes = []
+    queryset = Promo.objects.all().order_by("-id")
+    serializer_class = BannerSerializer
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ["title"]
+
+
+class BannerPromoDetailAPIView(generics.RetrieveAPIView):
+    permission_classes = []
+    queryset = Promo.objects.all().order_by("-id")
+    serializer_class = BannerSerializer
+    lookup_field = "id"
 
 
 class TopSellingProductsView(APIView, CustomPagination):

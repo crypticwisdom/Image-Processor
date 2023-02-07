@@ -1,9 +1,10 @@
 from abc import ABC
 
 from django.contrib.auth.models import User
+from django.db.models import Avg
 from rest_framework import serializers
 
-from ecommerce.models import Promo, ProductCategory
+from ecommerce.models import Promo, ProductCategory, ProductDetail, ProductReview
 from store.models import Store
 from superadmin.models import Role, AdminUser
 from superadmin.exceptions import InvalidRequestException
@@ -73,29 +74,19 @@ class BannerSerializer(serializers.ModelSerializer):
     sub_category = serializers.SerializerMethodField()
     product_type = serializers.SerializerMethodField()
     product = serializers.SerializerMethodField()
-    merchant_name = serializers.SerializerMethodField()
-    category_name = serializers.SerializerMethodField()
-    sub_category_name = serializers.SerializerMethodField()
-
-    def get_merchant_name(self, obj):
-        if obj.merchant:
-            return [merchant.user.get_full_name() for merchant in obj.merchant.all()]
-
-    def get_category_name(self, obj):
-        if obj.category:
-            return [category.name for category in obj.category.all()]
-
-    def get_sub_category_name(self, obj):
-        if obj.sub_category:
-            return [sub_cat.name for sub_cat in obj.sub_category.all()]
 
     def get_product(self, obj):
         if obj.product:
+            request = self.context.get("request")
             return [{
                 'id': product.id,
                 'name': product.name,
                 'category': product.category.name,
                 'store_name': product.store.name,
+                'product_detail_id': product.productdetail_set.last().id,
+                'price': product.productdetail_set.last().price,
+                'rating': product.productreview_set.all().aggregate(Avg('rating'))['rating__avg'] or 0,
+                'image': request.build_absolute_uri(product.image.image.url),
             } for product in obj.product.all()]
 
     def get_merchant(self, obj):

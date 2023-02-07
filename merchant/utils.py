@@ -1,7 +1,7 @@
 import datetime
 
 from dateutil.relativedelta import relativedelta
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Q
 
 from account.models import Profile
 from ecommerce.models import Product, ProductCategory, ProductType, ProductDetail, Brand, ProductImage, Image, \
@@ -211,7 +211,7 @@ def validate_bank_details(account_number: str, account_name: str, bank_code: str
 
     # Check if first or last name in 'response_name'
 
-    if not(account_name[0] in response_name or account_name[1] in response_name):
+    if not (account_name[0] in response_name or account_name[1] in response_name):
         return False, "First name or last name does not correspond with bank account name"
 
     return True, "Successfully validated bank details"
@@ -607,7 +607,7 @@ def get_total_sales(store):
     return total_sales
 
 
-def get_sales_data(store):
+def get_sales_data(store=None):
     sales = dict()
     weekly = []
     monthly = []
@@ -624,20 +624,22 @@ def get_sales_data(store):
         month_start, month_end = get_month_start_and_end_datetime(month_date)
         year_start, year_end = get_year_start_and_end_datetime(year_date)
         # print(year_start, year_end)
-        total_sales = OrderProduct.objects.filter(product_detail__product__store=store, created_on__gte=week_start,
-                                                  created_on__lte=week_end, order__payment_status="success"
+        query = Q(order__payment_status="success")
+        if store:
+            query &= Q(product_detail__product__store=store)
+        total_sales = OrderProduct.objects.filter(query, created_on__gte=week_start, created_on__lte=week_end
                                                   ).aggregate(total_sales=Sum('sub_total'))['total_sales']
+
         if total_sales:
             week_total_sales = total_sales
         weekly.append({"week": week_start.strftime("%d %b"), "sales": week_total_sales})
-        total_sales = OrderProduct.objects.filter(product_detail__product__store=store, created_on__gte=month_start,
-                                                  created_on__lte=month_end, order__payment_status="success"
-                                                  ).aggregate(total_sales=Sum('sub_total'))['total_sales']
+        total_sales = OrderProduct.objects.filter(
+            query, created_on__gte=month_start, created_on__lte=month_end).aggregate(
+            total_sales=Sum('sub_total'))['total_sales']
         if total_sales:
             month_total_sales = total_sales
         monthly.append({"month": month_start.strftime("%b"), "sales": month_total_sales})
-        total_sales = OrderProduct.objects.filter(product_detail__product__store=store, created_on__gte=year_start,
-                                                  created_on__lte=year_end, order__payment_status="success"
+        total_sales = OrderProduct.objects.filter(query, created_on__gte=year_start, created_on__lte=year_end
                                                   ).aggregate(total_sales=Sum('sub_total'))['total_sales']
         if total_sales:
             year_total_sales = total_sales
@@ -685,11 +687,11 @@ def get_top_categories_data(store):
     return top_categories
 
 
-def get_recent_orders_data(store):
+def get_recent_orders_data(request, store):
     serializer = OrderProductSerializer(
         OrderProduct.objects.filter(product_detail__product__store=store, order__payment_status="success"
                                     ).order_by('-created_on')[:10],
-        many=True)
+        many=True, context={"request": request})
     return serializer.data
 
 
@@ -725,5 +727,24 @@ def get_dashboard_data(store, request):
     data['sales_analytics'] = ""
     data['transactions'] = "Still pending ... [Transaction has no relation to merchant.]"
     # data['top_categories'] = get_top_categories_data(store)
-    data['recent_orders'] = get_recent_orders_data(store)
+    data['recent_orders'] = get_recent_orders_data(request, store)
+    data['best_selling_product'] = get_seller_best_selling_product(store)
     return data
+
+
+def get_seller_best_selling_product(store):
+    best_selling_products = Product.objects.filter(store=store).order_by("-sale_count")[:10]
+
+    # if date_from and date_to:
+    #     best_selling_products = Product.objects.filter(store=store, updated_on__range=(start_date, end_date)).order_by(
+    #         "-sale_count")[:10]
+    result = list()
+    for product in best_selling_products:
+        data = dict()
+        data["id"] = product.id
+        data["name"] = product.name
+        data["category"] = product.category.name
+        data["product_type"] = product.product_type.name
+        data["sale_count"] = product.sale_count
+        result.append(data)
+    return result
