@@ -133,7 +133,7 @@ class SignupView(APIView):
 
             success, profile_or_err_msg = create_account(email, phone_number, password, f_name, l_name)
             if success:
-                # Send Verification code
+                # Send Verification code.
                 if send_shopper_verification_email(email=email, profile=profile_or_err_msg):
                     return Response({"detail": "Account created and Verification link has been sent Successfully"})
                 else:
