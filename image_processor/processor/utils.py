@@ -19,8 +19,8 @@ def check_if_blur(cv_image_instance, image, image_path):
 
     # if the focus measure is less than the supplied threshold,
     # then the image should be considered "blurry"
-    if fm < 1:
-    # if fm < 5_5_0:
+    # if fm < 1:
+    if fm < 5_5_0:
         return False, "Blurry"
     return True, "Not Blurry"
 

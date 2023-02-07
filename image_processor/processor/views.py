@@ -369,4 +369,4 @@ class ValidationView(APIView):
             return Response({"detail": f"{len(images)} image has been validated." if len(
                 images) == 1 else f"{len(images)} has been Validated successfully."})
         except (Exception,) as err:
-            return Response({"detail": f"{err}. |"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"{err}."}, status=HTTP_400_BAD_REQUEST)
