@@ -24,7 +24,6 @@ def image_processor(block_token_num, image=None):
             8: settings.IMAGE_PROCESSOR_MALL_MERCHANT_BANNER_BLOCK_TOKEN,
             9: settings.IMAGE_PROCESSOR_MALL_SPA_BRAND_UPLOAD_BLOCK_TOKEN
         }
-        print(collections_of_block_names[1])
 
         IMAGE_BASE_URL: str = settings.IMAGE_PROCESS_BASE_URL
         # HEADER = {'Content-Type': 'multipart/form-data; boundary=<calculated when request is sent>'}
