@@ -1,12 +1,13 @@
 import secrets
 from django.contrib.auth.hashers import check_password
 from rest_framework.views import APIView
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from rest_framework.response import Response
 from .serializers import ClientSerializer
 from .utils import validate_email, validate_text, validate_password, list_of_extensions, list_of_content_types
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from .models import Client, ValidatorBlock
+from .serializers import ValidationBlockSerializer
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -143,5 +144,26 @@ class UpdateProfileView(APIView):
             client.save()
 
             return Response({"detail": f"Successfully Update record."})
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
+
+
+class GetClientsValidationBlocks(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        try:
+            client_token: str = request.GET.get("token", None)
+
+            if client_token is None:
+                return Response({"detail": "'token' parameter is required."}, status=HTTP_400_BAD_REQUEST)
+
+            query_set = ValidatorBlock.objects.filter(client__client_token=client_token)
+
+            if not query_set:
+                return Response({"detail": "This client has no validation block."}, status=HTTP_400_BAD_REQUEST)
+            serializer = ValidationBlockSerializer(query_set, many=True).data
+
+            return Response({"detail": serializer})
         except (Exception, ) as err:
             return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
