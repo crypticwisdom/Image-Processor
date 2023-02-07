@@ -286,10 +286,10 @@ class ProductImageView(APIView):
 
             if len(image) > 1:
                 # Making sure that the number of image this end point receives is just 1 image.
-                return Response({"detail": "You can only provide not more than 1 image."},
+                return Response({"detail": "You can only provide 1 image."},
                                 status=status.HTTP_400_BAD_REQUEST)
             image = image[0]
-            success, msg = utils.image_processor(2, image=image, request=request)
+            success, msg = utils.image_processor(2, image=image)
 
             if success is False:
                 return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)

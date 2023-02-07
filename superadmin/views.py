@@ -226,16 +226,16 @@ class BrandListAPIView(generics.ListCreateAPIView):
     pagination_class = CustomPagination
 
     def create(self, request, *args, **kwargs):
-
         # Image processor implementation
         image = request.data.getlist('image')[0]
         success, msg = utils.image_processor(9, image)
+
         if not success:
             return Response({"detail": f"{msg}"}, status=status.HTTP_400_BAD_REQUEST)
         # Implementation ends here
 
-        # ser = self.serializer_class(data=request.data, context={"request": request})
-        # print(ser.is_valid())
+        ser = self.serializer_class(data=request.data, context={"request": request})
+        print(ser.is_valid())
 
         return Response(self.serializer_class(self.queryset, context={"request": request}).data)
 
@@ -567,7 +567,7 @@ class AdminBannerView(generics.ListCreateAPIView):
 
         if len(banner_image) > 1:
             # Making sure that the number of banner this end point receives is just 1 image.
-            return Response({"detail": "You can only provide not more than 1 image."},
+            return Response({"detail": "You can only provide 1 image."},
                             status=status.HTTP_400_BAD_REQUEST)
 
         success, msg = utils.image_processor(1, image=banner_image)
