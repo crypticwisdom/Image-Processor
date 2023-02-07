@@ -172,6 +172,8 @@ class ProductTypeListAPIView(generics.ListAPIView):
     queryset = ProductType.objects.all()
     serializer_class = ProductTypeSerializer
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ["name"]
 
 
 class TopSellingProductsView(APIView, CustomPagination):
@@ -350,7 +352,11 @@ class ProductView(APIView, CustomPagination):
                 product.save()
                 serializer = ProductSerializer(product, context={"request": request}).data
             else:
-                prod = self.paginate_queryset(Product.objects.filter(status="active", store__is_active=True).order_by("-id"), request)
+                search = request.GET.get("search")
+                query = Q(status="active", store__is_active=True)
+                if search:
+                    query &= Q(name=search)
+                prod = self.paginate_queryset(Product.objects.filter(query).order_by("-id"), request)
                 queryset = ProductSerializer(prod, many=True, context={"request": request}).data
                 serializer = self.get_paginated_response(queryset).data
             return Response(serializer)
