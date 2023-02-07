@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from management.models import ApplicationExtension, ApplicationContentType
-from account.utils import validate_email, validate_text, validate_password, convert_to_kb, list_of_extensions, list_of_content_types
+from account.utils import validate_email, validate_text, validate_password, convert_to_kb, list_of_extensions, \
+    list_of_content_types
 import secrets
 from account.models import Client, ValidatorBlock
 from processor.serializers import ValidatorBlockSerializer
@@ -116,7 +117,7 @@ class CreateValidationBlockView(APIView):
                                                   image_width_dimension_threshold=image_width_dimension_threshold,
                                                   numb_of_images_per_process=numb_of_images_per_process)
             for id_ in allowed_extensions:
-                if id_ not in list_of_extensions:  # 'image/gif', 'image/svg+xml' can be allowed later.
+                if id_ not in list_of_extensions:  # 'image/svg+xml' can be allowed later.
                     block.delete()  # Delete created block.
                     return Response(
                         {"detail": f"Invalid image extension '{id_}' ID."},
@@ -282,9 +283,9 @@ class ValidationView(APIView):
             # 1. Check the number of images present in request header.
 
             if len(images) > block.numb_of_images_per_process:
-                return Response({"detail": f"You have entered a number of images that is greater than the specified "
-                                           f"number of images allowed per request. which is "
-                                           f"{block.numb_of_images_per_process}"}, status=HTTP_400_BAD_REQUEST)
+                return Response({"description": f"You have entered a number of images that is greater than the "
+                                                f"specified number of images allowed per request. which is "
+                                                f"{block.numb_of_images_per_process}"}, status=HTTP_400_BAD_REQUEST)
 
             # 2. Get the image details and Check image details again the block settings.
             for image in images:
@@ -311,7 +312,6 @@ class ValidationView(APIView):
                 if not converted:
                     return Response({"detail": f"{value_or_errmsg}"}, status=HTTP_400_BAD_REQUEST)
 
-                # print(image.size, image)
                 if value_or_errmsg > block.file_threshold_size:
                     return Response({"detail": f"'{image.name}' has a size of {float(image.size)} KB "
                                                f"which is above the specified size for this block which is "
@@ -325,17 +325,18 @@ class ValidationView(APIView):
                                   f"Validation Block. Validation block expects a value greater than or equal to "
                                   f"'{block.image_height_dimension_threshold}px', this image has "
                                   f"'{image_item.height}px' in height which is lesser than the expected "
-                                  f"value."},
+                                  f"value.", "description": ""},
                         status=HTTP_400_BAD_REQUEST)
 
                 # Check if the image width in pixel is less than the width specified in the Validation Block
                 if image_item.width < block.image_width_dimension_threshold:
                     return Response({
-                        "detail": f"'{image.name}' width in pixels is lower than the expected value for this Validation "
-                                  "Block. Validation block expects a value greater than or equal to "
-                                  f"'{block.image_width_dimension_threshold}px', this image has "
-                                  f"'{image_item.width}px' in width which is lesser than the expected "
-                                  f"value."}, status=HTTP_400_BAD_REQUEST)
+                        "description": f"'{image.name}' width in pixels is lower than the expected value for this "
+                                       f"Validation Block. Validation block expects a value greater than or equal to "
+                                       f"'{block.image_width_dimension_threshold}px', this image has "
+                                       f"'{image_item.width}px' in width which is lesser than the expected "
+                                       f"value.", "detail": "Image does not match the requirements."},
+                        status=HTTP_400_BAD_REQUEST)
 
                 path_ = rf"{os.getcwd()}/images"
                 try:

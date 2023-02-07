@@ -5,7 +5,7 @@ from account.models import Client, ValidatorBlock
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ['id', 'client_name', 'email']
+        fields = ['id', 'client_name', 'client_token', 'email']
 
 
 class ValidationBlockSerializer(serializers.ModelSerializer):

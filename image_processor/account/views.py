@@ -101,3 +101,47 @@ class LoginView(APIView):
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
 
+
+class UpdateProfileView(APIView):
+    permission_classes = []
+
+    def put(self, request):
+        try:
+            client_token: str = request.data.get('client_token', None)
+            client_name: str = request.data.get('client_name', None)
+            email: str = request.data.get('email', None)
+
+            if client_token is None:
+                return Response({"detail": "Client token is a required parameter."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            client_query = Client.objects.filter(client_token=client_token)
+
+            if not client_query.exists():
+                return Response({"detail": "Client not found."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            if not email:
+                return Response({"detail": "'email' is required."}, status=HTTP_400_BAD_REQUEST)
+
+            if not validate_email(email=email):
+                return Response({"detail": "Invalid email format."}, status=HTTP_400_BAD_REQUEST)
+
+            if not validate_text(text=client_name):
+                return Response({"detail": "Service supports '-' and '_' special characters."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            client_name = str(client_name).title()
+            client = client_query.last()
+
+            if client_name == client.client_name.title():
+                return Response({"detail": "Old client name cannot be the same as your New Client name."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            client.client_name = client_name
+            client.email = email
+            client.save()
+
+            return Response({"detail": f"Successfully Update record."})
+        except (Exception, ) as err:
+            return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
