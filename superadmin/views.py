@@ -571,10 +571,10 @@ class AdminBannerView(generics.ListCreateAPIView):
         if not banner_image:
             return Response({"detail": "Banner image is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(banner_image) > 1:
-            # Making sure that the number of banner this end point receives is just 1 image.
-            return Response({"detail": "You can only provide 1 image."},
-                            status=status.HTTP_400_BAD_REQUEST)
+        # if len(banner_image) > 1:
+        #     # Making sure that the number of banner this end point receives is just 1 image.
+        #     return Response({"detail": "You can only provide 1 image."},
+        #                     status=status.HTTP_400_BAD_REQUEST)
 
         success, msg = utils.image_processor(1, image=banner_image)
         data.update({"detail": f"{msg}"})
