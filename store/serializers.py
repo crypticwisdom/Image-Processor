@@ -37,6 +37,7 @@ class ProductCategorySerializer(serializers.ModelSerializer):
         exclude = []
 
 
+
 class StoreProductSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
