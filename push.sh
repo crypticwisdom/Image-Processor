@@ -11,7 +11,9 @@ git add .
 echo "Enter a commit message: "
 read msg
 git commit -m "$msg"
-git push
+echo "What branch are you pushing to ?"
+read branch
+git push origin branch
 
 git remote set-url origin https://gitlab.com/tm30/payarenamall/e-commerce/backend.git
 git remote -v
