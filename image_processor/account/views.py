@@ -10,7 +10,6 @@ from .models import Client, ValidatorBlock
 from .serializers import ValidationBlockSerializer
 from rest_framework.permissions import IsAuthenticated
 
-
 """
 Even it sounds simple to be done, image check could be tricky. At least following actions should be done:
 
@@ -80,17 +79,19 @@ class LoginView(APIView):
 
     def post(self, request):
         try:
-            client_name = request.data.get('client_name', None)
+            email = request.data.get('email', None)
             password = request.data.get('password', None)
 
-            if not client_name:
-                return Response({"detail": "'client_name' field is required."}, status=HTTP_400_BAD_REQUEST)
+            if not email:
+                return Response({"detail": "'email' field is required."}, status=HTTP_400_BAD_REQUEST)
+
+            if not validate_email(email=email):
+                return Response({"detail": "Invalid email format."}, status=HTTP_400_BAD_REQUEST)
 
             if not password:
                 return Response({"detail": "'password' field is required."}, status=HTTP_400_BAD_REQUEST)
 
-            client_name = str(client_name).title()
-            client = Client.objects.get(client_name=client_name)
+            client = Client.objects.get(email=email)
             if check_password(password=password, encoded=client.password):
                 return Response({"detail": "Success",
                                  "data": {
@@ -116,35 +117,30 @@ class UpdateProfileView(APIView):
                 return Response({"detail": "Client token is a required parameter."},
                                 status=HTTP_400_BAD_REQUEST)
 
-            client_query = Client.objects.filter(client_token=client_token)
-
-            if not client_query.exists():
-                return Response({"detail": "Client not found."},
-                                status=HTTP_400_BAD_REQUEST)
-
-            if not email:
-                return Response({"detail": "'email' is required."}, status=HTTP_400_BAD_REQUEST)
-
-            if not validate_email(email=email):
-                return Response({"detail": "Invalid email format."}, status=HTTP_400_BAD_REQUEST)
-
-            if not validate_text(text=client_name):
-                return Response({"detail": "Service supports '-' and '_' special characters."},
-                                status=HTTP_400_BAD_REQUEST)
-
+            client = Client.objects.get(client_token=client_token)
             client_name = str(client_name).title()
-            client = client_query.last()
+
+            if email:
+                if not validate_email(email=email):
+                    return Response({"detail": "Invalid email format."}, status=HTTP_400_BAD_REQUEST)
+                client.email = email
 
             if client_name == client.client_name.title():
                 return Response({"detail": "Old client name cannot be the same as your New Client name."},
                                 status=HTTP_400_BAD_REQUEST)
 
-            client.client_name = client_name
-            client.email = email
+            # I kept receiving 'client_name' as stringified 'None' so i needed to do this below to convert 'None' to
+            # None Data Type
+            client_name = None if str(client_name) == "None" else client_name
+            if client_name:
+                if not validate_text(text=client_name):
+                    return Response({"detail": "Service supports '-' and '_' special characters."},
+                                    status=HTTP_400_BAD_REQUEST)
+                client.client_name = client_name
             client.save()
 
             return Response({"detail": f"Successfully Update record."})
-        except (Exception, ) as err:
+        except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
 
 
@@ -165,5 +161,5 @@ class GetClientsValidationBlocks(APIView):
             serializer = ValidationBlockSerializer(query_set, many=True).data
 
             return Response({"detail": serializer})
-        except (Exception, ) as err:
+        except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)

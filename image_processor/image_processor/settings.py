@@ -21,8 +21,8 @@ ALLOWED_HOSTS = ["*", "127.0.0.1", "localhost", "89.38.135.41", "hopemail.tm-dev
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'tm_ip_db',
-        'USER': 'tm_ip',
+        'NAME': 'payarena_image_processor',
+        'USER': 'payarena_ip',
         'HOST': 'localhost',
         'PASSWORD': 'iamherenow',
         'PORT': 5432
@@ -116,10 +116,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR/"static",
-]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+# STATICFILES_DIRS = [
+#     BASE_DIR/"static",
+# ]
+# STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # Default primary key field type

@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from management.models import ApplicationExtension, ApplicationContentType
-
-
 # Create your models here.
 
 
@@ -29,6 +27,7 @@ class ValidatorBlock(models.Model):
     file_threshold_size = models.DecimalField(null=False, decimal_places=2, max_digits=10, blank=False, default=0,
                                               help_text="Any file size above this threshold will be "
                                                         "rejected. Sizes are converted to KB.")
+    allow_size_check = models.BooleanField(default=False)
     # Dimension = width (pixels) X height (pixels)
     # Resolution tellList of fields:s the amount of Pixels present in an Image.
     # 6000(w) X 6000(h) = 40,000 Pixels are present in the img
@@ -37,9 +36,10 @@ class ValidatorBlock(models.Model):
     # Images should not have pixels lesser than the assigned value for this block in width and in height.
     image_height_dimension_threshold = models.PositiveSmallIntegerField(null=False, blank=False, default=0, help_text="image height dimension treshold will be used to validate both height.")
     image_width_dimension_threshold = models.PositiveSmallIntegerField(null=False, blank=False, default=0, help_text="image width dimension treshold will be used to validate both width.")
+    allow_dimension_check = models.BooleanField(default=False)
     # Allowed extensions [png, jpeg, jpg]
     allowed_extensions = models.ManyToManyField(ApplicationExtension, help_text="List of allowed extensions")
-
+    allow_extension_check = models.BooleanField(default=False)
     # Allowed Content-Type [ 'image/gif', 'image/jpeg', 'image/png', image/tiff, image/vnd.microsoft.icon,
     # image/x-icon, image/vnd.djvu, image/svg+xml ]
     content_type = models.ManyToManyField(ApplicationContentType,
@@ -48,7 +48,10 @@ class ValidatorBlock(models.Model):
                                                     "be allowed for the Image Processing of this Validator Block. "
                                                     "E.g {'jpeg': 'image/jpeg'}, "
                                                     "it means images with content type of jpeg will be acceptable.")
+    allow_content_type_check = models.BooleanField(default=False)
     numb_of_images_per_process = models.PositiveSmallIntegerField(null=True, blank=True, default=1)
+    allow_number_of_image_check = models.BooleanField(default=False)
+    allow_blurry_images = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 

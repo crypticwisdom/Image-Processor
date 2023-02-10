@@ -2,7 +2,7 @@ import os
 from django.conf import settings
 import shutil
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 from rest_framework.views import APIView
 from management.models import ApplicationExtension, ApplicationContentType
 from account.utils import validate_email, validate_text, validate_password, convert_to_kb, list_of_extensions, \
@@ -13,10 +13,7 @@ from processor.serializers import ValidatorBlockSerializer
 from PIL import Image, ImageOps
 import cv2
 from .utils import variance_of_laplacian, check_if_blur
-
-
 # Create your views here.
-
 
 class CreateValidationBlockView(APIView):
     """
@@ -63,6 +60,13 @@ class CreateValidationBlockView(APIView):
             allowed_extensions = request.data.get('allowed_extensions', [])
             content_types = request.data.get("content_types", [])
 
+            allow_size_check = request.data.get("allow_dimension_check", False)
+            allow_dimension_check = request.data.get("allow_dimension_check", False)
+            allow_extension_check = request.data.get("allow_extension_check", False)
+            allow_content_type_check = request.data.get("allow_content_type_check", False)
+            allow_number_of_image_check = request.data.get("allow_number_of_image_check", False)
+            allow_blurry_images = request.data.get("allow_blurry_images", False)
+
             if not client_token:
                 return Response({"detail": "Set 'client_token'."}, status=HTTP_400_BAD_REQUEST)
 
@@ -76,66 +80,79 @@ class CreateValidationBlockView(APIView):
             if not block_name:
                 return Response({"detail": f"Set 'block_name'."}, status=HTTP_400_BAD_REQUEST)
 
-            if not file_threshold_size:
-                return Response({"detail": f"Set 'file_threshold_size'."}, status=HTTP_400_BAD_REQUEST)
+            block = ValidatorBlock(block_name=str(block_name).title(), block_token=block_token, client=client)
 
-            if not numb_of_images_per_process:
-                return Response({"detail": f"Set 'number_of_images'."}, status=HTTP_400_BAD_REQUEST)
+            if allow_number_of_image_check:
+                if not numb_of_images_per_process:
+                    return Response({"detail": f"Set 'number_of_images'."}, status=HTTP_400_BAD_REQUEST)
+                numb_of_images_per_process = int(numb_of_images_per_process)
 
-            if numb_of_images_per_process > 20:
-                return Response({"detail": f"Enter a number lesser than 20 and greater than one."},
-                                status=HTTP_400_BAD_REQUEST)
-            elif numb_of_images_per_process < 1:
-                return Response({"detail": f"Number of images per process should not be less than 1'."},
-                                status=HTTP_400_BAD_REQUEST)
+                if numb_of_images_per_process > 20:
+                    return Response({"detail": f"Enter a number lesser than 20 and greater than one."},
+                                    status=HTTP_400_BAD_REQUEST)
+                elif numb_of_images_per_process < 1:
+                    return Response({"detail": f"Number of images per process should not be less than 1'."},
+                                    status=HTTP_400_BAD_REQUEST)
+                block.allow_number_of_image_check = allow_number_of_image_check
 
-            if not file_size_unit:
-                return Response({"detail": f"Set 'file_size_unit'."}, status=HTTP_400_BAD_REQUEST)
-            file_size_unit = str(file_size_unit).lower()
+            if allow_size_check:
+                if not file_threshold_size:
+                    return Response({"detail": f"Set 'file_threshold_size'."}, status=HTTP_400_BAD_REQUEST)
 
-            success, file_size_value_or_err_msg = convert_to_kb(unit=file_size_unit,
-                                                                value=file_threshold_size)  # Convert the Size (MB) to KB.
+                if not file_size_unit:
+                    return Response({"detail": f"Set 'file_size_unit'."}, status=HTTP_400_BAD_REQUEST)
+                file_size_unit = str(file_size_unit).lower()
 
-            if not success:
-                return Response({"detail": f"{file_size_value_or_err_msg}"}, status=HTTP_400_BAD_REQUEST)
+                success, resp = convert_to_kb(unit=file_size_unit, value=file_threshold_size)  # Convert the Size (MB) to KB.
 
-            if not image_height_dimension_threshold:
-                return Response({"detail": f"Set 'image_height_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
+                if not success:
+                    return Response({"detail": f"{resp}"}, status=HTTP_400_BAD_REQUEST)
+                block.file_threshold_size = resp
+                block.allow_size_check = allow_size_check
 
-            if not image_width_dimension_threshold:
-                return Response({"detail": f"Set 'image_width_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
+            if allow_dimension_check:
+                if not image_height_dimension_threshold:
+                    return Response({"detail": f"Set 'image_height_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
 
-            if not allowed_extensions:
-                return Response({"detail": f"Set 'allowed_extensions'."}, status=HTTP_400_BAD_REQUEST)
+                if not image_width_dimension_threshold:
+                    return Response({"detail": f"Set 'image_width_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
+                block.allow_dimension_check = allow_dimension_check
+                block.image_height_dimension_threshold = image_height_dimension_threshold
+                block.image_width_dimension_threshold = image_width_dimension_threshold
 
-            if not content_types:
-                return Response({"detail": f"Set 'content_types'."}, status=HTTP_400_BAD_REQUEST)
+            block.allow_blurry_images = allow_blurry_images
+            block.save()
 
-            block = ValidatorBlock.objects.create(block_name=str(block_name).title(), block_token=block_token,
-                                                  client=client, file_threshold_size=file_size_value_or_err_msg,
-                                                  image_height_dimension_threshold=image_height_dimension_threshold,
-                                                  image_width_dimension_threshold=image_width_dimension_threshold,
-                                                  numb_of_images_per_process=numb_of_images_per_process)
-            for id_ in allowed_extensions:
-                if id_ not in list_of_extensions:  # 'image/svg+xml' can be allowed later.
-                    block.delete()  # Delete created block.
-                    return Response(
-                        {"detail": f"Invalid image extension '{id_}' ID."},
-                        status=HTTP_400_BAD_REQUEST)
+            if allow_extension_check:
+                if not allowed_extensions:
+                    return Response({"detail": f"Set 'allowed_extensions'."}, status=HTTP_400_BAD_REQUEST)
+                block.allow_extension_check = allow_extension_check
 
-                extension = ApplicationExtension.objects.get(id=id_)
-                block.allowed_extensions.add(extension)
+                for id_ in allowed_extensions:
+                    if id_ not in list_of_extensions:  # 'image/svg+xml' can be allowed later.
+                        block.delete()  # Delete created block.
+                        return Response(
+                            {"detail": f"Invalid image extension '{id_}' ID."},
+                            status=HTTP_400_BAD_REQUEST)
 
-            for typ_id in content_types:
-                if typ_id not in list_of_content_types:  # 'gif' and more can be allowed later.
-                    block.delete()  # Delete created block.
-                    return Response(
-                        {"detail": f"Invalid image content_type '{typ_id}' ID."},
-                        status=HTTP_400_BAD_REQUEST)
+                    extension = ApplicationExtension.objects.get(id=id_)
+                    block.allowed_extensions.add(extension)
 
-                extension = ApplicationContentType.objects.get(id=typ_id)
-                block.content_type.add(extension)
+            if allow_content_type_check:
+                if not content_types:
+                    return Response({"detail": f"Set 'content_types'."}, status=HTTP_400_BAD_REQUEST)
+                block.allow_content_type_check = allow_content_type_check
 
+                for typ_id in content_types:
+                    if typ_id not in list_of_content_types:  # 'gif' and more can be allowed later.
+                        block.delete()  # Delete created block.
+                        return Response(
+                            {"detail": f"Invalid image content_type '{typ_id}' ID."},
+                            status=HTTP_400_BAD_REQUEST)
+
+                    extension = ApplicationContentType.objects.get(id=typ_id)
+                    block.content_type.add(extension)
+            block.save()
             return Response({"detail": f"{block_name} Validation block has been created.",
                              "block_token": f"{block_token}"})
         except (Exception,) as err:
@@ -155,6 +172,14 @@ class CreateValidationBlockView(APIView):
                                                                None)  # width and height checks in pixels
             allowed_extensions = request.data.get('allowed_extensions', [])
             content_types = request.data.get("content_types", [])
+
+            allow_size_check = request.data.get("allow_size_check", False)
+            allow_dimension_check = request.data.get("allow_dimension_check", False)
+            allow_extension_check = request.data.get("allow_extension_check", False)
+            allow_content_type_check = request.data.get("allow_content_type_check", False)
+            allow_number_of_image_check = request.data.get("allow_number_of_image_check", False)
+            allow_blurry_images = request.data.get("allow_blurry_images", False)
+
             if not client_token:
                 return Response({"detail": "Set 'client_token'."}, status=HTTP_400_BAD_REQUEST)
 
@@ -165,85 +190,93 @@ class CreateValidationBlockView(APIView):
             else:
                 return Response({"detail": f"Invalid Client Token."}, status=HTTP_400_BAD_REQUEST)
 
-            if not block_name:
-                return Response({"detail": f"Set 'block_name'."}, status=HTTP_400_BAD_REQUEST)
-
             if not block_token:
                 return Response({"detail": f"Set 'block_token'."}, status=HTTP_400_BAD_REQUEST)
 
-            if not file_threshold_size:
-                return Response({"detail": f"Set 'file_threshold_size'."}, status=HTTP_400_BAD_REQUEST)
-
-            if not numb_of_images_per_process:
-                return Response({"detail": f"Set 'number_of_images'."}, status=HTTP_400_BAD_REQUEST)
-
-            if numb_of_images_per_process > 20:
-                return Response({"detail": f"Enter a number lesser than 20 and greater than one."},
-                                status=HTTP_400_BAD_REQUEST)
-            elif numb_of_images_per_process < 1:
-                return Response({"detail": f"Number of images per process should not be less than 1'."},
-                                status=HTTP_400_BAD_REQUEST)
-
-            if not file_size_unit:
-                return Response({"detail": f"Set 'file_size_unit'."}, status=HTTP_400_BAD_REQUEST)
-            file_size_unit = str(file_size_unit).lower()
-
-            success, file_size_value_or_err_msg = convert_to_kb(unit=file_size_unit,
-                                                                value=file_threshold_size)  # Convert the Size (MB) to KB.
-
-            if not success:
-                return Response({"detail": f"{file_size_value_or_err_msg}"}, status=HTTP_400_BAD_REQUEST)
-
-            if not image_height_dimension_threshold:
-                return Response({"detail": f"Set 'image_height_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
-
-            if not image_width_dimension_threshold:
-                return Response({"detail": f"Set 'image_width_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
-
-            if not allowed_extensions:
-                return Response({"detail": f"Set 'allowed_extensions'."}, status=HTTP_400_BAD_REQUEST)
-
-            if not content_types:
-                return Response({"detail": f"Set 'content_types'."}, status=HTTP_400_BAD_REQUEST)
-
             block = ValidatorBlock.objects.get(block_token=block_token, client=client)
 
-            if block is not None:
+            if block_name:
                 block.block_name = block_name
+
+            if allow_number_of_image_check:
+                if not numb_of_images_per_process:
+                    return Response({"detail": f"Set 'number_of_images'."}, status=HTTP_400_BAD_REQUEST)
+                numb_of_images_per_process = int(numb_of_images_per_process)
+
+                if numb_of_images_per_process > 20:
+                    return Response({"detail": f"Enter a number lesser than 20 and greater than one."},
+                                    status=HTTP_400_BAD_REQUEST)
+                elif numb_of_images_per_process < 1:
+                    return Response({"detail": f"Number of images per process should not be less than 1'."},
+                                    status=HTTP_400_BAD_REQUEST)
+                block.numb_of_images_per_process = numb_of_images_per_process
+                block.allow_number_of_image_check = allow_number_of_image_check
+
+            block.allow_number_of_image_check = allow_number_of_image_check  # False
+
+            if allow_size_check:
+                if not file_threshold_size:
+                    return Response({"detail": f"Set 'file_threshold_size'."}, status=HTTP_400_BAD_REQUEST)
+
+                if not file_size_unit:
+                    return Response({"detail": f"Set 'file_size_unit'."}, status=HTTP_400_BAD_REQUEST)
+                file_size_unit = str(file_size_unit).lower()
+
+                success, file_size_value_or_err_msg = convert_to_kb(unit=file_size_unit,
+                                                                    value=file_threshold_size)  # Convert the Size (MB) to KB.
+                if not success:
+                    return Response({"detail": f"{file_size_value_or_err_msg}"}, status=HTTP_400_BAD_REQUEST)
                 block.file_threshold_size = file_threshold_size
+                block.allow_size_check = allow_size_check
+            block.allow_size_check = allow_size_check  # False
+
+            if allow_dimension_check:
+                if not image_height_dimension_threshold:
+                    return Response({"detail": f"Set 'image_height_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
+
+                if not image_width_dimension_threshold:
+                    return Response({"detail": f"Set 'image_width_dimension_threshold'."}, status=HTTP_400_BAD_REQUEST)
                 block.image_height_dimension_threshold = image_height_dimension_threshold
                 block.image_width_dimension_threshold = image_width_dimension_threshold
-                block.numb_of_images_per_process = numb_of_images_per_process
+                block.allow_dimension_check = allow_dimension_check
+            block.allow_dimension_check = allow_dimension_check  # False
+
+            if allow_extension_check:
+                if not allowed_extensions:
+                    return Response({"detail": f"Set 'allowed_extensions'."}, status=HTTP_400_BAD_REQUEST)
 
                 block.allowed_extensions.clear()
                 for extension in allowed_extensions:
                     block.allowed_extensions.add(extension)
+                block.allow_extension_check = allow_extension_check
+            block.allow_extension_check = allow_extension_check  # False
+
+            if allow_content_type_check:
+                if not content_types:
+                    return Response({"detail": f"Set 'content_types'."}, status=HTTP_400_BAD_REQUEST)
 
                 block.content_type.clear()
                 for content_type in content_types:
                     block.content_type.add(content_type)
-                block.save()
-                return Response({"detail": "Validation Block has been updated."})
-            return Response({"detail": f"'{block_name}' update failed."}, status=HTTP_400_BAD_REQUEST)
+                block.allow_content_type_check = allow_content_type_check
+            block.allow_content_type_check = allow_content_type_check
+
+            block.allow_blurry_images = allow_blurry_images
+            block.save()
+            return Response({"detail": "Validation Block has been updated."})
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
 
-    def delete(self, request):
+    def delete(self, request, token=None):
         try:
-            client_token = request.data.get("client_token", None)
-            block_token = request.data.get("block_token", None)
+            if not token:
+                return Response({"detail": "'token' is required."}, status=HTTP_400_BAD_REQUEST)
 
-            if not client_token:
-                return Response({"detail": "'client_token' toke"}, status=HTTP_400_BAD_REQUEST)
-
-            if not block_token:
-                return Response({"detail": "'block_token' toke"}, status=HTTP_400_BAD_REQUEST)
-
-            block = ValidatorBlock.objects.get(block_token=block_token, client__client_token=client_token)
+            block = ValidatorBlock.objects.get(block_token=token)
 
             if block is not None:
                 block.delete()
-                return Response({"detail": "Validation block has been deleted."})
+                return Response({"detail": "Validation block has been deleted."}, status=HTTP_204_NO_CONTENT)
             return Response({"detail": "Validation block not found."})
         except (Exception,) as err:
             return Response({"detail": f"{err}"}, status=HTTP_400_BAD_REQUEST)
@@ -283,88 +316,82 @@ class ValidationView(APIView):
             # 1. Check the number of images present in request header.
 
             if len(images) > block.numb_of_images_per_process:
-                return Response({"description": f"You have entered a number of images that is greater than the "
-                                                f"specified number of images allowed per request. which is "
-                                                f"{block.numb_of_images_per_process}"}, status=HTTP_400_BAD_REQUEST)
+                return Response({"description": f"requires a Maximum of {block.numb_of_images_per_process} images(s)"},
+                                status=HTTP_400_BAD_REQUEST)
 
             # 2. Get the image details and Check image details again the block settings.
             for image in images:
                 image_item = Image.open(image)
 
                 # Check image extension.
-                image_extension: str = image_item.format.lower()
-                if image_extension not in block_extensions:
-                    return Response(
-                        {"detail": f"Unacceptable image extension of '{image_extension}' for '{image.name}'."})
+                if block.allow_extension_check:
+                    image_extension: str = image_item.format.lower()
+                    if image_extension not in block_extensions:
+                        return Response(
+                            {"detail": f"Unacceptable image extension of '{image_extension}' for '{image.name}'."})
 
                 #   Check Content Type
-                image_content_type: str = image.content_type
-                if image_content_type not in block_contents:
-                    return Response(
-                        {"detail": f"Unacceptable image content-type of {image_content_type} for image {image.name}."})
+                if block.allow_content_type_check:
+                    image_content_type: str = image.content_type
+                    if image_content_type not in block_contents:
+                        return Response(
+                            {"detail": f"Unacceptable image content-type of {image_content_type} for image {image.name}."})
                 # ------------------------------------------------------------------------------------------------------
 
                 # Check image size against the specified block size.
                 # 1. Pillow returns the image size in Bytes, so 1000 Bytes -> 1 Kilobytes
 
-                # convert Bytes to KB
-                converted, value_or_errmsg = convert_to_kb(unit='b', value=image.size)
-                if not converted:
-                    return Response({"detail": f"{value_or_errmsg}"}, status=HTTP_400_BAD_REQUEST)
+                if block.allow_size_check:
+                    # convert Bytes to KB.
+                    converted, value_or_errmsg = convert_to_kb(unit='b', value=image.size)
+                    if not converted:
+                        return Response({"detail": f"{value_or_errmsg}"}, status=HTTP_400_BAD_REQUEST)
 
-                if value_or_errmsg > block.file_threshold_size:
-                    return Response({"detail": f"'{image.name}' has a size of {float(image.size)} KB "
-                                               f"which is above the specified size for this block which is "
-                                               f"{float(block.file_threshold_size)}KB."}, status=HTTP_400_BAD_REQUEST)
+                    if value_or_errmsg > block.file_threshold_size:
+                        return Response({"detail": f"File size should be {float(block.file_threshold_size)}KB or less"},
+                                        status=HTTP_400_BAD_REQUEST)
 
                 # ------------------------------------------------------------------------------------------------------
-                # Check if the image height in pixel is less than the width specified in the Validation Block
-                if image_item.height < block.image_height_dimension_threshold:
-                    return Response({
-                        "detail": f"'{image.name}' height in pixels is lower than the expected value for this "
-                                  f"Validation Block. Validation block expects a value greater than or equal to "
-                                  f"'{block.image_height_dimension_threshold}px', this image has "
-                                  f"'{image_item.height}px' in height which is lesser than the expected "
-                                  f"value.", "description": ""},
-                        status=HTTP_400_BAD_REQUEST)
+                if block.allow_dimension_check:
+                    # Check if the image height in pixel is less than the width specified in the Validation Block
+                    if image_item.height < block.image_height_dimension_threshold:
+                        return Response({
+                            "detail": f"'{image.name}' height in pixels should be '{block.image_height_dimension_threshold}px' or less"},
+                            status=HTTP_400_BAD_REQUEST)
 
-                # Check if the image width in pixel is less than the width specified in the Validation Block
-                if image_item.width < block.image_width_dimension_threshold:
-                    return Response({
-                        "description": f"'{image.name}' width in pixels is lower than the expected value for this "
-                                       f"Validation Block. Validation block expects a value greater than or equal to "
-                                       f"'{block.image_width_dimension_threshold}px', this image has "
-                                       f"'{image_item.width}px' in width which is lesser than the expected "
-                                       f"value.", "detail": "Image does not match the requirements."},
-                        status=HTTP_400_BAD_REQUEST)
+                    # Check if the image width in pixel is less than the width specified in the Validation Block
+                    if image_item.width < block.image_width_dimension_threshold:
+                        return Response({
+                            "detail": f"'{image.name}' height in pixels should be "
+                                      f"'{block.image_height_dimension_threshold}px' or less"},
+                            status=HTTP_400_BAD_REQUEST)
 
-                path_ = rf"{os.getcwd()}/images"
-                try:
-                    if not os.path.exists(path_):
-                        os.mkdir(f"{path_}")
+                if block.allow_blurry_images:
+                    path_ = rf"{os.getcwd()}/images"
+                    try:
+                        if not os.path.exists(path_):
+                            os.mkdir(f"{path_}")
 
-                    # System only saves with JPEG type not JPG, so I did an Adjust to change all JPSs to JPEG.
-                    ext = "JPEG" if str(image.name).split(".")[-1].upper() == "JPG" else str(image.name).split(".")[
-                        -1].upper()
+                        # System only saves with JPEG type not JPG, so I did an Adjustment to change all JPSs to JPEG.
+                        ext = "JPEG" if str(image.name).split(".")[-1].upper() == "JPG" else str(image.name).split(".")[
+                            -1].upper()
 
-                    # Save image to images/ folder.
-                    image_item.save(fp=f"{path_}/{image.name}", format=ext)
+                        # Save image to images/ folder.
+                        image_item.save(fp=f"{path_}/{image.name}", format=ext)
+                    except (FileNotFoundError, FileExistsError, Exception) as err:
+                        # Log Error Message
+                        shutil.rmtree(path_)
 
-                except (FileNotFoundError, FileExistsError, Exception) as err:
-                    # Log Error Message
-                    print(err)
+                    # Calculate Blurriness of an Image.
+                    success, msg = check_if_blur(cv_image_instance=image_item, image=image, image_path=path_)
+
+                    # Remove/Release the images from the image/ directory.
                     shutil.rmtree(path_)
 
-                # Calculate Blurriness of an Image.
-                success, msg = check_if_blur(cv_image_instance=image_item, image=image, image_path=path_)
-
-                # Remove/Release the images from the image/ directory.
-                shutil.rmtree(path_)
-
-                if success is False:
-                    return Response({"detail": f"'{image.name}' is {msg}",
-                                     "description": f"The system detected a Blurry image '{image.name}', "
-                                                    f"Please enter a clear image."}, status=HTTP_400_BAD_REQUEST)
+                    if success is False:
+                        return Response({"detail": f"'{image.name}' is {msg}",
+                                         "description": f"The system detected a Blurry image '{image.name}', "
+                                                        f"Please enter a clear image."}, status=HTTP_400_BAD_REQUEST)
 
             return Response({"detail": f"{len(images)} image has been validated." if len(
                 images) == 1 else f"{len(images)} has been Validated successfully."})

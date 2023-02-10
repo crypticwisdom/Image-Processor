@@ -36,6 +36,7 @@ class ValidatorBlockSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ValidatorBlock
-        fields = ['id', 'block_name', 'block_token', 'file_threshold_size', 'image_height_dimension_threshold',
-                  'image_width_dimension_threshold', 'allowed_extensions', 'content_type', 'numb_of_images_per_process',
-                  'created_on']
+        fields = ['id', 'block_name', 'block_token', 'file_threshold_size', 'allow_size_check',
+                  'image_height_dimension_threshold', 'image_width_dimension_threshold', 'allow_dimension_check',
+                  'allowed_extensions', 'allow_extension_check', 'content_type', 'allow_content_type_check',
+                  'numb_of_images_per_process', 'allow_number_of_image_check', 'allow_blurry_images', 'created_on']
